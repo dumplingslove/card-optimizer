@@ -1,0 +1,17 @@
+{
+  "name": "Daran 信用卡优化器",
+  "short_name": "卡优化",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f0f23",
+  "theme_color": "#0f0f23",
+  "description": "信用卡消费推荐 & 积分优化工具",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f0f23'/><text x='50' y='65' font-size='50' text-anchor='middle'>💳</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
