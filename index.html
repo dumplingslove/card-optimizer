@@ -45,6 +45,18 @@
 .rc-sec li{padding:2px 0}
 .rc-sec li b{color:#4ecdc4}
 .rc-warn{background:#2a1a1a;border:1px solid #764ba2;border-radius:6px;padding:6px 8px;font-size:0.9em;color:#c49bff;margin-top:6px}
+.changelog-section{border-color:#ff6b6b;background:linear-gradient(135deg,#2a1215,#1a1a2e)}
+.changelog-section h2{color:#ff6b6b}
+.change-item{display:flex;gap:8px;padding:9px 10px;background:#16213e;border-radius:8px;margin-bottom:8px;font-size:0.82em;border-left:3px solid #4ecdc4;align-items:flex-start}
+.change-item.urgent{border-left-color:#ff6b6b}
+.change-item .ch-date{color:#888;white-space:nowrap;font-size:0.85em;padding-top:2px}
+.ch-tag{font-size:0.7em;padding:2px 7px;border-radius:8px;font-weight:bold;white-space:nowrap;height:fit-content;margin-top:1px}
+.ch-tag.new{background:#5c1a1a;color:#ff6b6b;border:1px solid #ff6b6b;animation:chblink 1.6s infinite}
+.ch-tag.urgent{background:#5c1a1a;color:#ffd93d;border:1px solid #ffd93d}
+.ch-tag.info{background:#1a2a1a;color:#4ecdc4;border:1px solid #4ecdc4}
+@keyframes chblink{0%,100%{opacity:1}50%{opacity:0.55}}
+.ch-text{color:#ddd;line-height:1.55;flex:1}
+.ch-text b{color:#fff}
 @media(max-width:768px){.card-grid{grid-template-columns:1fr}.bilt-result{grid-template-columns:1fr}.q-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -52,6 +64,17 @@
 <div class="container">
 <h1>💳 Daran 的信用卡优化器</h1>
 <p class="subtitle">一目了然的刷卡指南 | 房租 $7,000/月</p>
+
+<!-- CHANGELOG -->
+<div class="section changelog-section">
+<h2>📢 卡片动态追踪 <span style="font-size:0.55em;color:#888">最近更新 <span id="ch-updated">2026-09-12</span> · 每周一自动检查</span></h2>
+<!-- CHANGELOG-START -->
+<div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">⏰ 紧急</span><div class="ch-text"><b>Chase Ink Business Cash $1,000 开卡奖励 9/17/2026 截止</b>——只剩几天！免年费卡史上最高档奖励之一，$8k/4个月消费拿$1,000（=100k UR，可转Hyatt）。详见下方"💡 新卡推荐"。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text">本站新增 <b>💡 新卡推荐</b> 板块：Venture X / Ink Business Cash / Blue Business Plus / Citi Strata Premier 详解（为什么适合你、可替换哪张），以及 Hilton Aspire 等可跳过的卡和申请顺序建议。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">待更新</span><div class="ch-text"><b>Q4 2026（10-12月）Chase Freedom / Discover 5% 类别</b>预计 9 月中旬公布，公布后本栏更新并替换上方轮转板块。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">倒计时</span><div class="ch-text"><b>Amex Platinum 12/17 关卡</b>进入 3 个月倒计时：关前烧完 $200 航司 credit、$200 FHR、$50 Saks（半年）、每月 $15-20 Uber 和 $20 数字娱乐 credit。</div></div>
+<!-- CHANGELOG-END -->
+</div>
 
 <!-- RECOMMENDATIONS - Grouped -->
 <div class="section rec-section">
