@@ -21,6 +21,30 @@
 .cards-section h2{color:#ffd93d}.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}.card-box{background:#16213e;border-radius:10px;border:1px solid #333;overflow:hidden;cursor:pointer;transition:all 0.2s}.card-box:hover{border-color:#667eea}.card-box .ct{padding:12px;display:flex;justify-content:space-between;align-items:center}.card-box .cn{font-weight:bold;color:#fff;font-size:0.9em}.card-box .cf{color:#ffd93d;font-size:0.75em}.card-box .cb{padding:0 12px 8px;font-size:0.78em;color:#aaa}.card-box .cd{display:none;padding:12px;border-top:1px solid #333;background:#12122a;font-size:0.78em;line-height:1.6;color:#ccc}.card-box.open .cd{display:block}.card-box .cd h4{color:#4ecdc4;margin:6px 0 3px;font-size:0.85em}.card-box .cd li{padding:1px 0}.card-box .cd .tip{background:#1a2a1a;border:1px solid #4ecdc4;border-radius:6px;padding:6px;margin-top:6px;font-size:0.85em;color:#4ecdc4}.card-box .cd .protip{background:#2a1a2a;border:1px solid #764ba2;border-radius:6px;padding:6px;margin-top:6px;font-size:0.85em;color:#c49bff}
 .bilt-section{border-color:#ffd93d}.bilt-section h2{color:#ffd93d}.bilt-slider{width:100%;margin:8px 0;accent-color:#667eea}.bilt-result{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.bilt-stat{text-align:center;padding:8px;background:#16213e;border-radius:6px}.bilt-stat .num{font-size:1.2em;font-weight:bold;color:#4ecdc4}.bilt-stat .label{font-size:0.7em;color:#888;margin-top:2px}
 .credits-section h2{color:#ff6b6b}.credit-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #222;font-size:0.82em}.credit-item:last-child{border:none}
+.reco-section{border-color:#667eea;background:linear-gradient(135deg,#1a1a3e,#1a1a2e)}
+.reco-section h2{color:#8f9bff}
+.reco-tier{color:#ffd93d;font-weight:bold;font-size:0.95em;margin:16px 0 8px;padding-left:2px}
+.reco-tier:first-of-type{margin-top:4px}
+.reco-card{background:#16213e;border-radius:10px;border:1px solid #333;padding:12px;margin-bottom:10px;font-size:0.8em;line-height:1.6;color:#ccc}
+.reco-card.hot{border-color:#ff6b6b}
+.reco-card.skip{opacity:0.85}
+.reco-card.save,.reco-card.plan{border-color:#4ecdc4}
+.rc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.rc-name{font-weight:bold;color:#fff;font-size:1.05em}
+.rc-badge{font-size:0.75em;padding:2px 8px;border-radius:10px;font-weight:bold}
+.rc-badge.hot{background:#5c1a1a;color:#ff6b6b;border:1px solid #ff6b6b}
+.rc-badge.ok{background:#1a3a2a;color:#4ecdc4;border:1px solid #4ecdc4}
+.rc-badge.no{background:#2a2a2a;color:#888;border:1px solid #555}
+.rc-urgent{font-size:0.75em;color:#ff6b6b;font-weight:bold}
+.rc-fee{color:#ffd93d;font-size:0.85em;margin-bottom:6px}
+.rc-earn{margin-bottom:8px;color:#aaa}
+.rc-earn b{color:#4ecdc4}
+.rc-sec{margin-bottom:8px}
+.rc-sec b{color:#fff}
+.rc-sec ul,.rc-sec ol{margin:4px 0 0 18px;color:#bbb}
+.rc-sec li{padding:2px 0}
+.rc-sec li b{color:#4ecdc4}
+.rc-warn{background:#2a1a1a;border:1px solid #764ba2;border-radius:6px;padding:6px 8px;font-size:0.9em;color:#c49bff;margin-top:6px}
 @media(max-width:768px){.card-grid{grid-template-columns:1fr}.bilt-result{grid-template-columns:1fr}.q-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -158,6 +182,110 @@
 
 <div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">CFU / Citi Double Cash</span><span class="cf">免年费</span></div><div class="cb">CFU 1.5x UR | Citi 2%(弃用)</div><div class="cd"><ul><li>CFU: 想集中攒UR时用(但<Bilt/Smartly)</li><li>Citi: 被Smartly取代，养历史</li></ul><div class="protip">🎯 资深玩家：CFU积累的UR仍可通过CSP转Hyatt。每3-6月刷Citi一笔防关。CFU的3%餐饮/药店在关Plat后作为Amex不收时的备选</div></div></div>
 </div></div>
+<!-- Recommended Cards -->
+<div class="section reco-section">
+<h2>💡 新卡推荐 <span style="font-size:0.55em;color:#888">(基于你现有卡组)</span></h2>
+<p style="color:#888;font-size:0.78em;margin-bottom:10px">流行卡里真正适合你的 + 哪些可以跳过 + 能替换掉哪张。开卡奖励为 2026-09 核实。</p>
+
+<div class="reco-tier">🔥 强烈推荐</div>
+
+<div class="reco-card hot">
+<div class="rc-head"><span class="rc-name">Capital One Venture X</span><span class="rc-badge hot">🔥 强烈推荐</span></div>
+<div class="rc-fee">$395/年 · 实际成本≈$0</div>
+<div class="rc-earn"><b>2x</b> 所有消费无上限 | <b>10x/5x</b> C1 Travel酒店租车/机票 | $300旅行credit + 10k周年miles | Priority Pass + C1自营Lounge</div>
+<div class="rc-sec"><b>🎁 开卡奖励：</b>75k miles（3个月消费$4k）≈ $750</div>
+<div class="rc-sec"><b>为什么适合你：</b><ul>
+<li><b>年费几乎白给：</b>$300 credit 订一次旅行就烧掉 + 10k miles（保底$100，TPG估值$185），$485回报 &gt; $395年费</li>
+<li><b>补上"无脑2x"缺口：</b>Bilt 2x很好但要凑房租比例；Smartly 4%要锁$100K在US Bank。Venture X 2x无类别无上限，是最省心的backup</li>
+<li><b>Lounge长期缺口：</b>Plat 12/17关、CSR 5/27降级后PP只剩Bilt；Venture X的PP + C1自营lounge（DFW/DEN/IAD/JFK质量很高）补上</li>
+<li><b>免费副卡带lounge：</b>Amex Plat副卡$195/张，Venture X副卡免费且能进lounge——给旅伴加一张很划算</li>
+</ul></div>
+<div class="rc-sec"><b>可替换：</b>不直接替换现有卡。定位是"CSR降级+Plat关卡后"的长期高端卡位。与Bilt 2x功能重叠，Bilt仍优先（Hyatt 1:1更值）。</div>
+<div class="rc-warn">⚠️ C1转分伙伴偏弱（无Hyatt/UA），miles主要按1cpp抵旅行或转Flying Blue；C1对"卡多"申请人审批偏紧</div>
+</div>
+
+<div class="reco-card hot">
+<div class="rc-head"><span class="rc-name">Chase Ink Business Cash</span><span class="rc-badge hot">🔥 强烈推荐</span><span class="rc-urgent">⏰ $1,000奖励 9/17/2026 截止！</span></div>
+<div class="rc-fee">免年费</div>
+<div class="rc-earn"><b>5x</b> 办公用品店 + 网费/话费/电视费（$25k/年cap）| <b>2x</b> 加油/餐饮（$25k/年cap）| <b>5x</b> Lyft（至2027/9/30）</div>
+<div class="rc-sec"><b>🎁 开卡奖励：</b>$1,000（4个月消费$8k）——免年费卡史上最高档之一，错过等一年</div>
+<div class="rc-sec"><b>为什么适合你：</b><ul>
+<li><b>奖励以UR发放：</b>可合并到CSP转Hyatt 1:1，$1,000 = 100k UR = 潜在$2,000+酒店价值</li>
+<li><b>办公用品店5x隐藏玩法：</b>Staples/Office Depot买Amazon/Apple/各类gift card都算5x——等于把很多消费变成5x UR</li>
+<li><b>账单5x碾压USB Cash+：</b>你现在网费用Cash+拿5% cash；Ink给5x UR（转Hyatt≈10%+），可把网络/话费账单移过来</li>
+</ul></div>
+<div class="rc-sec"><b>可替换：</b>不替代现有卡，纯增量。手机账单可从Bilt移到Ink拿5x，但会失去Bilt的$800手机保险——建议话费放Ink、手机账单留Bilt保保险。</div>
+<div class="rc-warn">⚠️ 商业卡：sole proprietorship用SSN即可申请；Chase商业卡不占5/24名额，但批卡时会看你的5/24状态</div>
+</div>
+
+<div class="reco-tier">✅ 值得考虑</div>
+
+<div class="reco-card">
+<div class="rc-head"><span class="rc-name">Amex Blue Business Plus</span><span class="rc-badge ok">✅ 值得考虑</span></div>
+<div class="rc-fee">免年费</div>
+<div class="rc-earn"><b>2x</b> MR 所有消费（首$50k/年，之后1x）</div>
+<div class="rc-sec"><b>🎁 开卡奖励：</b>15k MR（3个月消费$3k）</div>
+<div class="rc-sec"><b>为什么适合你：</b><ul>
+<li><b>Plat关后Amex侧兜底：</b>Plat 12/17关后你Amex侧只剩Gold（4x餐饮/超市）；BBP给Amex生态一个2x兜底，MR池子互通，VA→ANA 45k商务舱路线不断</li>
+<li><b>免年费永久持有：</b>MR永不过期（只要持有任意MR卡），放抽屉养着就行</li>
+<li>同样是商业卡，SSN sole prop可申，不占5/24</li>
+</ul></div>
+<div class="rc-sec"><b>可替换：</b>CFU。你卡组里CFU的定位是"集中攒UR"，BBP是Amex版"集中攒MR"；CFU 1.5x &lt; BBP 2x，但UR转Hyatt更值——两者可按场景并存。</div>
+</div>
+
+<div class="reco-card">
+<div class="rc-head"><span class="rc-name">Citi Strata Premier</span><span class="rc-badge ok">✅ 值得考虑</span></div>
+<div class="rc-fee">$95/年 · $100酒店credit烧掉后≈$0</div>
+<div class="rc-earn"><b>3x</b> 餐饮/超市/加油/EV/机票/酒店（境外也算）| <b>10x</b> Citi Travel酒店租车 | $100/年酒店credit（$500+订单）</div>
+<div class="rc-sec"><b>🎁 开卡奖励：</b>60k TYP（3个月消费$4k）</div>
+<div class="rc-sec"><b>为什么适合你：</b><ul>
+<li><b>激活Citi线：</b>你的Citi Double Cash一直在"养历史"，加一张Strata Premier即可解锁TYP转航司/酒店（Flying Blue、Aeroplan等），Citi从cashback变转分生态</li>
+<li><b>年底东南亚行用得上：</b>3x餐饮/超市/加油境外也算且无FTF</li>
+<li>$100酒店credit在Citi Travel订$500+酒店轻松烧掉，实际年费≈$0</li>
+</ul></div>
+<div class="rc-sec"><b>可替换：</b>不替代现有卡。注意TYP整体价值不如UR/MR（估值约1.6-1.8cpp），别把主力消费移过去。</div>
+</div>
+
+<div class="reco-tier">🚫 不推荐（说清原因）</div>
+
+<div class="reco-card skip">
+<div class="rc-head"><span class="rc-name">Hilton Aspire</span><span class="rc-badge no">🚫 跳过</span></div>
+<div class="rc-fee">$550/年</div>
+<div class="rc-sec"><b>为什么不适合你：</b>乍看很香（$400 resort credit + $200航司 + 钻石会籍 + 免房晚），但你已是<b>Marriott Platinum + Brilliant</b>（85K FNA + $25/月dining），酒店主力是万豪系；Aspire的Diamond对你边际价值很低，还要再花$550年费。除非Hilton住宿突然变多，否则是重复建设。</div>
+</div>
+
+<div class="reco-card skip">
+<div class="rc-head"><span class="rc-name">Wells Fargo Autograph Journey</span><span class="rc-badge no">🚫 跳过</span></div>
+<div class="rc-fee">$95/年</div>
+<div class="rc-sec"><b>为什么不适合你：</b>5x酒店/4x机票/3x旅行看着美，但WF转分伙伴很弱，没有Hyatt/UA/AA这种高价值选项。你是"转分换商务舱"玩家，这张卡用不上。</div>
+</div>
+
+<div class="reco-card skip">
+<div class="rc-head"><span class="rc-name">Robinhood Gold Card</span><span class="rc-badge no">🚫 不必</span></div>
+<div class="rc-fee">3% cash无上限 · 需Gold会员</div>
+<div class="rc-sec"><b>为什么不适合你：</b>3%无类别很火，但你的Smartly已经<b>4%</b>（$100K US Bank关系）全面碾压。除非你想把$100K从US Bank撤出来，否则没必要换。</div>
+</div>
+
+<div class="reco-tier">💰 省年费思路（降级备选）</div>
+<div class="reco-card save">
+<div class="rc-sec"><ul>
+<li><b>Marriott Brilliant ($650) → Bevy ($250)：</b>某年万豪住得少时降级，省$400；代价是FNA从85K降到50K、失去Platinum自动会籍。住得多就别降。</li>
+<li><b>Amex Gold ($325)：</b>credits全用上（$10 Uber + $10 dining + $100 Resy + $84 Dunkin' + $100 Hotel Collection）就回本；用不上就关，4x餐饮可由Bilt 2x / Atmos 3x顶。</li>
+<li><b>Plat关卡后（12/17）：</b>MR不会丢（Gold还在），记得关前把$200航司credit、$200 FHR、Saks $50、Uber credit烧完。</li>
+</ul></div>
+</div>
+
+<div class="reco-tier">📋 申请顺序建议</div>
+<div class="reco-card plan">
+<div class="rc-sec"><ol>
+<li><b>最优先：Ink Business Cash</b> —— $1,000奖励 <b>9/17/2026截止，只剩几天！</b></li>
+<li><b>其次：Venture X</b> —— 75k开卡常年有不急；但C1喜欢"卡少"的申请人，常见策略是先申C1再申Chase</li>
+<li><b>随时：</b>BBP / Strata Premier（免年费/$95，无时间压力）</li>
+</ol></div>
+<div class="rc-warn">⚠️ Chase <b>5/24规则</b>：24个月内开了5张个人卡就批不下Chase卡。商业卡（Ink/BBP）申请不占5/24名额，但Chase批商业卡时会看你的5/24状态。Venture X、Strata Premier占5/24。</div>
+</div>
+</div>
+
 <!-- Credits -->
 <div class="section credits-section">
 <h2>📅 Credits追踪</h2>
