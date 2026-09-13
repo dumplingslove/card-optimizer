@@ -58,33 +58,69 @@
 .ch-text{color:#ddd;line-height:1.55;flex:1}
 .ch-text b{color:#fff}
 @media(max-width:768px){.card-grid{grid-template-columns:1fr}.bilt-result{grid-template-columns:1fr}.q-grid{grid-template-columns:1fr}}
+
+.tabbar{position:sticky;top:0;z-index:50;background:rgba(15,15,35,.96);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;padding:10px 2px;margin-bottom:14px;border-bottom:1px solid #2a2a4a;scrollbar-width:none}
+.tabbar::-webkit-scrollbar{display:none}
+.tab-btn{flex:1;min-width:88px;white-space:nowrap;background:#1a1a2e;border:1px solid #333;color:#aaa;border-radius:10px;padding:9px 6px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
+.tab-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:#667eea;font-weight:bold}
+.tab-btn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff6b6b;margin-left:5px;vertical-align:middle;animation:chblink 1.6s infinite}
+.tab-page{display:none}
+.tab-page.active{display:block;animation:fadein .18s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
 <div class="container">
 <h1>💳 Daran 的信用卡优化器</h1>
 <p class="subtitle">一目了然的刷卡指南 | 房租 $7,000/月</p>
+<nav class="tabbar">
+<button class="tab-btn active" data-tab="home" onclick="goTab('home')">🏠 总览</button>
+<button class="tab-btn" data-tab="spend" onclick="goTab('spend')">🎯 刷卡</button>
+<button class="tab-btn" data-tab="cards" onclick="goTab('cards')">💳 卡片</button>
+<button class="tab-btn" data-tab="new" onclick="goTab('new')">💡 新卡</button>
+<button class="tab-btn" data-tab="updates" onclick="goTab('updates')">📢 动态</button>
+</nav>
 
-<!-- CHANGELOG -->
-<div class="section changelog-section">
-<h2>📢 卡片动态追踪 <span style="font-size:0.55em;color:#888">最近更新 <span id="ch-updated">2026-09-12</span> · 每周一自动检查</span></h2>
-<!-- CHANGELOG-START -->
-<div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Amex Platinum 年费 $695→$895</b>（2025-09-18 改版，2026-01-02 起老用户续费按新价；新增 Resy $400/年、lululemon $300/年、酒店 credit 涨到 $600/年等）。网站旧数据已修正。12/17 关卡计划不变且更坚定——关前把新增 credits 也烧掉。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Chase Sapphire Reserve 年费 $550→$795</b>（2025 年 6 月大改版：8x Chase Travel、4x 航司酒店直购、IHG 铂金会籍等）。网站旧数据已修正。2027-05-11 降级 CSP 计划不变；降级前确认新版 credits 已用完。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Venture X 副卡 lounge 规则</b>：2026 年 2 月起主卡需为每张副卡付 <b>$125/年</b>才能保留 lounge 权限（此前免费已取消）。推荐板块已修正——给旅伴加副卡要重算成本。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>Hyatt 大贬值（2026-05-20）</b>：兑换档位从 3 档扩到 <b>5 档</b>，最高档比原 Peak 最高涨 <b>67%</b>（Cat 8：45k→75k/晚）。你的 UR/Bilt 主力转 Hyatt——热门酒店旺季兑换成本明显上升，烧分趁淡季提前锁房。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>Chase Sapphire Preferred 改版（2026-06-15）</b>：年费 $95 不变，Chase Travel 酒店 credit $50→<b>$100</b>，新增 3x 加油/EV 充电、$120 Global Entry。你 2027-05-11 降级后的 CSP 正好是新版——$100 credit 基本抵掉年费，降级方案比以前更划算了。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Amex Centurion Lounge 新规（2026-07-08 生效）</b>：同行 guest 须与持卡人<b>同一航班</b>；中转旅客起飞前 5 小时内才能进。Plat 关卡前带家人进 lounge 注意掐时间。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Robinhood Gold Card</b>：2026-07-01 起<b>新开户收 3% 外币交易费</b>（老用户豁免）。"不推荐"结论维持，理由再加一条。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">记录</span><div class="ch-text"><b>X 上线 X Money（2026-07-27）</b>：配的是 <b>Visa 借记卡（非信用卡）</b>，6% APY / 3% 返现需 Premium+ 订阅（$40/月）。无开卡奖励、无转分——不进信用卡体系，仅记录。</div></div>
-<div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">⏰ 紧急</span><div class="ch-text"><b>Chase Ink Business Cash $1,000 开卡奖励 9/17/2026 截止</b>——只剩几天！免年费卡史上最高档奖励之一，$8k/4个月消费拿$1,000（=100k UR，可转Hyatt）。详见下方"💡 新卡推荐"。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text">本站新增 <b>💡 新卡推荐</b> 板块：Venture X / Ink Business Cash / Blue Business Plus / Citi Strata Premier 详解（为什么适合你、可替换哪张），以及 Hilton Aspire 等可跳过的卡和申请顺序建议。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">待更新</span><div class="ch-text"><b>Q4 2026（10-12月）Chase Freedom / Discover 5% 类别</b>预计 9 月中旬公布，公布后本栏更新并替换上方轮转板块。</div></div>
-<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">倒计时</span><div class="ch-text"><b>Amex Platinum 12/17 关卡</b>进入 3 个月倒计时：关前烧完 $200 航司 credit、$600 酒店 credit、$400 Resy、$300 lululemon、$50 Saks（半年）、每月 Uber 和数字娱乐 credit。</div></div>
-<div style="font-size:0.72em;color:#666;margin-top:4px">📰 追踪来源：The Points Guy · Doctor of Credit · Frequent Miler · One Mile at a Time · View from the Wing · Miles to Memories ｜ X: @garyleff @DoctorOfCredit @thepointsguy</div>
-<!-- CHANGELOG-END -->
+<div class="tab-page active" id="tp-home">
+<!-- Warnings -->
+<div class="warn-banner">
+<h2>⚠️ 待关卡/降级</h2>
+<div class="warn-item"><span class="wn">Amex Delta Gold</span><span class="wa">关卡(先要retention)</span><span class="wd">9/24</span></div>
+<div class="warn-item"><span class="wn">Amex Platinum</span><span class="wa">关卡(用完credits!)</span><span class="wd">12/17</span></div>
+<div class="warn-item"><span class="wn">Chase Sapphire Reserve</span><span class="wa">降级→CSP(用完10x!)</span><span class="wd">5/11/27</span></div>
 </div>
 
+<!-- Q3 -->
+<div class="section quarter-banner">
+<h2>🔄 本季5%轮转 (Q3: Jul-Sep 2026)</h2>
+<div class="q-grid">
+<div class="q-card"><h3>Chase Freedom/Flex</h3><ul><li>加油站 & EV</li><li>公共交通</li><li>现场娱乐</li><li>United Way</li></ul><p style="color:#888;font-size:0.7em;margin-top:4px">$1,500/卡(两张=$3,000)</p></div>
+<div class="q-card"><h3>Discover it®</h3><ul><li>加油站 & EV</li></ul><p style="color:#ffd93d;font-size:0.7em;margin-top:4px">⚡与Chase重叠！加油$4,500</p></div>
+</div></div>
+
+<!-- Enrollment -->
+<div class="section enroll-section">
+<h2>🔔 每季度手动激活</h2>
+<div class="enroll-item"><div><span class="en-name">Chase Freedom Flex 5%</span><br><span class="en-how">chase.com/freedom → Activate</span></div><span class="en-freq">每季度</span></div>
+<div class="enroll-item"><div><span class="en-name">Chase Freedom® 5%</span><br><span class="en-how">chase.com/freedom → Activate</span></div><span class="en-freq">每季度</span></div>
+<div class="enroll-item"><div><span class="en-name">Discover it® 5%</span><br><span class="en-how">discover.com → Cashback Bonus</span></div><span class="en-freq">每季度</span></div>
+<div class="enroll-item"><div><span class="en-name">USB Cash+ 类别选择</span><br><span class="en-how">usbank.com → Rewards → Choose</span></div><span class="en-freq">每季度可换</span></div>
+<div class="enroll-item" style="border-left-color:#ff6b6b"><div><span class="en-name">Amex Plat 航司选择</span><br><span class="en-how">选$200 airline credit航司(关前用完)</span></div><span class="en-freq">每年1月</span></div>
+</div>
+
+<!-- Bilt -->
+<div class="section bilt-section">
+<h2>🧮 Bilt房租积分计算器</h2>
+<p style="color:#aaa;font-size:0.8em;margin-bottom:6px">每月Bilt非房租消费:</p>
+<input type="range" class="bilt-slider" id="bs" min="0" max="10000" value="5250" step="100" oninput="cb()">
+<p style="text-align:center;color:#fff;font-size:0.9em" id="bS">$5,250/月</p>
+<div class="bilt-result"><div class="bilt-stat"><div class="num" id="bR">75%</div><div class="label">消费/房租比</div></div><div class="bilt-stat"><div class="num" id="bM">1.0x</div><div class="label">房租倍率</div></div><div class="bilt-stat"><div class="num" id="bP">7,000</div><div class="label">积分/月</div></div></div>
+<p style="color:#888;margin-top:8px;text-align:center;font-size:0.75em" id="bV">≈$126/月(1.8cpp) | $175/月(Hyatt 2.5cpp)</p>
+</div>
+
+</div>
+
+<div class="tab-page" id="tp-spend">
 <!-- RECOMMENDATIONS - Grouped -->
 <div class="section rec-section">
 <h2>🎯 消费推荐速查</h2>
@@ -149,42 +185,9 @@
 <div class="rec-detail"><div class="why">💡 选TV/Internet/Streaming为5%类别</div><div class="alts"><b>备选：</b>Bilt 2x | Smartly 4%</div></div>
 </div>
 </div>
-<!-- Warnings -->
-<div class="warn-banner">
-<h2>⚠️ 待关卡/降级</h2>
-<div class="warn-item"><span class="wn">Amex Delta Gold</span><span class="wa">关卡(先要retention)</span><span class="wd">9/24</span></div>
-<div class="warn-item"><span class="wn">Amex Platinum</span><span class="wa">关卡(用完credits!)</span><span class="wd">12/17</span></div>
-<div class="warn-item"><span class="wn">Chase Sapphire Reserve</span><span class="wa">降级→CSP(用完10x!)</span><span class="wd">5/11/27</span></div>
 </div>
 
-<!-- Q3 -->
-<div class="section quarter-banner">
-<h2>🔄 本季5%轮转 (Q3: Jul-Sep 2026)</h2>
-<div class="q-grid">
-<div class="q-card"><h3>Chase Freedom/Flex</h3><ul><li>加油站 & EV</li><li>公共交通</li><li>现场娱乐</li><li>United Way</li></ul><p style="color:#888;font-size:0.7em;margin-top:4px">$1,500/卡(两张=$3,000)</p></div>
-<div class="q-card"><h3>Discover it®</h3><ul><li>加油站 & EV</li></ul><p style="color:#ffd93d;font-size:0.7em;margin-top:4px">⚡与Chase重叠！加油$4,500</p></div>
-</div></div>
-
-<!-- Enrollment -->
-<div class="section enroll-section">
-<h2>🔔 每季度手动激活</h2>
-<div class="enroll-item"><div><span class="en-name">Chase Freedom Flex 5%</span><br><span class="en-how">chase.com/freedom → Activate</span></div><span class="en-freq">每季度</span></div>
-<div class="enroll-item"><div><span class="en-name">Chase Freedom® 5%</span><br><span class="en-how">chase.com/freedom → Activate</span></div><span class="en-freq">每季度</span></div>
-<div class="enroll-item"><div><span class="en-name">Discover it® 5%</span><br><span class="en-how">discover.com → Cashback Bonus</span></div><span class="en-freq">每季度</span></div>
-<div class="enroll-item"><div><span class="en-name">USB Cash+ 类别选择</span><br><span class="en-how">usbank.com → Rewards → Choose</span></div><span class="en-freq">每季度可换</span></div>
-<div class="enroll-item" style="border-left-color:#ff6b6b"><div><span class="en-name">Amex Plat 航司选择</span><br><span class="en-how">选$200 airline credit航司(关前用完)</span></div><span class="en-freq">每年1月</span></div>
-</div>
-
-<!-- Bilt -->
-<div class="section bilt-section">
-<h2>🧮 Bilt房租积分计算器</h2>
-<p style="color:#aaa;font-size:0.8em;margin-bottom:6px">每月Bilt非房租消费:</p>
-<input type="range" class="bilt-slider" id="bs" min="0" max="10000" value="5250" step="100" oninput="cb()">
-<p style="text-align:center;color:#fff;font-size:0.9em" id="bS">$5,250/月</p>
-<div class="bilt-result"><div class="bilt-stat"><div class="num" id="bR">75%</div><div class="label">消费/房租比</div></div><div class="bilt-stat"><div class="num" id="bM">1.0x</div><div class="label">房租倍率</div></div><div class="bilt-stat"><div class="num" id="bP">7,000</div><div class="label">积分/月</div></div></div>
-<p style="color:#888;margin-top:8px;text-align:center;font-size:0.75em" id="bV">≈$126/月(1.8cpp) | $175/月(Hyatt 2.5cpp)</p>
-</div>
-
+<div class="tab-page" id="tp-cards">
 <!-- Cards with Pro Tips -->
 <div class="section cards-section">
 <h2>📋 所有卡片一览 <span style="font-size:0.55em;color:#888">(点击展开)</span></h2>
@@ -214,6 +217,78 @@
 
 <div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">CFU / Citi Double Cash</span><span class="cf">免年费</span></div><div class="cb">CFU 1.5x UR | Citi 2%(弃用)</div><div class="cd"><ul><li>CFU: 想集中攒UR时用(但<Bilt/Smartly)</li><li>Citi: 被Smartly取代，养历史</li></ul><div class="protip">🎯 资深玩家：CFU积累的UR仍可通过CSP转Hyatt。每3-6月刷Citi一笔防关。CFU的3%餐饮/药店在关Plat后作为Amex不收时的备选</div></div></div>
 </div></div>
+<!-- Credits -->
+<div class="section credits-section">
+<h2>📅 Credits追踪</h2>
+<div class="credit-item"><div><b>Uber Cash</b><br><span style="color:#888;font-size:0.8em">Gold+Plat</span></div><span style="color:#4ecdc4;font-weight:bold">$10+$15</span><span style="color:#ffd93d">每月</span></div>
+<div class="credit-item"><div><b>Dining Credit</b><br><span style="color:#888;font-size:0.8em">Amex Gold</span></div><span style="color:#4ecdc4;font-weight:bold">$10</span><span style="color:#ffd93d">每月</span></div>
+<div class="credit-item"><div><b>Digital Entertainment</b><br><span style="color:#888;font-size:0.8em">Plat(关前!)</span></div><span style="color:#4ecdc4;font-weight:bold">$20</span><span style="color:#ffd93d">每月</span></div>
+<div class="credit-item"><div><b>Marriott Dining</b><br><span style="color:#888;font-size:0.8em">Brilliant</span></div><span style="color:#4ecdc4;font-weight:bold">$25</span><span style="color:#ffd93d">每月</span></div>
+<div class="credit-item"><div><b>Saks</b><br><span style="color:#888;font-size:0.8em">Plat(关前!)</span></div><span style="color:#4ecdc4;font-weight:bold">$50</span><span style="color:#ffd93d">每半年</span></div>
+<div class="credit-item"><div><b>旅行Credit</b><br><span style="color:#888;font-size:0.8em">CSR</span></div><span style="color:#4ecdc4;font-weight:bold">$300</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>航司+FHR</b><br><span style="color:#888;font-size:0.8em">Plat(关前!)</span></div><span style="color:#4ecdc4;font-weight:bold">$400</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Resy</b><br><span style="color:#888;font-size:0.8em">Amex Gold</span></div><span style="color:#4ecdc4;font-weight:bold">$100</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Hotel Collection</b><br><span style="color:#888;font-size:0.8em">Amex Gold(新!)</span></div><span style="color:#4ecdc4;font-weight:bold">$100</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Dunkin'</b><br><span style="color:#888;font-size:0.8em">Amex Gold(新!)</span></div><span style="color:#4ecdc4;font-weight:bold">$7</span><span style="color:#ffd93d">每月</span></div>
+<div class="credit-item"><div><b>Hotel Credit</b><br><span style="color:#888;font-size:0.8em">Bilt</span></div><span style="color:#4ecdc4;font-weight:bold">$400</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Bilt Cash</b><br><span style="color:#888;font-size:0.8em">Bilt</span></div><span style="color:#4ecdc4;font-weight:bold">$200</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Global Companion</b><br><span style="color:#888;font-size:0.8em">Atmos</span></div><span style="color:#4ecdc4;font-weight:bold">25K pts</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Lounge Pass</b><br><span style="color:#888;font-size:0.8em">Atmos</span></div><span style="color:#4ecdc4;font-weight:bold">8张</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Free Night</b><br><span style="color:#888;font-size:0.8em">Marriott</span></div><span style="color:#4ecdc4;font-weight:bold">85K pts</span><span style="color:#ffd93d">每年</span></div>
+<div class="credit-item"><div><b>Property Credit</b><br><span style="color:#888;font-size:0.8em">Marriott</span></div><span style="color:#4ecdc4;font-weight:bold">$100</span><span style="color:#ffd93d">每年</span></div>
+</div>
+
+<!-- Perks & Status Map -->
+<div class="section" style="border-color:#764ba2">
+<h2 style="color:#c49bff">🎖️ 卡组附带福利一览</h2>
+
+<h4 style="color:#4ecdc4;margin:12px 0 8px">✈️ 机场 Lounge</h4>
+<div style="display:grid;gap:6px">
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Priority Pass</b> (全球1,400+)</span><span style="color:#ffd93d">CSR + Plat + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：自动附带，注册PP账户后关联卡即可。CSR/Plat本人+2客人。Bilt本人+2客人。注意：餐饮credit额度各卡不同</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Centurion Lounge</b> (美国顶级)</span><span style="color:#ffd93d">Amex Plat</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：Platinum卡刷卡进入。带客人需年消费$75K+，否则$50/人。部分location有3hr限制。餐饮酒水免费</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Delta Sky Club</b> (飞Delta时)</span><span style="color:#ffd93d">Amex Plat</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：须持当日Delta航班登机牌+Amex Plat。限10次/年，不能带客人。仅限Delta运营航班</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Alaska Lounge</b> (SEA等)</span><span style="color:#ffd93d">Atmos Summit (8张/年)</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：每季度自动发2张day pass到Atmos账户。可带2名儿童。位于SEA/ANC/LAX/JFK/SFO等。不需要飞Alaska，任何航班都能进</div></div>
+</div>
+
+<h4 style="color:#4ecdc4;margin:12px 0 8px">🛡️ 保险 <span style="font-size:0.7em;color:#888">(点击看激活条件)</span></h4>
+<div style="display:grid;gap:6px">
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">旅行延误/取消保险</b></span><span style="color:#ffd93d">CSR + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡支付机票/旅行费用。CSR: 延误6hr+报销$500(餐饮/住宿)；取消报销$10K。Bilt: 延误6hr+报销$500。须保留收据claim</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">行李延误/丢失保险</b></span><span style="color:#ffd93d">CSR + Amex Plat</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡买机票。行李延误6hr+可claim必需品(衣物/洗漱)最高$100/天。丢失最高$3,000(CSR)</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">租车保险 CDW</b></span><span style="color:#ffd93d">CSR (Primary!) + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡付租车全款+拒绝租车公司CDW。CSR=Primary(不需先走个人车险!)直接报销碰撞损失。Bilt=Secondary(先走自己车险)。最高赔付$75K(CSR)。注意：部分豪车/卡车不覆盖</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Cell Phone Protection</b></span><span style="color:#ffd93d">Bilt Palladium ($800/次)</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用Bilt卡支付每月手机账单(至少连续2个月)。覆盖手机屏幕碎裂/被盗/损坏。$50免赔额。每次最高$800，每年最多2次claim。覆盖你+家庭成员同一账单上的手机</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Purchase Protection</b></span><span style="color:#ffd93d">CSR + Amex全系</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡购买物品。90-120天内被盗/意外损坏可claim。CSR: $500/次, $50K/年。Amex: $1,000/次, $50K/年。不含手机/电脑(有些例外)</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Extended Warranty</b></span><span style="color:#ffd93d">CSR + Amex + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡购买有厂商保修的物品。自动延长1年(Amex/Bilt)或1年(CSR, 最长延到5年总保修)。无需注册，保留收据+保修卡即可</div></div>
+<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">航班延误$50补偿</b></span><span style="color:#ffd93d">Atmos Summit</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：Alaska航班延误2hr+或取消。自动以statement credit发放$50(无需claim!)。须用Atmos Summit买票或票在Atmos账户中</div></div>
+</div>
+
+<h4 style="color:#4ecdc4;margin:12px 0 8px">👑 会员身份 / Status</h4>
+<div style="display:grid;gap:6px">
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Marriott Platinum Elite</b> (升级/早餐/延退)</span><span style="color:#ffd93d">Marriott Brilliant</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Alaska MVP Status Points</b> (10K/年+消费)</span><span style="color:#ffd93d">Atmos Summit</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Hilton Gold</b> (自动)</span><span style="color:#ffd93d">Amex Plat</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Marriott Gold</b> (自动)</span><span style="color:#ffd93d">Amex Plat</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Hertz President's Circle</b></span><span style="color:#ffd93d">Amex Plat</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">CLEAR+ Membership</b> ($189报销)</span><span style="color:#ffd93d">Amex Plat</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Global Entry/TSA Pre</b> ($120报销)</span><span style="color:#ffd93d">CSR + Atmos Summit</span></div>
+</div>
+
+<h4 style="color:#4ecdc4;margin:12px 0 8px">🎁 其他特权</h4>
+<div style="display:grid;gap:6px">
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">免费托运行李</b> (本人+6同伴)</span><span style="color:#ffd93d">Atmos Summit</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">优先登机</b> (本人+6同伴)</span><span style="color:#ffd93d">Atmos Summit</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">免费同日改签</b> (Alaska)</span><span style="color:#ffd93d">Atmos Summit</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Lyft $10/月 credit</b> ($120/年)</span><span style="color:#ffd93d">CSR</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">DoorDash DashPass</b></span><span style="color:#ffd93d">CSR</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Instacart+</b></span><span style="color:#ffd93d">CSR</span></div>
+<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">无Foreign Transaction Fee</b></span><span style="color:#ffd93d">Bilt + Atmos + Gold + Plat + CSR</span></div>
+</div>
+
+<p style="color:#ff6b6b;font-size:0.75em;margin-top:12px">⚠️ Plat和CSR关/降级后，对应的保险和Status会消失。Bilt Priority Pass + Atmos Lounge Pass可部分替代</p>
+</div>
+
+</div>
+
+<div class="tab-page" id="tp-new">
 <!-- Recommended Cards -->
 <div class="section reco-section">
 <h2>💡 新卡推荐 <span style="font-size:0.55em;color:#888">(基于你现有卡组)</span></h2>
@@ -318,76 +393,37 @@
 </div>
 </div>
 
-<!-- Credits -->
-<div class="section credits-section">
-<h2>📅 Credits追踪</h2>
-<div class="credit-item"><div><b>Uber Cash</b><br><span style="color:#888;font-size:0.8em">Gold+Plat</span></div><span style="color:#4ecdc4;font-weight:bold">$10+$15</span><span style="color:#ffd93d">每月</span></div>
-<div class="credit-item"><div><b>Dining Credit</b><br><span style="color:#888;font-size:0.8em">Amex Gold</span></div><span style="color:#4ecdc4;font-weight:bold">$10</span><span style="color:#ffd93d">每月</span></div>
-<div class="credit-item"><div><b>Digital Entertainment</b><br><span style="color:#888;font-size:0.8em">Plat(关前!)</span></div><span style="color:#4ecdc4;font-weight:bold">$20</span><span style="color:#ffd93d">每月</span></div>
-<div class="credit-item"><div><b>Marriott Dining</b><br><span style="color:#888;font-size:0.8em">Brilliant</span></div><span style="color:#4ecdc4;font-weight:bold">$25</span><span style="color:#ffd93d">每月</span></div>
-<div class="credit-item"><div><b>Saks</b><br><span style="color:#888;font-size:0.8em">Plat(关前!)</span></div><span style="color:#4ecdc4;font-weight:bold">$50</span><span style="color:#ffd93d">每半年</span></div>
-<div class="credit-item"><div><b>旅行Credit</b><br><span style="color:#888;font-size:0.8em">CSR</span></div><span style="color:#4ecdc4;font-weight:bold">$300</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>航司+FHR</b><br><span style="color:#888;font-size:0.8em">Plat(关前!)</span></div><span style="color:#4ecdc4;font-weight:bold">$400</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Resy</b><br><span style="color:#888;font-size:0.8em">Amex Gold</span></div><span style="color:#4ecdc4;font-weight:bold">$100</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Hotel Collection</b><br><span style="color:#888;font-size:0.8em">Amex Gold(新!)</span></div><span style="color:#4ecdc4;font-weight:bold">$100</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Dunkin'</b><br><span style="color:#888;font-size:0.8em">Amex Gold(新!)</span></div><span style="color:#4ecdc4;font-weight:bold">$7</span><span style="color:#ffd93d">每月</span></div>
-<div class="credit-item"><div><b>Hotel Credit</b><br><span style="color:#888;font-size:0.8em">Bilt</span></div><span style="color:#4ecdc4;font-weight:bold">$400</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Bilt Cash</b><br><span style="color:#888;font-size:0.8em">Bilt</span></div><span style="color:#4ecdc4;font-weight:bold">$200</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Global Companion</b><br><span style="color:#888;font-size:0.8em">Atmos</span></div><span style="color:#4ecdc4;font-weight:bold">25K pts</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Lounge Pass</b><br><span style="color:#888;font-size:0.8em">Atmos</span></div><span style="color:#4ecdc4;font-weight:bold">8张</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Free Night</b><br><span style="color:#888;font-size:0.8em">Marriott</span></div><span style="color:#4ecdc4;font-weight:bold">85K pts</span><span style="color:#ffd93d">每年</span></div>
-<div class="credit-item"><div><b>Property Credit</b><br><span style="color:#888;font-size:0.8em">Marriott</span></div><span style="color:#4ecdc4;font-weight:bold">$100</span><span style="color:#ffd93d">每年</span></div>
+</div>
+
+<div class="tab-page" id="tp-updates">
+<!-- CHANGELOG -->
+<div class="section changelog-section">
+<h2>📢 卡片动态追踪 <span style="font-size:0.55em;color:#888">最近更新 <span id="ch-updated">2026-09-12</span> · 每周一自动检查</span></h2>
+<!-- CHANGELOG-START -->
+<div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Amex Platinum 年费 $695→$895</b>（2025-09-18 改版，2026-01-02 起老用户续费按新价；新增 Resy $400/年、lululemon $300/年、酒店 credit 涨到 $600/年等）。网站旧数据已修正。12/17 关卡计划不变且更坚定——关前把新增 credits 也烧掉。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Chase Sapphire Reserve 年费 $550→$795</b>（2025 年 6 月大改版：8x Chase Travel、4x 航司酒店直购、IHG 铂金会籍等）。网站旧数据已修正。2027-05-11 降级 CSP 计划不变；降级前确认新版 credits 已用完。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Venture X 副卡 lounge 规则</b>：2026 年 2 月起主卡需为每张副卡付 <b>$125/年</b>才能保留 lounge 权限（此前免费已取消）。推荐板块已修正——给旅伴加副卡要重算成本。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>Hyatt 大贬值（2026-05-20）</b>：兑换档位从 3 档扩到 <b>5 档</b>，最高档比原 Peak 最高涨 <b>67%</b>（Cat 8：45k→75k/晚）。你的 UR/Bilt 主力转 Hyatt——热门酒店旺季兑换成本明显上升，烧分趁淡季提前锁房。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>Chase Sapphire Preferred 改版（2026-06-15）</b>：年费 $95 不变，Chase Travel 酒店 credit $50→<b>$100</b>，新增 3x 加油/EV 充电、$120 Global Entry。你 2027-05-11 降级后的 CSP 正好是新版——$100 credit 基本抵掉年费，降级方案比以前更划算了。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Amex Centurion Lounge 新规（2026-07-08 生效）</b>：同行 guest 须与持卡人<b>同一航班</b>；中转旅客起飞前 5 小时内才能进。Plat 关卡前带家人进 lounge 注意掐时间。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Robinhood Gold Card</b>：2026-07-01 起<b>新开户收 3% 外币交易费</b>（老用户豁免）。"不推荐"结论维持，理由再加一条。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">记录</span><div class="ch-text"><b>X 上线 X Money（2026-07-27）</b>：配的是 <b>Visa 借记卡（非信用卡）</b>，6% APY / 3% 返现需 Premium+ 订阅（$40/月）。无开卡奖励、无转分——不进信用卡体系，仅记录。</div></div>
+<div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">⏰ 紧急</span><div class="ch-text"><b>Chase Ink Business Cash $1,000 开卡奖励 9/17/2026 截止</b>——只剩几天！免年费卡史上最高档奖励之一，$8k/4个月消费拿$1,000（=100k UR，可转Hyatt）。详见下方"💡 新卡推荐"。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text">本站新增 <b>💡 新卡推荐</b> 板块：Venture X / Ink Business Cash / Blue Business Plus / Citi Strata Premier 详解（为什么适合你、可替换哪张），以及 Hilton Aspire 等可跳过的卡和申请顺序建议。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">待更新</span><div class="ch-text"><b>Q4 2026（10-12月）Chase Freedom / Discover 5% 类别</b>预计 9 月中旬公布，公布后本栏更新并替换上方轮转板块。</div></div>
+<div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">倒计时</span><div class="ch-text"><b>Amex Platinum 12/17 关卡</b>进入 3 个月倒计时：关前烧完 $200 航司 credit、$600 酒店 credit、$400 Resy、$300 lululemon、$50 Saks（半年）、每月 Uber 和数字娱乐 credit。</div></div>
+<div style="font-size:0.72em;color:#666;margin-top:4px">📰 追踪来源：The Points Guy · Doctor of Credit · Frequent Miler · One Mile at a Time · View from the Wing · Miles to Memories ｜ X: @garyleff @DoctorOfCredit @thepointsguy</div>
+<!-- CHANGELOG-END -->
+</div>
+
 </div>
 </div>
 
-<!-- Perks & Status Map -->
-<div class="section" style="border-color:#764ba2">
-<h2 style="color:#c49bff">🎖️ 卡组附带福利一览</h2>
-
-<h4 style="color:#4ecdc4;margin:12px 0 8px">✈️ 机场 Lounge</h4>
-<div style="display:grid;gap:6px">
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Priority Pass</b> (全球1,400+)</span><span style="color:#ffd93d">CSR + Plat + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：自动附带，注册PP账户后关联卡即可。CSR/Plat本人+2客人。Bilt本人+2客人。注意：餐饮credit额度各卡不同</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Centurion Lounge</b> (美国顶级)</span><span style="color:#ffd93d">Amex Plat</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：Platinum卡刷卡进入。带客人需年消费$75K+，否则$50/人。部分location有3hr限制。餐饮酒水免费</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Delta Sky Club</b> (飞Delta时)</span><span style="color:#ffd93d">Amex Plat</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：须持当日Delta航班登机牌+Amex Plat。限10次/年，不能带客人。仅限Delta运营航班</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Alaska Lounge</b> (SEA等)</span><span style="color:#ffd93d">Atmos Summit (8张/年)</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">激活：每季度自动发2张day pass到Atmos账户。可带2名儿童。位于SEA/ANC/LAX/JFK/SFO等。不需要飞Alaska，任何航班都能进</div></div>
-</div>
-
-<h4 style="color:#4ecdc4;margin:12px 0 8px">🛡️ 保险 <span style="font-size:0.7em;color:#888">(点击看激活条件)</span></h4>
-<div style="display:grid;gap:6px">
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">旅行延误/取消保险</b></span><span style="color:#ffd93d">CSR + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡支付机票/旅行费用。CSR: 延误6hr+报销$500(餐饮/住宿)；取消报销$10K。Bilt: 延误6hr+报销$500。须保留收据claim</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">行李延误/丢失保险</b></span><span style="color:#ffd93d">CSR + Amex Plat</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡买机票。行李延误6hr+可claim必需品(衣物/洗漱)最高$100/天。丢失最高$3,000(CSR)</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">租车保险 CDW</b></span><span style="color:#ffd93d">CSR (Primary!) + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡付租车全款+拒绝租车公司CDW。CSR=Primary(不需先走个人车险!)直接报销碰撞损失。Bilt=Secondary(先走自己车险)。最高赔付$75K(CSR)。注意：部分豪车/卡车不覆盖</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Cell Phone Protection</b></span><span style="color:#ffd93d">Bilt Palladium ($800/次)</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用Bilt卡支付每月手机账单(至少连续2个月)。覆盖手机屏幕碎裂/被盗/损坏。$50免赔额。每次最高$800，每年最多2次claim。覆盖你+家庭成员同一账单上的手机</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Purchase Protection</b></span><span style="color:#ffd93d">CSR + Amex全系</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡购买物品。90-120天内被盗/意外损坏可claim。CSR: $500/次, $50K/年。Amex: $1,000/次, $50K/年。不含手机/电脑(有些例外)</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">Extended Warranty</b></span><span style="color:#ffd93d">CSR + Amex + Bilt</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：用该卡购买有厂商保修的物品。自动延长1年(Amex/Bilt)或1年(CSR, 最长延到5年总保修)。无需注册，保留收据+保修卡即可</div></div>
-<div onclick="this.querySelector('.pd').style.display=this.querySelector('.pd').style.display==='block'?'none':'block'" style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;cursor:pointer"><div style="display:flex;justify-content:space-between"><span><b style="color:#fff">航班延误$50补偿</b></span><span style="color:#ffd93d">Atmos Summit</span></div><div class="pd" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #333;color:#aaa;font-size:0.9em">条件：Alaska航班延误2hr+或取消。自动以statement credit发放$50(无需claim!)。须用Atmos Summit买票或票在Atmos账户中</div></div>
-</div>
-
-<h4 style="color:#4ecdc4;margin:12px 0 8px">👑 会员身份 / Status</h4>
-<div style="display:grid;gap:6px">
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Marriott Platinum Elite</b> (升级/早餐/延退)</span><span style="color:#ffd93d">Marriott Brilliant</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Alaska MVP Status Points</b> (10K/年+消费)</span><span style="color:#ffd93d">Atmos Summit</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Hilton Gold</b> (自动)</span><span style="color:#ffd93d">Amex Plat</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Marriott Gold</b> (自动)</span><span style="color:#ffd93d">Amex Plat</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Hertz President's Circle</b></span><span style="color:#ffd93d">Amex Plat</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">CLEAR+ Membership</b> ($189报销)</span><span style="color:#ffd93d">Amex Plat</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Global Entry/TSA Pre</b> ($120报销)</span><span style="color:#ffd93d">CSR + Atmos Summit</span></div>
-</div>
-
-<h4 style="color:#4ecdc4;margin:12px 0 8px">🎁 其他特权</h4>
-<div style="display:grid;gap:6px">
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">免费托运行李</b> (本人+6同伴)</span><span style="color:#ffd93d">Atmos Summit</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">优先登机</b> (本人+6同伴)</span><span style="color:#ffd93d">Atmos Summit</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">免费同日改签</b> (Alaska)</span><span style="color:#ffd93d">Atmos Summit</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Lyft $10/月 credit</b> ($120/年)</span><span style="color:#ffd93d">CSR</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">DoorDash DashPass</b></span><span style="color:#ffd93d">CSR</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">Instacart+</b></span><span style="color:#ffd93d">CSR</span></div>
-<div style="padding:8px 10px;background:#16213e;border-radius:6px;font-size:0.82em;display:flex;justify-content:space-between"><span><b style="color:#fff">无Foreign Transaction Fee</b></span><span style="color:#ffd93d">Bilt + Atmos + Gold + Plat + CSR</span></div>
-</div>
-
-<p style="color:#ff6b6b;font-size:0.75em;margin-top:12px">⚠️ Plat和CSR关/降级后，对应的保险和Status会消失。Bilt Priority Pass + Atmos Lounge Pass可部分替代</p>
-</div>
-
+<script>
+function setTab(t,scroll){document.querySelectorAll('.tab-page').forEach(function(p){p.classList.toggle('active',p.id==='tp-'+t)});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});try{localStorage.setItem('co_tab',t)}catch(e){}if(history.replaceState)history.replaceState(null,'','#'+t);var ab=document.querySelector('.tab-btn.active'),bar=document.querySelector('.tabbar');if(ab&&bar){bar.scrollLeft=ab.offsetLeft-bar.clientWidth/2+ab.clientWidth/2}if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
+function goTab(t){setTab(t,true)}
+document.addEventListener('DOMContentLoaded',function(){var t=(location.hash||'').slice(1);if(!document.getElementById('tp-'+t)){try{t=localStorage.getItem('co_tab')||'home'}catch(e){t='home'}}if(!document.getElementById('tp-'+t))t='home';setTab(t,false);if(document.querySelector('#tp-updates .ch-tag.new')){var b=document.querySelector('[data-tab="updates"]');if(b&&!b.querySelector('.dot')){var d=document.createElement('span');d.className='dot';b.appendChild(d)}}});
+</script>
 <script>
 function cb(){const s=parseInt(document.getElementById('bs').value),r=7000,p=s/r;let m;if(p>=1)m=1.25;else if(p>=.75)m=1;else if(p>=.5)m=.75;else if(p>=.25)m=.5;else m=0;const pts=Math.floor(r*m);document.getElementById('bS').textContent='$'+s.toLocaleString()+'/月';document.getElementById('bR').textContent=Math.round(p*100)+'%';document.getElementById('bM').textContent=m+'x';document.getElementById('bP').textContent=pts.toLocaleString();document.getElementById('bV').textContent='≈$'+(pts*.018).toFixed(0)+'/月(1.8cpp) | $'+(pts*.025).toFixed(0)+'/月(Hyatt 2.5cpp)'}
 cb();
