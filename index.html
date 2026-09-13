@@ -57,6 +57,16 @@
 @keyframes chblink{0%,100%{opacity:1}50%{opacity:0.55}}
 .ch-text{color:#ddd;line-height:1.55;flex:1}
 .ch-text b{color:#fff}
+.status-card{background:#16213e;border:1px solid #4ecdc4;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:.82em}
+.st-row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid #222}
+.st-tags-row{padding:4px 0}
+.st-label{color:#888;white-space:nowrap}
+.st-row b{color:#4ecdc4}
+#st-last,#st-next{color:#ffd93d;font-weight:bold}
+.st-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.st-tags span{font-size:.75em;background:#1a2a1a;border:1px solid #4ecdc4;color:#4ecdc4;border-radius:10px;padding:2px 9px;white-space:nowrap}
+.xlink{font-size:.62em;color:#4ecdc4;cursor:pointer;font-weight:normal;white-space:nowrap}
+.xlink:hover{text-decoration:underline}
 @media(max-width:768px){.card-grid{grid-template-columns:1fr}.bilt-result{grid-template-columns:1fr}.q-grid{grid-template-columns:1fr}}
 
 .tabbar{position:sticky;top:0;z-index:50;background:rgba(15,15,35,.96);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;padding:10px 2px;margin-bottom:14px;border-bottom:1px solid #2a2a4a;scrollbar-width:none}
@@ -84,7 +94,7 @@
 <div class="tab-page" id="tp-home">
 <!-- Warnings -->
 <div class="warn-banner">
-<h2>⚠️ 待关卡/降级</h2>
+<h2>⚠️ 待关卡/降级 <span class="xlink" onclick="goTab('updates')">→ 📢 动态看相关追踪</span></h2>
 <div class="warn-item"><span class="wn">Amex Delta Gold</span><span class="wa">关卡(先要retention)</span><span class="wd">9/24</span></div>
 <div class="warn-item"><span class="wn">Amex Platinum</span><span class="wa">关卡(用完credits!)</span><span class="wd">12/17</span></div>
 <div class="warn-item"><span class="wn">Chase Sapphire Reserve</span><span class="wa">降级→CSP(用完10x!)</span><span class="wd">5/11/27</span></div>
@@ -123,7 +133,7 @@
 <div class="tab-page active" id="tp-spend">
 <!-- RECOMMENDATIONS - Grouped -->
 <div class="section rec-section">
-<h2>🎯 消费推荐速查</h2>
+<h2>🎯 消费推荐速查 <span class="xlink" onclick="goTab('cards')">→ 💳 卡片看单卡详情</span></h2>
 
 <!-- Group: Daily -->
 <div class="group-header open" onclick="this.classList.toggle('open')"><h3>🛒 日常消费</h3><span class="garrow">›</span></div>
@@ -399,6 +409,13 @@
 <!-- CHANGELOG -->
 <div class="section changelog-section">
 <h2>📢 卡片动态追踪 <span style="font-size:0.55em;color:#888">最近更新 <span id="ch-updated">2026-09-12</span> · 每周一自动检查</span></h2>
+<div class="status-card">
+<div class="st-row"><span class="st-label">🔄 检查频率</span><span>每周一 ~09:13（太平洋时间）自动检查</span></div>
+<div class="st-row"><span class="st-label">✅ 上次更新</span><span id="st-last">—</span></div>
+<div class="st-row"><span class="st-label">⏳ 下次检查</span><span id="st-next">—</span></div>
+<div class="st-row"><span class="st-label">📝 累计动态</span><span><b id="st-count">—</b> 条记录</span></div>
+<div class="st-tags-row"><span class="st-label">👀 追踪项目</span><div class="st-tags"><span>季度 5% 类别</span><span>年费·credits·福利变化</span><span>开卡奖励</span><span>贬值·转分 bonus</span><span>博主爆料</span><span>行动节点倒计时</span></div></div>
+</div>
 <!-- CHANGELOG-START -->
 <div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Amex Platinum 年费 $695→$895</b>（2025-09-18 改版，2026-01-02 起老用户续费按新价；新增 Resy $400/年、lululemon $300/年、酒店 credit 涨到 $600/年等）。网站旧数据已修正。12/17 关卡计划不变且更坚定——关前把新增 credits 也烧掉。</div></div>
 <div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">🔧 纠正</span><div class="ch-text"><b>Chase Sapphire Reserve 年费 $550→$795</b>（2025 年 6 月大改版：8x Chase Travel、4x 航司酒店直购、IHG 铂金会籍等）。网站旧数据已修正。2027-05-11 降级 CSP 计划不变；降级前确认新版 credits 已用完。</div></div>
@@ -408,7 +425,7 @@
 <div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Amex Centurion Lounge 新规（2026-07-08 生效）</b>：同行 guest 须与持卡人<b>同一航班</b>；中转旅客起飞前 5 小时内才能进。Plat 关卡前带家人进 lounge 注意掐时间。</div></div>
 <div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Robinhood Gold Card</b>：2026-07-01 起<b>新开户收 3% 外币交易费</b>（老用户豁免）。"不推荐"结论维持，理由再加一条。</div></div>
 <div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">记录</span><div class="ch-text"><b>X 上线 X Money（2026-07-27）</b>：配的是 <b>Visa 借记卡（非信用卡）</b>，6% APY / 3% 返现需 Premium+ 订阅（$40/月）。无开卡奖励、无转分——不进信用卡体系，仅记录。</div></div>
-<div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">⏰ 紧急</span><div class="ch-text"><b>Chase Ink Business Cash $1,000 开卡奖励 9/17/2026 截止</b>——只剩几天！免年费卡史上最高档奖励之一，$8k/4个月消费拿$1,000（=100k UR，可转Hyatt）。详见下方"💡 新卡推荐"。</div></div>
+<div class="change-item urgent"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">⏰ 紧急</span><div class="ch-text"><b>Chase Ink Business Cash $1,000 开卡奖励 9/17/2026 截止</b>——只剩几天！免年费卡史上最高档奖励之一，$8k/4个月消费拿$1,000（=100k UR，可转Hyatt）。详见 <span class="xlink" onclick="goTab('new')">💡 新卡推荐 →</span>。</div></div>
 <div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag new">NEW</span><div class="ch-text">本站新增 <b>💡 新卡推荐</b> 板块：Venture X / Ink Business Cash / Blue Business Plus / Citi Strata Premier 详解（为什么适合你、可替换哪张），以及 Hilton Aspire 等可跳过的卡和申请顺序建议。</div></div>
 <div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">待更新</span><div class="ch-text"><b>Q4 2026（10-12月）Chase Freedom / Discover 5% 类别</b>预计 9 月中旬公布，公布后本栏更新并替换上方轮转板块。</div></div>
 <div class="change-item"><span class="ch-date">2026-09-12</span><span class="ch-tag info">倒计时</span><div class="ch-text"><b>Amex Platinum 12/17 关卡</b>进入 3 个月倒计时：关前烧完 $200 航司 credit、$600 酒店 credit、$400 Resy、$300 lululemon、$50 Saks（半年）、每月 Uber 和数字娱乐 credit。</div></div>
@@ -422,7 +439,11 @@
 <script>
 function setTab(t,scroll){document.querySelectorAll('.tab-page').forEach(function(p){p.classList.toggle('active',p.id==='tp-'+t)});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});try{localStorage.setItem('co_tab',t)}catch(e){}if(history.replaceState)history.replaceState(null,'','#'+t);var ab=document.querySelector('.tab-btn.active'),bar=document.querySelector('.tabbar');if(ab&&bar){bar.scrollLeft=ab.offsetLeft-bar.clientWidth/2+ab.clientWidth/2}if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
 function goTab(t){setTab(t,true)}
-document.addEventListener('DOMContentLoaded',function(){var t=(location.hash||'').slice(1);if(!document.getElementById('tp-'+t)){try{t=localStorage.getItem('co_tab')||'spend'}catch(e){t='spend'}}if(!document.getElementById('tp-'+t))t='spend';setTab(t,false);if(document.querySelector('#tp-updates .ch-tag.new')){var b=document.querySelector('[data-tab="updates"]');if(b&&!b.querySelector('.dot')){var d=document.createElement('span');d.className='dot';b.appendChild(d)}}});
+document.addEventListener('DOMContentLoaded',function(){var t=(location.hash||'').slice(1);if(!document.getElementById('tp-'+t)){try{t=localStorage.getItem('co_tab')||'spend'}catch(e){t='spend'}}if(!document.getElementById('tp-'+t))t='spend';setTab(t,false);if(document.querySelector('#tp-updates .ch-tag.new')){var b=document.querySelector('[data-tab="updates"]');if(b&&!b.querySelector('.dot')){var d=document.createElement('span');d.className='dot';b.appendChild(d)}}
+var chu=document.getElementById('ch-updated'),sl=document.getElementById('st-last');if(chu&&sl)sl.textContent=chu.textContent;
+var scc=document.getElementById('st-count');if(scc)scc.textContent=document.querySelectorAll('#tp-updates .change-item').length;
+var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.getDay())%7;if(df===0&&nwd.getHours()>=10)df=7;var dd=new Date(nwd);dd.setDate(nwd.getDate()+df);var wkn=['周日','周一','周二','周三','周四','周五','周六'];snx.textContent=(df===0?'今天 ':((dd.getMonth()+1)+'月'+dd.getDate()+'日 '))+wkn[dd.getDay()]+' ~09:13';}
+});
 </script>
 <script>
 function cb(){const s=parseInt(document.getElementById('bs').value),r=7000,p=s/r;let m;if(p>=1)m=1.25;else if(p>=.75)m=1;else if(p>=.5)m=.75;else if(p>=.25)m=.5;else m=0;const pts=Math.floor(r*m);document.getElementById('bS').textContent='$'+s.toLocaleString()+'/月';document.getElementById('bR').textContent=Math.round(p*100)+'%';document.getElementById('bM').textContent=m+'x';document.getElementById('bP').textContent=pts.toLocaleString();document.getElementById('bV').textContent='≈$'+(pts*.018).toFixed(0)+'/月(1.8cpp) | $'+(pts*.025).toFixed(0)+'/月(Hyatt 2.5cpp)'}
