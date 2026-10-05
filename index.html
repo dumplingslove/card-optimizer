@@ -89,6 +89,7 @@
 <button class="tab-btn active" data-tab="spend" onclick="goTab('spend')">🎯 刷卡</button>
 <button class="tab-btn" data-tab="home" onclick="goTab('home')">🏠 总览</button>
 <button class="tab-btn" data-tab="cards" onclick="goTab('cards')">💳 卡片</button>
+<button class="tab-btn" data-tab="redeem" onclick="goTab('redeem')">🎁 兑换</button>
 <button class="tab-btn" data-tab="new" onclick="goTab('new')">💡 新卡</button>
 <button class="tab-btn" data-tab="updates" onclick="goTab('updates')">📢 动态</button>
 </nav>
@@ -185,7 +186,7 @@
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🛏️</span><span class="cat-name">其他酒店</span><span class="best-name">⚡CSR Portal</span><span class="best-rate">10x UR!≈20.5%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Portal订=10x UR超值！降级前多用。之后→Bilt Portal($400 credit) 或 Plat FHR($200)</div><div class="alts"><b>备选：</b>Amex Gold 5x(Amex Travel预付!) | Plat FHR($200) | Bilt Portal($400) | Smartly 4%</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🌍</span><span class="cat-name">境外消费</span><span class="best-name">Atmos Summit</span><span class="best-rate">3x≈4.65%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 无FTF+兑Cathay/JAL商务舱4-8cpp。Bilt月度没达标→先Bilt</div><div class="alts"><b>备选：</b>Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)</div></div>
+<div class="rec-detail"><div class="why">💡 无FTF+兑Cathay商务舱可达约9.8cpp。Bilt月度没达标→先Bilt</div><div class="alts"><b>备选：</b>Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🌏</span><span class="cat-name">境外餐饮</span><span class="best-name">Amex Gold</span><span class="best-rate">4x MR≈8%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x</div><div class="alts"><b>备选：</b>Atmos 3x | Bilt 2x(凑比例)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🚇</span><span class="cat-name">公交/地铁</span><span class="best-name">⚡CFF/CF</span><span class="best-rate">5%本季!</span><span class="arrow">›</span></div>
@@ -213,15 +214,15 @@
 <h2>📋 所有卡片一览 <span style="font-size:0.55em;color:#888">(点击展开)</span></h2>
 <div class="card-grid">
 
-<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Amex Platinum</span><span class="cf">$895 ⚠️12/17关</span></div><div class="cb"><b>5x</b>机票直购(≈10%) | Centurion+PP</div><div class="cd"><h4>积分</h4><ul><li>5x 机票(航司直购)</li><li>5x Amex Travel</li><li>1x 其他</li></ul><h4>Credits(关前全用!)</h4><ul><li>$15-20/月 Uber</li><li>$20/月 数字娱乐</li><li>$200/年 航司fee credit</li><li>$600/年 酒店credit(FHR/THC)</li><li>$400/年 Resy($100/季)</li><li>$300/年 lululemon($75/季)</li><li>$189 CLEAR</li><li>$50/半年 Saks</li></ul><div class="tip">💡 MR转分最佳：Virgin Atlantic→ANA商务舱(45K单程西海岸→东京,现金票价$5000+) | Aeroplan→星盟商务(60K起→欧洲,常有转分bonus) | ANA直转→ANA头等(不如Virgin Atlantic路线)</div><div class="protip">🎯 资深玩家：航司credit选Alaska/Delta→用于升舱/行李/选座等fee。FHR/THC找价格合理的酒店享$600 credit+房间升级+延迟退房+免费早餐。CLEAR可加同住家人。关卡前30天打retention，通常给$150-695 offer</div></div></div>
+<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Amex Platinum</span><span class="cf">$895 ⚠️12/17关</span></div><div class="cb"><b>5x</b>机票直购(≈10%) | Centurion+PP</div><div class="cd"><h4>积分</h4><ul><li>5x 机票(航司直购)</li><li>5x Amex Travel</li><li>1x 其他</li></ul><h4>Credits(关前全用!)</h4><ul><li>$15-20/月 Uber</li><li>$20/月 数字娱乐</li><li>$200/年 航司fee credit</li><li>$600/年 酒店credit(FHR/THC)</li><li>$400/年 Resy($100/季)</li><li>$300/年 lululemon($75/季)</li><li>$189 CLEAR</li><li>$50/半年 Saks</li></ul><div class="tip">💡 MR转分最佳：Virgin Atlantic→ANA商务舱(45K单程西海岸→东京,现金约$4200→4.4cpp) | Aeroplan→星盟商务(60K/75K分档→欧洲,常有转分bonus) | ANA直转→ANA头等(不如Virgin Atlantic路线)</div><div class="protip">🎯 资深玩家：航司credit选Alaska/Delta→用于升舱/行李/选座等fee。FHR/THC找价格合理的酒店享$600 credit+房间升级+延迟退房+免费早餐。CLEAR可加同住家人。关卡前30天打retention，通常给$150-695 offer</div></div></div>
 
-<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Chase Sapphire Reserve</span><span class="cf">$795 ⚠️降5/11</span></div><div class="cb"><b>8x</b>Chase Travel(≈16.4%) | <b>4x</b>航司酒店直购(≈8.2%) | 3x餐饮(≈6.2%) (2025.6改版后费率)</div><div class="cd"><h4>积分</h4><ul><li>8x Chase Travel(含The Edit)</li><li>4x 航司/酒店直购</li><li>5x Lyft + $10/月 Lyft credit ($120/年)</li><li>3x 餐饮 | 1x 其他旅行</li><li>10x Chase Dining部分餐厅</li></ul><h4>权益</h4><ul><li>$300/年旅行credit(自动)</li><li>UR 1.5x Portal</li><li>Priority Pass</li><li>$100 Global Entry</li><li>IHG 铂金会籍(改版新增)</li><li>旅行延误险</li></ul><div class="tip">💡 UR转Hyatt 1:1是最高价值(2-5cpp)。Park Hyatt/Andaz等高端=巨大价值。也可转United(close-in免手续费)、Southwest(1.4cpp+companion pass)</div><div class="protip">🎯 资深玩家：降级前把Portal 10x用到极致(酒店+租车)。$300 credit涵盖Uber/停车/过路费等。Lyft 5x别忘用。降到CSP后转分能力不变，只是Portal从1.5x降到1.25x。DoorDash DashPass免费也是(降前享受)</div></div></div>
+<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Chase Sapphire Reserve</span><span class="cf">$795 ⚠️降5/11</span></div><div class="cb"><b>8x</b>Chase Travel(≈16.4%) | <b>4x</b>航司酒店直购(≈8.2%) | 3x餐饮(≈6.2%) (2025.6改版后费率)</div><div class="cd"><h4>积分</h4><ul><li>8x Chase Travel(含The Edit)</li><li>4x 航司/酒店直购</li><li>5x Lyft + $10/月 Lyft credit ($120/年)</li><li>3x 餐饮 | 1x 其他旅行</li><li>10x Chase Dining部分餐厅</li></ul><h4>权益</h4><ul><li>$300/年旅行credit(自动)</li><li>UR 1.5x Portal</li><li>Priority Pass</li><li>$100 Global Entry</li><li>IHG 铂金会籍(改版新增)</li><li>旅行延误险</li></ul><div class="tip">💡 UR转Hyatt 1:1是最高价值(实测2.2–3.3cpp)。Park Hyatt/Andaz等高端=巨大价值。也可转United(close-in免手续费)、Southwest(1.4cpp+companion pass)</div><div class="protip">🎯 资深玩家：降级前把Portal 10x用到极致(酒店+租车)。$300 credit涵盖Uber/停车/过路费等。Lyft 5x别忘用。降到CSP后转分能力不变，只是Portal从1.5x降到1.25x。DoorDash DashPass免费也是(降前享受)</div></div></div>
 
-<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Bilt Palladium</span><span class="cf">$495/年</span></div><div class="cb"><b>2x</b>日常≈5%Hyatt | <b>1.25x</b>房租</div><div class="cd"><h4>积分</h4><ul><li>2x 所有非房租</li><li>1.25x 房租(需消费≥租金)</li></ul><h4>权益</h4><ul><li>$400酒店credit($200x2)</li><li>$200 Bilt Cash/年</li><li>Priority Pass</li><li>Cell Phone Protection</li><li>无FTF</li></ul><div class="tip">💡 Bilt→Hyatt 1:1最值(Park Hyatt东京=25K/晚=$500+)。也可→AA(兑Cathay/JAL) | →United(close-in) | →Alaska/Virgin Atlantic</div><div class="protip">🎯 资深玩家：积分加速器$200Bilt Cash→+1x(变3x)，每年5次=$25K额外消费@3x=75K额外积分。Rent Day(每月1号)刷卡积分翻倍活动别错过。$400酒店credit用Bilt Travel Portal订即可触发(不限品牌)</div></div></div>
+<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Bilt Palladium</span><span class="cf">$495/年</span></div><div class="cb"><b>2x</b>日常≈5%Hyatt | <b>1.25x</b>房租</div><div class="cd"><h4>积分</h4><ul><li>2x 所有非房租</li><li>1.25x 房租(需消费≥租金)</li></ul><h4>权益</h4><ul><li>$400酒店credit($200x2)</li><li>$200 Bilt Cash/年</li><li>Priority Pass</li><li>Cell Phone Protection</li><li>无FTF</li></ul><div class="tip">💡 Bilt→Hyatt最值(Park Hyatt东京35K–75K/晚，现金$800+；⚠️2027-01-01起转Hyatt变4:3)。→Cathay 1:1 | →JAL 1:1 | →United 1:1 | →Atmos 1:1</div><div class="protip">🎯 资深玩家：积分加速器$200Bilt Cash→+1x(变3x)，每年5次=$25K额外消费@3x=75K额外积分。Rent Day(每月1号)刷卡积分翻倍活动别错过。$400酒店credit用Bilt Travel Portal订即可触发(不限品牌)</div></div></div>
 
-<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Atmos Summit</span><span class="cf">$395/年</span></div><div class="cb"><b>3x</b>Alaska/餐饮/境外≈4.65%</div><div class="cd"><h4>积分</h4><ul><li>3x Alaska/Hawaiian+餐饮+境外</li><li>1x 其他+$2=1 status pt</li></ul><h4>权益</h4><ul><li>25K Global Companion/年</li><li>100K Companion($60K后)</li><li>8 Lounge Pass</li><li>10K status pts/年</li><li>免费托运+优先登机(+6人)</li></ul><div class="tip">💡 Atmos award chart固定价！最值兑换：Cathay商务亚洲(50K)、JAL头等(70K US→日本)、AA国内头等(15K短途)、Emirates商务(100K US→Dubai)</div><div class="protip">🎯 资深玩家：Global Companion是25K点兑一张同行票(全球任何航线!)比Alaska老的$99 CF值多了。Lounge Pass每季度2张(可带小孩)。Status pts无上限，高消费者轻松攒MVP Gold(40K pts)。免费同日改签=flexibility神器</div></div></div>
+<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Atmos Summit</span><span class="cf">$395/年</span></div><div class="cb"><b>3x</b>Alaska/餐饮/境外≈4.65%</div><div class="cd"><h4>积分</h4><ul><li>3x Alaska/Hawaiian+餐饮+境外</li><li>1x 其他+$2=1 status pt</li></ul><h4>权益</h4><ul><li>25K Global Companion/年</li><li>100K Companion($60K后)</li><li>8 Lounge Pass</li><li>10K status pts/年</li><li>免费托运+优先登机(+6人)</li></ul><div class="tip">💡 Atmos award chart固定价！最值兑换：Cathay商务亚洲(50K)、JAL头等(70K US→日本)、AA国内短途经济(4.5K起/头等13.5K)、Emirates商务(约82.5K US→Dubai)</div><div class="protip">🎯 资深玩家：Global Companion是25K点兑一张同行票(全球任何航线!)比Alaska老的$99 CF值多了。Lounge Pass每季度2张(可带小孩)。Status pts无上限，高消费者轻松攒MVP Gold(40K pts)。免费同日改签=flexibility神器</div></div></div>
 
-<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Amex Gold</span><span class="cf">$325/年</span></div><div class="cb"><b>4x</b>餐饮+超市(≈8%) | <b>5x</b>预付酒店(≈10%)</div><div class="cd"><h4>积分</h4><ul><li>4x 餐饮(全球,$50K/年cap)</li><li>4x 美国超市($25K/年cap)</li><li>5x 预付酒店(通过Amex Travel预订)</li><li>3x 机票(航司直购)</li><li>1x 其他</li></ul><h4>Credits</h4><ul><li>$10/月 Uber</li><li>$10/月 Dining</li><li>$100/年 Resy</li><li>$100/年 Hotel Collection (住2晚+)</li><li>$84/年 Dunkin' ($7/月)</li><li>Hertz Five Star 租车status</li></ul><div class="tip">💡 MR最值转法：VA→ANA商务(45K) | Aeroplan→星盟商务(60K起→欧洲) | 5x预付酒店超值(通过Amex Travel比CSR Portal还高!) | Air France→达美商务</div><div class="protip">🎯 资深玩家：Uber credit叠加Uber One会员省更多。Dining credit在Grubhub上买gift card(Grubhub→其他餐厅GC)。Resy credit看Resy独家餐厅体验(不只是订位)。超市买gift card(如Amazon GC)理论上4x(⚠️有T&C风险,可能被clawback)</div></div></div>
+<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Amex Gold</span><span class="cf">$325/年</span></div><div class="cb"><b>4x</b>餐饮+超市(≈8%) | <b>5x</b>预付酒店(≈10%)</div><div class="cd"><h4>积分</h4><ul><li>4x 餐饮(全球,$50K/年cap)</li><li>4x 美国超市($25K/年cap)</li><li>5x 预付酒店(通过Amex Travel预订)</li><li>3x 机票(航司直购)</li><li>1x 其他</li></ul><h4>Credits</h4><ul><li>$10/月 Uber</li><li>$10/月 Dining</li><li>$100/年 Resy</li><li>$100/年 Hotel Collection (住2晚+)</li><li>$84/年 Dunkin' ($7/月)</li><li>Hertz Five Star 租车status</li></ul><div class="tip">💡 MR最值转法：VA→ANA商务(美西45K/美东47.5K单程) | Aeroplan→星盟商务(60K短线/75K多数美欧线，2026-06新表) | 5x预付酒店超值(通过Amex Travel比CSR Portal还高!) | Air France→达美商务</div><div class="protip">🎯 资深玩家：Uber credit叠加Uber One会员省更多。Dining credit在Grubhub上买gift card(Grubhub→其他餐厅GC)。Resy credit看Resy独家餐厅体验(不只是订位)。超市买gift card(如Amazon GC)理论上4x(⚠️有T&C风险,可能被clawback)</div></div></div>
 
 <div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Marriott Brilliant</span><span class="cf">$650/年</span></div><div class="cb"><b>6x</b>Marriott(≈4.2%) | 85K FNA | $25/月</div><div class="cd"><h4>积分</h4><ul><li>6x Marriott | 3x 餐饮+机票 | 2x 其他</li></ul><h4>权益</h4><ul><li>$25/月 Dining(全球餐厅)</li><li>85K FNA/年</li><li>$100 Property Credit</li><li>Plat Elite(升级/延退/早餐)</li></ul><div class="tip">💡 85K FNA可住W/Edition/St.Regis淡季。5晚付4晚(积分票也算!)=住5晚只扣4晚积分。积分→航司(3:1 but有5K bonus at 60K)通常不值</div><div class="protip">🎯 资深玩家：FNA可top-off(加点数升级到更贵酒店)。$25/月dining全球任意餐厅(包括外卖)自动触发。Property Credit住店时花在minibar/spa/room service。25 elite nights帮攒Titanium(75晚)</div></div></div>
 
@@ -306,6 +307,98 @@
 <p style="color:#ff6b6b;font-size:0.75em;margin-top:12px">⚠️ Plat和CSR关/降级后，对应的保险和Status会消失。Bilt Priority Pass + Atmos Lounge Pass可部分替代</p>
 </div>
 
+</div>
+
+<div class="tab-page" id="tp-redeem">
+<div class="section reco-section">
+<h2>🎁 积分兑换指南 <span style="font-size:0.55em;color:#888">(数字全部有来源)</span></h2>
+<p style="color:#888;font-size:0.78em;margin-bottom:10px">每个体系怎么换最值、最高返现比例怎么达成。基准估值：TPG 2026-10（MR 2.0¢｜UR 2.05¢｜Bilt 2.2¢｜Atmos 1.55¢｜Marriott 0.7¢）——下面是<span style="color:#ffd93d">真实兑换案例</span>能达到的价值上限。</p>
+<!-- REDEEM-CONTENT-START -->
+<div class="reco-tier">📐 先看懂公式</div>
+<div class="reco-card">
+<div class="rc-sec"><b>等效返现 = 刷卡倍率 × 你实际换出的 cpp</b>。比如 Gold 餐饮 4x，TPG 给 MR 估值 2.0¢ → 4 × 2.0% = <b>8%</b>（这是保守基准）。但如果你把积分换成下面的 sweet spot 商务舱，实际能到 4–9¢，等效返现就翻几倍——<b>每个体系都列"基准"和"天花板（实测案例）"</b>，以及天花板怎么达成。</div>
+<div class="rc-sec" style="color:#888;font-size:0.9em">⚠️ cpp 是估值不是保证：能换出多少看你有没有行程、有没有放位。转分<b>不可逆</b>，先查到票再转。</div>
+</div>
+
+<div class="reco-tier">💳 Amex Membership Rewards <span style="font-size:0.7em;color:#888">基准 2.0¢</span></div>
+<div class="reco-card">
+<div class="rc-head"><span class="rc-name">转分伙伴（均为 1:1）</span></div>
+<div class="rc-sec">Virgin Atlantic｜Aeroplan｜Flying Blue｜ANA｜British Airways 等</div>
+<div class="rc-sec"><b>🎯 最高价值兑换（有来源）：</b><ul>
+<li><b>Virgin→ANA 美西–东京商务单程 45K</b>（美东 47.5K）：现金约 $4,200 → <b>约 4.4cpp</b>（<a href="https://thepointsguy.com/loyalty-programs/virgin-atlantic-sweet-spot-japan/">TPG</a>）</li>
+<li><b>Aeroplan→ANA The Room（JFK–HND）商务单程 85K+$65税</b>：现金 $4,800–$7,200 → <b>5.6–8.4cpp</b>（creditpoints.cash 2026-08 实战）</li>
+<li><b>Aeroplan 星盟美欧商务</b>：60K（≤4,000英里短线）／75K（多数美欧线），2026-06-01 新表（liveandletsfly 2026-04）</li>
+<li><b>Flying Blue 美欧商务三档</b>（2026-09-08 生效）：Light 60K（阉割版：无休息室/不可改退）／<b>Standard 75K（真·商务舱）</b>／Flex 110K（TPG 2026-08）</li>
+</ul></div>
+<div class="rc-sec"><b>📈 天花板怎么达成：</b><ul>
+<li>现实可达：Gold 4x 餐饮 × 4.4¢ = <b>等效 17.6%</b>（Virgin→ANA 商务）</li>
+<li>上限：Aeroplan 换 ANA The Room 按 8.4cpp → 4x = <b>等效 33.6%</b></li>
+<li>步骤：① 先在 Virgin/Aeroplan 搜到伙伴 saver 位 ② 再转分（<b>转分不可逆</b>）③ 盯 Flying Blue 每月 Promo Rewards（常 25–50% off）④ Virgin 转分常有 30% bonus（35K MR = 45K Virgin）</li>
+</ul></div>
+</div>
+
+<div class="reco-tier">💳 Chase Ultimate Rewards <span style="font-size:0.7em;color:#888">基准 2.05¢</span></div>
+<div class="reco-card">
+<div class="rc-head"><span class="rc-name">转分伙伴</span></div>
+<div class="rc-sec">Hyatt（<b>CSR 1:1 永久</b>；CSP/Ink Preferred 2026-10-01 起 <b>4:3</b>）｜United 1:1｜Southwest 1:1</div>
+<div class="rc-sec"><b>🎯 最高价值兑换（有来源）：</b><ul>
+<li><b>Hyatt：Park Hyatt Tokyo（Cat 8）35K–75K/晚</b>（2026-05 新五档：Lowest 35K／Low 45K／Moderate 55K／Upper 65K／Top 75K）：现金 $800+/晚（旺季 $1,700）→ <b>2.2–3.3cpp</b>（<a href="https://onpointswithkids.com/2026/02/world-of-hyatt-award-chart-changes-in-2026-full-breakdown/">新兑换表</a>｜<a href="https://thepointsguy.com/news/book-these-hyatt-awards-now/">TPG</a>）</li>
+<li><b>UR→United 1:1</b>：约 1.3cpp（低于 UR 基准——转过去理论上"亏"，只适合特定高价值兑换）</li>
+<li><b>UR→Southwest 1:1</b>：约 1.4cpp</li>
+</ul></div>
+<div class="rc-sec"><b>📈 天花板怎么达成：</b><ul>
+<li>CSR Chase Travel 订酒店/租车 10x × 3.3¢ = <b>等效 33%</b>；8x 机票 × 3.3¢ = 26.4%</li>
+<li>步骤：① CSR 持有期间转 Hyatt 保持 1:1 ② <b>2027-05-11 降级 CSP 前把大额 Hyatt 兑换先锁房</b>（降级后变 4:3）③ 淡季订、避开 Top 75K 档 ④ 转分只转当下要用的（Hyatt 24 个月无活动会过期）</li>
+</ul></div>
+</div>
+
+<div class="reco-tier">💳 Bilt Rewards <span style="font-size:0.7em;color:#888">基准 2.2¢</span></div>
+<div class="reco-card">
+<div class="rc-head"><span class="rc-name">转分伙伴（1:1，Accor 3:2 除外）</span></div>
+<div class="rc-sec">Hyatt（⚠️ <b>2027-01-01 起变 4:3</b>）｜United｜Atmos｜Cathay Asia Miles｜JAL —— <b>不转 AA</b></div>
+<div class="rc-sec"><b>🎯 最高价值兑换（有来源）：</b><ul>
+<li><b>Bilt→Hyatt：Park Hyatt Tokyo 35K–75K/晚</b> → 2.2–3.3cpp；⚠️ 2027 年起按 4:3，同样 Top 房要 100K Bilt 分（<a href="https://thriftytraveler.com/news/points/bilt-hyatt-transfer-ratio-change/">Thrifty Traveler</a>）</li>
+<li><b>Bilt→Atmos→Cathay 美国–亚洲商务 50K</b>：现金 $5,000+ → <b>约 9.8cpp</b>（<a href="https://awardwallet.com/news/alaska-atmos-rewards/book-cathay-pacific-latam-awards/">AwardWallet</a>）</li>
+<li><b>Bilt→Atmos：AA 美国国内短途（700英里内）经济 4,500</b>（TPG）</li>
+</ul></div>
+<div class="rc-sec"><b>📈 天花板怎么达成：</b><ul>
+<li>日常 2x × 9.8¢ = <b>等效 19.6%</b>（Bilt→Atmos→Cathay 商务线）</li>
+<li>步骤：① Rent Day（每月 1 号）常有 100%–200% 转分 bonus，大额转分等那天 ② 先查到伙伴位再转 ③ <b>2026-12-31 前 Hyatt 还是 1:1，大额 Hyatt 兑换今年内锁房</b></li>
+</ul></div>
+</div>
+
+<div class="reco-tier">💳 Alaska Atmos Rewards <span style="font-size:0.7em;color:#888">基准 1.55¢</span></div>
+<div class="reco-card">
+<div class="rc-head"><span class="rc-name">固定伙伴表（Alaska 自家是动态价，只有伙伴有固定表）</span></div>
+<div class="rc-sec"><b>🎯 最高价值兑换（有来源）：</b><ul>
+<li><b>Cathay 美国–亚洲商务 50K</b>：现金 $5,000+ → <b>约 9.8cpp</b>（<a href="https://awardwallet.com/news/alaska-atmos-rewards/book-cathay-pacific-latam-awards/">AwardWallet</a>）</li>
+<li><b>Cathay 美国–亚洲头等 70K</b>：现金 $20,000+ → <b>25cpp+</b>（TPG）</li>
+<li><b>JAL 美国–日本商务／头等 60K／70K</b>（Alaska 官方表）</li>
+<li><b>AA 美国国内短途（700英里内）：经济 4,500 起／头等 13,500</b>（<a href="https://10xtravel.com/atmos-award-charts/">10xtravel 现行表</a>）</li>
+<li><b>Emirates 美国–Dubai 商务约 82.5K</b>（以官网实时为准）</li>
+</ul></div>
+<div class="rc-sec"><b>📈 天花板怎么达成：</b><ul>
+<li>现实可达：Summit 3x × 9.8¢ = <b>等效 29.4%</b>（Cathay 商务线）</li>
+<li>理论上限：头等 25cpp+ → 3x = <b>等效 75%</b>（可遇不可求）</li>
+<li>步骤：① 用好<b>免费 stopover</b>（单程可免费停一站，同价，如 JFK–HKG 中停曼谷）② Cathay/JAL 放位极少，刷到就锁 ③ 官网可直接搜 Cathay/LATAM 伙伴票，不用打电话</li>
+</ul></div>
+</div>
+
+<div class="reco-tier">💳 Marriott Bonvoy <span style="font-size:0.7em;color:#888">基准 0.7¢</span></div>
+<div class="reco-card">
+<div class="rc-sec"><b>🎯 最高价值用法（有来源）：</b><ul>
+<li><b>住 5 付 4</b>：连住 5 晚积分房，第 5 晚免费（按最便宜那晚免）→ 相当于 8 折，有效约 0.875¢（Upgraded Points 2026）</li>
+<li><b>85K 房券</b>：盯着现金价 $600+ 的旺季房用（$700 房 → 约 0.82cpp）</li>
+<li><b>积分→航司 3:1</b>：60K Bonvoy → 25K 里程（含 5K bonus）；→United 60K→30K。平时是亏的（0.7¢→约 0.58¢），<b>只做 top-up 补零头</b>，或等买分 50%+ bonus 时"造"里程（OMAAT 2026-10-01）</li>
+</ul></div>
+<div class="rc-sec"><b>📈 天花板怎么达成：</b><ul>
+<li>Brilliant 住万豪 6x × 0.875¢（五晚连住）= <b>等效 5.25%</b></li>
+<li>步骤：① 5 晚连住触发免第 5 晚 ② 房券可 top-up 加点数升级到更贵酒店 ③ Marriott 积分贬值快，有就早点烧</li>
+</ul></div>
+</div>
+<p style="color:#666;font-size:0.72em;margin-top:8px">📚 数据口径：TPG 2026-10 估值／AwardWallet／10xtravel 现行 Atmos 表／Thrifty Traveler／onpointswithkids（Hyatt 新表）／creditpoints.cash（2026-08 实战）／liveandletsfly／OMAAT。cpp =（现金价−税费）÷ 里程数，均为实测口径、不是承诺。兑换表会贬值，出行前请以官网实时为准。</p>
+<!-- REDEEM-CONTENT-END -->
+</div>
 </div>
 
 <div class="tab-page" id="tp-new">
@@ -418,7 +511,7 @@
 <div class="tab-page" id="tp-updates">
 <!-- CHANGELOG -->
 <div class="section changelog-section">
-<h2>📢 卡片动态追踪 <span style="font-size:0.55em;color:#888">最近更新 <span id="ch-updated">2026-09-21</span> · 每周一自动检查</span></h2>
+<h2>📢 卡片动态追踪 <span style="font-size:0.55em;color:#888">最近更新 <span id="ch-updated">2026-10-04</span> · 每周一自动检查</span></h2>
 <div class="status-card">
 <div class="st-row"><span class="st-label">🔄 检查频率</span><span>每周一 ~09:13（太平洋时间）自动检查</span></div>
 <div class="st-row"><span class="st-label">✅ 上次更新</span><span id="st-last">—</span></div>
@@ -427,6 +520,7 @@
 <div class="st-tags-row"><span class="st-label">👀 追踪项目</span><div class="st-tags"><span>季度 5% 类别</span><span>年费·credits·福利变化</span><span>开卡奖励</span><span>贬值·转分 bonus</span><span>博主爆料</span><span>行动节点倒计时</span></div></div>
 </div>
 <!-- CHANGELOG-START -->
+<div class="change-item"><span class="ch-date">2026-10-04</span><span class="ch-tag new">NEW</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Bilt→Hyatt 转分 2027-01-01 起从 1:1 降为 4:3</b>（Thrifty Traveler 首爆）：2027 年起每 1,000 Bilt 分只能换 750 Hyatt 分——Park Hyatt Tokyo 顶级房（75K）要 100K Bilt 分。<b>2026-12-31 前仍是 1:1</b>，大额 Hyatt 兑换今年内锁房。2027 年起转 Hyatt 不亏的只剩 CSR（1:1 永久）。（来源：<a href="https://thriftytraveler.com/news/points/bilt-hyatt-transfer-ratio-change/">Thrifty Traveler</a>）</div></div>
 <div class="change-item"><span class="ch-date">2026-09-21</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>Chase Freedom/Flex Q4（10-12月）5% 类别公布：超市+餐饮+美国红十字会捐款</b>——上限$1,500/卡，<b>12/14 前激活</b>（可追溯）。Flex 本来餐饮就 3%，叠加季度奖励= <b>7%</b>！Discover Q4（餐饮/娱乐/水电网账单）先激活再消费、无追溯。轮转板块已同步更新。USB Cash+ 的两个自选类别记得 10/1 前确认。（来源：TPG / NerdWallet / Upgraded Points）</div></div>
 <div class="change-item"><span class="ch-date">2026-09-21</span><span class="ch-tag new">NEW</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Chase Freedom Flex 改版 9/20 生效</b>：<b>取消 3% 境外交易手续费</b>——Flex 终于能出国刷了！Q4 餐饮 7%/超市 5% 在东南亚照样拿，12 月行程直接受益。代价是取消手机保险；新卡面已在 App 上线。更多改版细节仍是传闻，DoC 在跟进。（来源：Doctor of Credit / TPG）</div></div>
 <div class="change-item"><span class="ch-date">2026-09-21</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>Chase Ink Business Cash $1,000 开卡奖励已于 9/17 结束</b>，回归常规 $750（$6k/3个月）。错过了史上最高档——但免年费+5x 办公/账单的卡本身依然值得办，"新卡推荐"板块已同步。另据 DoC 爆料：Chase 前线客服口径称 sole prop 申请商业卡可能收紧到 <b>3/24</b>（待官方确认），想办就别拖。（来源：TPG / Milesopedia / Doctor of Credit）</div></div>
