@@ -593,6 +593,18 @@
 <div class="fire-range" id="f-range">—</div>
 <p id="f-mile" style="color:#cfe3ff;font-size:.82em;line-height:1.7;margin-top:10px"></p>
 <p id="f-assump" style="color:#888;font-size:.78em;line-height:1.6;margin-top:12px"></p>
+<div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
+<h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🏠 演示 persona 家庭结构（完整模型 · 均为虚构数字）</h3>
+<p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0">双职工两位成人可各自设退休年龄（如 55 / 57 岁）、各自收入与 401(k) 供款+雇主 match；账户分 Taxable / Traditional / Roth / HSA / 529 五类；两套房两笔贷款（自住房 + 出租房，出租净现金流 = 租金×(1−空置) − 运营成本 − 贷款月供，可设卖出年份）；一个孩子 + 可开关的二孩情景；年支出拆 Must（必要）/ Like（享受）两层，如演示年支出 $60,000 = Must $42,000 + Like $18,000，大额支出（换车、父母支持、旅行）单列。上面的快速计算器是这套完整模型的简化版；私人版才保存真实数字，本页不保存任何输入。</p>
+<h3 style="margin:12px 0 8px;color:#ffd93d;font-size:.95em">💰 房贷摊还演示（标准等额本息）</h3>
+<div class="fire-grid">
+<label>贷款余额 ($)<input type="number" id="f-loan-bal" value="800000" min="0" step="1000" oninput="loanCalc()"></label>
+<label>年利率 (%)<input type="number" id="f-loan-rate" value="6" step="0.05" oninput="loanCalc()"></label>
+<label>期限 (年)<input type="number" id="f-loan-years" value="30" min="1" max="40" oninput="loanCalc()"></label>
+</div>
+<p id="f-loan-out" style="color:#cfe3ff;font-size:.85em;line-height:1.7;margin:8px 0 0">—</p>
+<p style="color:#888;font-size:.72em;margin:6px 0 0">默认数字即校验基线：$800,000、6%、30 年 → 月供 $4,796.40、第 12 期后余额约 $790,176、逐年余额单调下降、30 年还清。</p>
+</div>
 <svg id="f-chart" viewBox="0 0 600 220" style="width:100%;background:#16213e;border-radius:10px;margin-top:10px" role="img" aria-label="资产轨迹与 Coast 门槛双线图"></svg>
 <p style="color:#888;font-size:.75em;margin-top:6px">图：三条资产轨迹是情景带——基准（青）/ 保守（橙）/ 乐观（绿）；黄线 = Coast 门槛（随年龄逼近 Full FI）。资产线越过 Full FI 虚线即达标。</p>
 <details style="margin-top:12px"><summary style="color:#4ecdc4;font-size:.85em;cursor:pointer">📅 逐年现金流表（积累期投入 / 退休期取款，全程实际美元）</summary>
@@ -692,6 +704,16 @@ function fireCalc(){
  html+='<text x="'+lx+'" y="'+(24+bands.length*18)+'" fill="#ffd93d" font-size="11">Coast 门槛</text>';
  svg.innerHTML=html;
 }
-document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc()});
+function loanAmortize(balance,annualRate,years){var n=Math.round(years*12),r=annualRate/12,pmt;
+ if(n<=0||balance<=0)return null;
+ if(Math.abs(r)<1e-12)pmt=balance/n; else pmt=balance*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+ var bal=balance,bal12=null,totalInterest=0,monotonic=true,prev=balance;
+ for(var i=1;i<=n;i++){var interest=bal*r;totalInterest+=interest;bal=bal+interest-pmt;if(i===12)bal12=bal;if(i%12===0){if(bal>prev+0.01)monotonic=false;prev=bal}}
+ return {pmt:pmt,bal12:bal12,totalInterest:totalInterest,finalBal:bal,monotonic:monotonic,payoffYears:years}}
+function loanCalc(){var b=+document.getElementById('f-loan-bal').value||0,rate=(+document.getElementById('f-loan-rate').value||0)/100,y=+document.getElementById('f-loan-years').value||0;
+ var out=document.getElementById('f-loan-out');if(!out)return;var a=loanAmortize(b,rate,y);
+ if(!a){out.textContent='请输入有效的贷款余额与期限。';return}
+ out.textContent='月供 '+fireFmt(a.pmt)+'（精确 $'+a.pmt.toFixed(2)+'）· 第 12 期后余额 '+fireFmt(a.bal12)+' · 总利息 '+fireFmt(a.totalInterest)+' · '+a.payoffYears+' 年还清（期末余额 '+fireFmt(a.finalBal)+'）· 逐年余额单调下降：'+(a.monotonic?'是 ✅':'否 ❌')}
+document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc();if(document.getElementById('f-loan-bal'))loanCalc()});
 </script>
 </body></html>
