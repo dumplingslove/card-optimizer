@@ -605,6 +605,27 @@
 <p id="f-loan-out" style="color:#cfe3ff;font-size:.85em;line-height:1.7;margin:8px 0 0">—</p>
 <p style="color:#888;font-size:.72em;margin:6px 0 0">默认数字即校验基线：$800,000、6%、30 年 → 月供 $4,796.40、第 12 期后余额约 $790,176、逐年余额单调下降、30 年还清。</p>
 </div>
+
+<div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
+<h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🧾 退休工资单演示（某一年怎么发工资 · 均为虚构数字）</h3>
+<p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0 0 8px">退休后每一年的钱从哪来：先领社保与租金，不够的部分按顺序从账户取款——先 Taxable、再 Traditional（取款要计税）、最后 Roth。65 岁前医疗走 ACA 简化档，65 岁后走 Medicare。还没开始领社保或没满 65 岁的年份就是桥接年，缺口全靠组合取款。</p>
+<div class="fire-grid">
+<label>A 在 FRA 的月领额 PIA ($)<input type="number" id="f-pia-a" value="2800" min="0" step="50" oninput="paycheckCalc()"></label>
+<label>B 在 FRA 的月领额 PIA ($)<input type="number" id="f-pia-b" value="2200" min="0" step="50" oninput="paycheckCalc()"></label>
+<label>A 领取年龄<select id="f-claim-a" onchange="paycheckCalc()"><option>62</option><option>63</option><option>64</option><option>65</option><option>66</option><option selected>67</option><option>68</option><option>69</option><option>70</option></select></label>
+<label>B 领取年龄<select id="f-claim-b" onchange="paycheckCalc()"><option>62</option><option>63</option><option>64</option><option>65</option><option>66</option><option selected>67</option><option>68</option><option>69</option><option>70</option></select></label>
+<label>这一年 A 的年龄<input type="number" id="f-age-a" value="66" min="55" max="100" oninput="paycheckCalc()"></label>
+<label>这一年 B 的年龄<input type="number" id="f-age-b" value="64" min="55" max="100" oninput="paycheckCalc()"></label>
+<label>这一年租金净收入 ($)<input type="number" id="f-rent" value="12000" min="0" step="500" oninput="paycheckCalc()"></label>
+<label>退休平均税率 (%)<input type="number" id="f-tax" value="15" min="0" max="40" step="0.5" oninput="paycheckCalc()"></label>
+<label>ACA 全额保费/人/年 ($)<input type="number" id="f-aca" value="9600" min="0" step="100" oninput="paycheckCalc()"></label>
+<label>Taxable 余额 ($)<input type="number" id="f-bal-tax" value="400000" min="0" step="5000" oninput="paycheckCalc()"></label>
+<label>Traditional 余额 ($)<input type="number" id="f-bal-trad" value="600000" min="0" step="5000" oninput="paycheckCalc()"></label>
+<label>这一年总支出 ($，默认同上年支出)<input type="number" id="f-pay-spend" value="60000" min="0" step="1000" oninput="paycheckCalc()"></label>
+</div>
+<p id="f-pay-out" style="color:#cfe3ff;font-size:.85em;line-height:1.8;margin:8px 0 0">—</p>
+<p style="color:#888;font-size:.72em;margin:6px 0 0">社保系数（FRA 67）：62 岁 70.0% · 63 岁 75.0% · 64 岁 80.0% · 65 岁 86.7% · 66 岁 93.3% · 67 岁 100% · 68 岁 108% · 69 岁 116% · 70 岁 124%。规则：提前领按月扣（前 36 个月每月 5/9%、其后每月 5/12%），延迟领每月 +2/3%、封顶 70 岁。Medicare 按 2026 年 Part B 标准保费 $202.90/月（$2,434.80/年）+ 补充险演示 $2,400/年计。ACA 为规划级简化三档（MAGI 代理 ≤$85k 付 30%、≤$150k 付 65%、否则全额），非补贴精确计算。税务为平均税率 gross-up 简化估算，非报税级；WA 无州所得税。</p>
+</div>
 <svg id="f-chart" viewBox="0 0 600 220" style="width:100%;background:#16213e;border-radius:10px;margin-top:10px" role="img" aria-label="资产轨迹与 Coast 门槛双线图"></svg>
 <p style="color:#888;font-size:.75em;margin-top:6px">图：三条资产轨迹是情景带——基准（青）/ 保守（橙）/ 乐观（绿）；黄线 = Coast 门槛（随年龄逼近 Full FI）。资产线越过 Full FI 虚线即达标。</p>
 <details style="margin-top:12px"><summary style="color:#4ecdc4;font-size:.85em;cursor:pointer">📅 逐年现金流表（积累期投入 / 退休期取款，全程实际美元）</summary>
@@ -704,6 +725,37 @@ function fireCalc(){
  html+='<text x="'+lx+'" y="'+(24+bands.length*18)+'" fill="#ffd93d" font-size="11">Coast 门槛</text>';
  svg.innerHTML=html;
 }
+
+function ssFactor(claimAge){var fra=67;claimAge=Math.max(62,Math.min(70,claimAge));
+ if(claimAge>=fra)return 1+(claimAge-fra)*12*(2/3)/100;
+ var m=(fra-claimAge)*12;return 1-(Math.min(m,36)*(5/9)+Math.max(0,m-36)*(5/12))/100}
+function ssAnnualDemo(piaMonthly,claimAge,curAge){return curAge>=claimAge?piaMonthly*12*ssFactor(claimAge):0}
+function healthDemo(age,magi,acaFull){if(age<65){var share=magi<=85000?0.30:(magi<=150000?0.65:1);return acaFull*share}return 2434.80+2400}
+function paycheckCalc(){
+ var piaA=+document.getElementById('f-pia-a').value||0,piaB=+document.getElementById('f-pia-b').value||0;
+ var cA=+document.getElementById('f-claim-a').value||67,cB=+document.getElementById('f-claim-b').value||67;
+ var ageA=+document.getElementById('f-age-a').value||0,ageB=+document.getElementById('f-age-b').value||0;
+ var rent=+document.getElementById('f-rent').value||0,taxR=(+document.getElementById('f-tax').value||0)/100;
+ var aca=+document.getElementById('f-aca').value||0,spend=+document.getElementById('f-pay-spend').value||0;
+ var balTax=+document.getElementById('f-bal-tax').value||0,balTrad=+document.getElementById('f-bal-trad').value||0;
+ var ssA=ssAnnualDemo(piaA,cA,ageA),ssB=ssAnnualDemo(piaB,cB,ageB),ss=ssA+ssB;
+ var health=0,tax=0,wdTax=0,wdTrad=0,wdRoth=0,need=spend;
+ for(var it=0;it<3;it++){
+   var magi=ss+Math.max(0,rent)+wdTrad;
+   health=(ageA>=55?healthDemo(ageA,magi,aca):0)+(ageB>=55?healthDemo(ageB,magi,aca):0);
+   var wNeed=Math.max(0,spend+health+tax-ss-rent);
+   wdTax=Math.min(balTax,wNeed);var rem=wNeed-wdTax;
+   wdTrad=Math.min(balTrad,rem);wdRoth=rem-wdTrad;
+   tax=(wdTrad+0.85*ss+Math.max(0,rent))*taxR;
+   need=spend+health+tax}
+ var bridge=(ageA<cA||ageB<cB||ageA<65||ageB<65);
+ var covered=ss+rent+wdTax+wdTrad+wdRoth,short=need-covered;
+ var out=document.getElementById('f-pay-out');if(!out)return;
+ out.innerHTML='社保：A '+(ssA?fireFmt(ssA)+'/年（系数 '+(ssFactor(cA)*100).toFixed(1)+'%，月领 '+fireFmt(piaA*ssFactor(cA))+')':'未领取（'+cA+' 岁起领，系数 '+(ssFactor(cA)*100).toFixed(1)+'%）')+' · B '+(ssB?fireFmt(ssB)+'/年（系数 '+(ssFactor(cB)*100).toFixed(1)+'%，月领 '+fireFmt(piaB*ssFactor(cB))+')':'未领取（'+cB+' 岁起领，系数 '+(ssFactor(cB)*100).toFixed(1)+'%）')+'<br>'
+ +'租金净收入 '+fireFmt(rent)+' · 组合取款 '+fireFmt(wdTax+wdTrad+wdRoth)+'（顺序：Taxable '+fireFmt(wdTax)+' → Traditional '+fireFmt(wdTrad)+' → Roth '+fireFmt(wdRoth)+'）<br>'
+ +'支出侧：生活支出 '+fireFmt(spend)+' + 医疗 '+fireFmt(health)+'（A '+(ageA<65?'ACA 简化档':'Medicare')+' / B '+(ageB<65?'ACA 简化档':'Medicare')+'）+ 税 '+fireFmt(tax)+'（应税代理 = Traditional 取款 + 社保×85% + 租金正数，× '+(taxR*100).toFixed(1)+'%）= 共需 '+fireFmt(need)+'<br>'
+ +(short>1?'❌ 缺口 '+fireFmt(short)+'（演示余额不足以覆盖这一年）':'✅ 这一年来源覆盖支出')+(bridge?' · 🌉 桥接年：社保未全领或有人未满 65 岁，缺口主要靠组合取款':' · 社保与 Medicare 均已到位');
+}
 function loanAmortize(balance,annualRate,years){var n=Math.round(years*12),r=annualRate/12,pmt;
  if(n<=0||balance<=0)return null;
  if(Math.abs(r)<1e-12)pmt=balance/n; else pmt=balance*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
@@ -714,6 +766,6 @@ function loanCalc(){var b=+document.getElementById('f-loan-bal').value||0,rate=(
  var out=document.getElementById('f-loan-out');if(!out)return;var a=loanAmortize(b,rate,y);
  if(!a){out.textContent='请输入有效的贷款余额与期限。';return}
  out.textContent='月供 '+fireFmt(a.pmt)+'（精确 $'+a.pmt.toFixed(2)+'）· 第 12 期后余额 '+fireFmt(a.bal12)+' · 总利息 '+fireFmt(a.totalInterest)+' · '+a.payoffYears+' 年还清（期末余额 '+fireFmt(a.finalBal)+'）· 逐年余额单调下降：'+(a.monotonic?'是 ✅':'否 ❌')}
-document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc();if(document.getElementById('f-loan-bal'))loanCalc()});
+document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc();if(document.getElementById('f-loan-bal'))loanCalc();if(document.getElementById('f-pia-a'))paycheckCalc()});
 </script>
 </body></html>
