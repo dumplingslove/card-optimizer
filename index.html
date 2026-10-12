@@ -69,6 +69,16 @@
 .xlink:hover{text-decoration:underline}
 @media(max-width:768px){.card-grid{grid-template-columns:1fr}.bilt-result{grid-template-columns:1fr}.q-grid{grid-template-columns:1fr}}
 
+
+.fire-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fire-grid label{font-size:.78em;color:#aaa;display:block}
+.fire-grid input,.fire-grid select{width:100%;margin-top:4px;background:#16213e;border:1px solid #333;color:#fff;border-radius:8px;padding:9px;font-size:.95em}
+.fire-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.fire-stat{text-align:center;padding:10px;background:#16213e;border-radius:8px}
+.fire-stat .num{font-size:1.05em;font-weight:bold;color:#4ecdc4;word-break:break-word}
+.fire-stat .label{font-size:.7em;color:#888;margin-top:2px}
+.fire-demo{background:#2a1a10;border:1px solid #ffd93d;color:#ffd93d;border-radius:8px;padding:8px 10px;font-size:.8em;margin-bottom:12px}
+@media(max-width:768px){.fire-grid{grid-template-columns:1fr 1fr}.fire-stats{grid-template-columns:1fr}}
 .tabbar{position:sticky;top:0;z-index:50;background:rgba(15,15,35,.96);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;padding:10px 2px;margin-bottom:14px;border-bottom:1px solid #2a2a4a;scrollbar-width:none}
 .tabbar::-webkit-scrollbar{display:none}
 .tab-btn{flex:1;min-width:88px;white-space:nowrap;background:#1a1a2e;border:1px solid #333;color:#aaa;border-radius:10px;padding:9px 6px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
@@ -92,6 +102,7 @@
 <button class="tab-btn" data-tab="redeem" onclick="goTab('redeem')">🎁 兑换</button>
 <button class="tab-btn" data-tab="new" onclick="goTab('new')">💡 新卡</button>
 <button class="tab-btn" data-tab="updates" onclick="goTab('updates')">📢 动态</button>
+<button class="tab-btn" data-tab="fire" onclick="goTab('fire')">🔥 FIRE</button>
 </nav>
 
 <div class="tab-page" id="tp-home">
@@ -545,6 +556,38 @@
 </div>
 
 </div>
+
+<div class="tab-page" id="tp-fire">
+<div class="section">
+<h2>🔥 FIRE 财务自由计算器</h2>
+<div class="fire-demo">演示版 · 演示数据：本页只用虚构 persona 数字在你的浏览器本地计算，不保存、不上传任何数据。公式公开、全程按今天美元（实际购买力）计。</div>
+<p style="color:#aaa;font-size:.85em;line-height:1.6;margin-bottom:12px">60 秒快速模式：填下面 8 个数，立刻看到 Full FI 目标、Coast 门槛、Barista 缺口和预计达标年份。演示 persona：35 岁、计划 55 岁退休的双职工家庭。</p>
+<div class="fire-grid">
+<label>当前年龄<input type="number" id="f-age" value="35" min="18" max="90" oninput="fireCalc()"></label>
+<label>计划退休年龄<input type="number" id="f-retire" value="55" min="30" max="90" oninput="fireCalc()"></label>
+<label>当前可投资资产 ($)<input type="number" id="f-assets" value="250000" min="0" step="1000" oninput="fireCalc()"></label>
+<label>每年储蓄投入 ($)<input type="number" id="f-save" value="40000" min="0" step="1000" oninput="fireCalc()"></label>
+<label>退休后年支出 ($/年)<input type="number" id="f-spend" value="60000" min="0" step="1000" oninput="fireCalc()"></label>
+<label>名义投资回报 (%)<input type="number" id="f-nom" value="7" step="0.1" oninput="fireCalc()"></label>
+<label>通胀 (%)<input type="number" id="f-infl" value="3" step="0.1" oninput="fireCalc()"></label>
+<label>安全提取率 SWR<select id="f-swr" onchange="fireCalc()"><option value="0.0325">3.25%</option><option value="0.035" selected>3.5%</option><option value="0.04">4%</option></select></label>
+<label>Barista 兼职年收入 ($)<input type="number" id="f-part" value="20000" min="0" step="1000" oninput="fireCalc()"></label>
+</div>
+<div class="fire-stats">
+<div class="fire-stat"><div class="num" id="f-fi">—</div><div class="label">Full FI 目标 = 年支出 ÷ SWR</div></div>
+<div class="fire-stat"><div class="num" id="f-coast">—</div><div class="label">Coast FI 门槛（现在需有）</div></div>
+<div class="fire-stat"><div class="num" id="f-barista">—</div><div class="label">Barista FI 目标（兼职补缺口）</div></div>
+<div class="fire-stat"><div class="num" id="f-prog">—</div><div class="label">当前完成度（资产 ÷ Full FI）</div></div>
+<div class="fire-stat"><div class="num" id="f-year">—</div><div class="label">预计达标（年龄 / 年份）</div></div>
+<div class="fire-stat"><div class="num" id="f-real">—</div><div class="label">实际回报（Fisher 精确式）</div></div>
+</div>
+<p id="f-assump" style="color:#888;font-size:.78em;line-height:1.6;margin-top:12px"></p>
+<svg id="f-chart" viewBox="0 0 600 220" style="width:100%;background:#16213e;border-radius:10px;margin-top:10px" role="img" aria-label="资产轨迹与 Coast 门槛双线图"></svg>
+<p style="color:#888;font-size:.75em;margin-top:6px">蓝线 = 你的资产轨迹；黄线 = Coast 门槛（随年龄逼近 Full FI）。资产线越过 Full FI 虚线即达标。</p>
+<p style="color:#666;font-size:.72em;margin-top:10px;line-height:1.6">口径：实际回报 = (1+名义回报) ÷ (1+通胀) − 1（Fisher 精确式，不用减法近似）；Coast = FI 目标 ÷ (1+实际回报)^(退休年龄−当前年龄)。本工具为教育演示，估算非报税级，不是税务或投资建议。</p>
+</div>
+</div>
+
 </div>
 
 <script>
@@ -571,5 +614,38 @@ function fallbackCopy(){var ta=document.createElement('textarea');ta.value=SITE_
 <script>
 // Register service worker for PWA install
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+
+<script>
+// FIRE engine v0 (demo only, local calculation)
+function fireRealReturn(nom,infl){return (1+nom)/(1+infl)-1}
+function fireFINumber(spend,swr){return spend/swr}
+function fireCoastNumber(fi,real,years){return fi/Math.pow(1+real,Math.max(0,years))}
+function fireProject(assets,save,real,fi,age){var a=assets,year=new Date().getFullYear();if(a>=fi)return{age:age,year:year};for(var i=1;i<=80;i++){a=a*(1+real)+save;if(a>=fi)return{age:age+i,year:year+i}}return null}
+function fireFmt(n){return '$'+Math.round(n).toLocaleString('en-US')}
+function fireCalc(){
+ var age=+document.getElementById('f-age').value||0,ret=+document.getElementById('f-retire').value||0;
+ var assets=+document.getElementById('f-assets').value||0,save=+document.getElementById('f-save').value||0,spend=+document.getElementById('f-spend').value||0;
+ var nom=(+document.getElementById('f-nom').value||0)/100,infl=(+document.getElementById('f-infl').value||0)/100,swr=+document.getElementById('f-swr').value||0.035;
+ var part=+document.getElementById('f-part').value||0;
+ var real=fireRealReturn(nom,infl),fi=fireFINumber(spend,swr),coast=fireCoastNumber(fi,real,ret-age);
+ var baristaFi=fireFINumber(Math.max(0,spend-part),swr);
+ var proj=fireProject(assets,save,real,fi,age);
+ document.getElementById('f-fi').textContent=fireFmt(fi);
+ document.getElementById('f-coast').textContent=fireFmt(coast);
+ document.getElementById('f-barista').textContent=fireFmt(baristaFi);
+ document.getElementById('f-prog').textContent=(fi>0?Math.min(999,assets/fi*100).toFixed(1):'0')+'%'+(assets>=coast?' · 已过 Coast ✅':'');
+ document.getElementById('f-year').textContent=proj?(proj.age+' 岁 / '+proj.year+' 年'):'80 年内未达标';
+ document.getElementById('f-real').textContent=(real*100).toFixed(2)+'%';
+ document.getElementById('f-assump').textContent='关键假设：名义回报 '+(nom*100).toFixed(1)+'% · 通胀 '+(infl*100).toFixed(1)+'% · 实际回报 '+(real*100).toFixed(2)+'% · SWR '+(swr*100).toFixed(2)+'% · 年支出 '+fireFmt(spend)+' · 每年投入 '+fireFmt(save)+' · 退休年龄 '+ret+' 岁。全程实际美元。';
+ // dual-line chart: asset trajectory vs coast threshold
+ var svg=document.getElementById('f-chart');if(!svg)return;
+ var yrs=Math.max(5,ret-age),ptsA=[],ptsC=[],maxV=fi*1.15,a=assets;
+ for(var i=0;i<=yrs;i++){ptsA.push([i,a]);ptsC.push([i,fireCoastNumber(fi,real,yrs-i)]);a=a*(1+real)+save;if(a>maxV)maxV=a}
+ function X(i){return 30+i/yrs*550} function Y(v){return 200-v/maxV*180}
+ function line(pts){return pts.map(function(p,i){return (i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)}).join(' ')}
+ svg.innerHTML='<line x1="30" y1="'+Y(fi)+'" x2="580" y2="'+Y(fi)+'" stroke="#888" stroke-dasharray="4 4"/><text x="34" y="'+(Y(fi)-6)+'" fill="#aaa" font-size="11">Full FI '+fireFmt(fi)+'</text><path d="'+line(ptsA)+'" fill="none" stroke="#4ecdc4" stroke-width="2.5"/><path d="'+line(ptsC)+'" fill="none" stroke="#ffd93d" stroke-width="2.5"/><text x="470" y="24" fill="#4ecdc4" font-size="11">资产轨迹</text><text x="470" y="42" fill="#ffd93d" font-size="11">Coast 门槛</text>';
+}
+document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc()});
 </script>
 </body></html>
