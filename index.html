@@ -649,6 +649,21 @@
 <p id="f-stress-out" style="color:#cfe3ff;font-size:.85em;line-height:1.8;margin:4px 0 0">点一个压力按钮，看这个计划在坏运气下还撑不撑得住。</p>
 <p style="color:#888;font-size:.72em;margin:6px 0 0">口径：Monte Carlo 回报逐年独立抽取（正态，均值 = Fisher 实际回报，σ 如上），每次试验与上方快速模式同一套逐年现金流；护栏规则 = 退休期某年年末余额较该年年初下跌超 20% 时，次年支出下调 10%（演示简化，私人版可调 Must/Like 与阈值），未触发年份恢复原支出。压力测试为确定性重演：大跌 = 退休头 5 年每年回报额外乘 (0.70)^(1/5)；高通胀 = 头 3 年实际回报改按 Fisher(名义回报, 6%)；长寿 = 模拟终点改 100 岁。简化模型，未建模回报自相关与税制变化；教育演示，非投资建议。</p>
 </div>
+<div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
+<h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🧭 资产配置演示（推荐 + 备选并排 · 均为虚构数字）</h3>
+<p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0 0 8px">配多少股票、多少债券，不是看心情：看离退休还有几年（期限）、支出里刚性的部分有多大、退休前后那几年最怕刚退休就遇大跌（序列风险）。下面先按你离退休的年数给一个推荐，再把稳健 / 平衡 / 进取 / 年龄公式四种备选并排算给你看——每种都代入同一套引擎与 200 次 Monte Carlo（固定种子），达标年龄与通过率的差别一目了然。</p>
+<div class="fire-grid">
+<label>当前股票仓位 (%)<input type="number" id="f-alloc-stock" value="90" min="0" max="100" step="1" oninput="allocCalc()"></label>
+<label>当前现金仓位 (%)<input type="number" id="f-alloc-cash" value="5" min="0" max="100" step="1" oninput="allocCalc()"></label>
+<label>雇主股票（同一家公司 RSU/持股，$）<input type="number" id="f-alloc-meta" value="60000" min="0" step="5000" oninput="allocCalc()"></label>
+<label>单一雇主股票上限 (%)<input type="number" id="f-alloc-limit" value="10" min="1" max="50" step="1" oninput="allocCalc()"></label>
+</div>
+<p id="f-alloc-out" style="color:#cfe3ff;font-size:.85em;line-height:1.8;margin:8px 0 0">—</p>
+<div style="overflow-x:auto"><table class="fire-table"><thead><tr><th>方案</th><th>股 / 债 / 现金</th><th>预期名义回报</th><th>实际回报（Fisher）</th><th>波动率 σ</th><th>预计达标</th><th>期末余额</th><th>MC 通过率（200 次）</th></tr></thead><tbody id="f-alloc-tbody"></tbody></table></div>
+<p id="f-alloc-glide" style="color:#cfe3ff;font-size:.82em;line-height:1.7;margin:8px 0 0"></p>
+<p style="color:#aaa;font-size:.78em;line-height:1.7;margin:6px 0 0">账户定位（asset location）演示原则：债券优先放 Traditional（利息按普通收入计税，放免税增长账户里浪费空间）；预期增长最高的资产优先 Roth（终身免税，涨得越多越划算）；税效高的宽基指数放 Taxable（长期资本利得税率低、还能做税损收割）；未来 2–3 年要用的桥接资金留现金/短债，别放在股票里赌。再平衡：任一大类偏离目标超过 ±5 个百分点才动手，用新增储蓄优先补低配的那一类，少卖出、少触发税。</p>
+<p style="color:#888;font-size:.72em;margin:6px 0 0">预期回报 building blocks（名义，演示简化中点）：股票 6.4%（美股/国际混合）、债券 4.8%、现金 3.0%；波动率：股票 17%、债券 6%、现金 1%，股债相关性按 0.2 估组合波动。参考来源：J.P. Morgan 2026 Long-Term Capital Market Assumptions（美股大盘 6.7%、60/40 组合 6.4%，marketsmedia.com 发布稿）与 Vanguard Capital Markets Model 展望（美股 2.8%–4.8%、美国以外股票 6.9%–8.9%、美国债券 4.3%–5.3%，经 Morningstar 2026 专家预测汇总转述）——各家分歧很大，这里只取简化中点做规划演示，不是收益保证。本模块为教育与规划用途，非个性化投资建议，不连接券商、不下单。</p>
+</div>
 <svg id="f-chart" viewBox="0 0 600 220" style="width:100%;background:#16213e;border-radius:10px;margin-top:10px" role="img" aria-label="资产轨迹与 Coast 门槛双线图"></svg>
 <p style="color:#888;font-size:.75em;margin-top:6px">图：三条资产轨迹是情景带——基准（青）/ 保守（橙）/ 乐观（绿）；黄线 = Coast 门槛（随年龄逼近 Full FI）。资产线越过 Full FI 虚线即达标。</p>
 <details style="margin-top:12px"><summary style="color:#4ecdc4;font-size:.85em;cursor:pointer">📅 逐年现金流表（积累期投入 / 退休期取款，全程实际美元）</summary>
@@ -733,7 +748,7 @@ function fireCalc(){
  // yearly cashflow table
  var tb=document.getElementById('f-tbody');if(tb){var yr=new Date().getFullYear();tb.innerHTML=sim.rows.map(function(r){return '<tr'+(r.short?' class="fire-short"':'')+'><td>'+r.age+' 岁（'+(yr+(r.age-age))+'）</td><td>'+r.phase+(r.short?' · 断粮':'')+'</td><td>'+fireFmt(r.start)+'</td><td>'+(r.flow>=0?'+':'−')+fireFmt(Math.abs(r.flow)).replace('$','$')+'</td><td>'+fireFmt(r.growth)+'</td><td>'+fireFmt(r.end)+'</td></tr>'}).join('')}
  scenarioCalc();
- if(document.getElementById('f-risk-out'))riskCalc();
+ if(document.getElementById('f-risk-out'))riskCalc();if(document.getElementById('f-alloc-tbody'))allocCalc();
  // scenario band chart: conservative / base / optimistic asset trajectories to retirement + coast line
  var svg=document.getElementById('f-chart');if(!svg)return;
  var yrs=Math.max(5,ret-age);
@@ -865,6 +880,35 @@ function riskStress(kind){
  else if(kind==='infl'){var ri=fireRealReturn(o.nom,0.06);label='退休头 3 年通胀 6%（实际回报降至 '+(ri*100).toFixed(2)+'%）';r=fireSimulateR(o,function(age,ph){return (ph==='ret'&&age<o.ret+3)?ri:mu},false)}
  else{label='长寿到 100 岁';var o2={};for(var k in o)o2[k]=o[k];o2.life=100;r=fireSimulateR(o2,function(){return mu},false)}
  out.innerHTML='压力「'+label+'」：'+(r.failed?('❌ '+r.failAge+' 岁断粮'):'✅ 不断粮')+' · 期末余额 '+fireFmt(r.endBalance)+'（基准无压力：'+(base.failed?('❌ '+base.failAge+' 岁断粮'):'✅ 不断粮')+' · 期末 '+fireFmt(base.endBalance)+' · 差值 '+(r.endBalance-base.endBalance>=0?'+':'−')+fireFmt(Math.abs(r.endBalance-base.endBalance)).replace('$','$')+'）'}
+function allocBlocks(ws,wb,wc){var nom=ws*0.064+wb*0.048+wc*0.030;var v=Math.sqrt(Math.pow(ws*17,2)+Math.pow(wb*6,2)+Math.pow(wc*1,2)+2*ws*wb*0.2*17*6+2*ws*wc*0.2*17*1+2*wb*wc*0.2*6*1)/100;return {nom:nom,vol:v}}
+function allocRecStock(years){if(years>=20)return 85;if(years>=10)return 75;if(years>=5)return 65;return 55}
+function allocCalc(){
+ var tb=document.getElementById('f-alloc-tbody');if(!tb)return;
+ var out=document.getElementById('f-alloc-out');
+ var o=fireInputs(),infl=o.infl;
+ var curStock=+document.getElementById('f-alloc-stock').value||0,curCash=+document.getElementById('f-alloc-cash').value||0;
+ var meta=+document.getElementById('f-alloc-meta').value||0,limit=+document.getElementById('f-alloc-limit').value||10;
+ if(curStock<0||curCash<0||curStock+curCash>100){out.textContent='⚠️ 当前仓位不合法：股票% 与现金% 都不能为负、两者之和不能超过 100%（剩下的按债券计）。请修正后再看配置表。';tb.innerHTML='';return}
+ if(limit<1||limit>50){out.textContent='⚠️ 单一雇主股票上限需在 1%–50% 之间，请修正。';tb.innerHTML='';return}
+ var curBond=100-curStock-curCash;
+ var years=Math.max(0,o.ret-o.age),recStock=allocRecStock(years);
+ var ageStock=Math.max(40,Math.min(100,110-o.age));
+ var presets=[{name:'推荐（按期限）',ws:recStock,wb:95-recStock,wc:5},{name:'稳健 60/40',ws:60,wb:35,wc:5},{name:'平衡 80/20',ws:80,wb:15,wc:5},{name:'进取 100/0',ws:100,wb:0,wc:0},{name:'年龄公式 110−年龄',ws:ageStock,wb:95-ageStock,wc:5}];
+ var swr=+document.getElementById('f-swr').value||0.035;
+ var rows=presets.map(function(p){
+   var b=allocBlocks(p.ws/100,p.wb/100,p.wc/100),real=fireRealReturn(b.nom,infl);
+   var sc=fireScenario({assets:o.assets,save:o.save,spend:o.spend,real:real,age:o.age,retire:o.ret,life:o.life,swr:swr});
+   var mc=mcRun({age:o.age,ret:o.ret,life:o.life,assets:o.assets,save:o.save,spend:o.spend,nom:b.nom,infl:infl},b.vol,false,20261013,200);
+   return {p:p,b:b,real:real,sc:sc,mc:mc}});
+ tb.innerHTML=rows.map(function(r){return '<tr><td>'+r.p.name+'</td><td>'+r.p.ws+' / '+r.p.wb+' / '+r.p.wc+'</td><td>'+(r.b.nom*100).toFixed(2)+'%</td><td>'+(r.real*100).toFixed(2)+'%</td><td>'+(r.b.vol*100).toFixed(1)+'%</td><td>'+(r.sc.proj?(r.sc.proj.age+' 岁 / '+r.sc.proj.year+' 年'):'80 年内未达标')+'</td><td>'+fireFmt(r.sc.endBalance)+(r.sc.failed?('（'+r.sc.failAge+' 岁断粮 ❌）'):'')+'</td><td>'+(r.mc.rate*100).toFixed(1)+'%</td></tr>'}).join('');
+ var share=o.assets>0?meta/o.assets*100:0;
+ var conc=o.assets>0?('雇主股票集中度：'+fireFmt(meta)+' ÷ 可投资资产 '+fireFmt(o.assets)+' = '+share.toFixed(1)+'%'+(share>limit?('，❌ 超过你设的 '+limit+'% 上限——工资和股票同源，公司出事时收入与资产会同时受伤，建议优先卖出/到期即分散，把占比压回上限内'):'，✅ 在 '+limit+'% 上限内')):'雇主股票集中度：当前可投资资产为 0，算不出占比，请先在上方填资产。';
+ var diff=curStock-recStock;
+ var reb=Math.abs(diff)>5?('再平衡提示：当前股票 '+curStock+'%（债 '+curBond+'% / 现金 '+curCash+'%）比推荐 '+recStock+'% '+(diff>0?'高':'低')+' 了 '+Math.abs(diff).toFixed(0)+' 个百分点，超过 ±5pp 偏离带，建议用新增储蓄优先补低配类别、逐步调回。'):('再平衡：当前股票 '+curStock+'%（债 '+curBond+'% / 现金 '+curCash+'%）与推荐 '+recStock+'% 的偏差在 ±5pp 偏离带内，不用动。');
+ out.innerHTML='结论：离退休还有 '+years+' 年，推荐股票约 '+recStock+'%（期限越长越能扛波动、越该让股票干活；临近退休再降下来躲序列风险）。各备选里达标最早、通过率最高的方案见下表——股票越高回报越高、达标越早，但波动与断粮尾部风险也越大，别只看达标年龄。<br>'+conc+'<br>'+reb;
+ var g=document.getElementById('f-alloc-glide');
+ if(g){var tent=Math.max(40,recStock-15);g.textContent='Glide path（推荐的滑动路径）：现在股票 '+recStock+'% → 退休前 5 年降到 '+Math.max(45,recStock-10)+'% → 退休当年 '+tent+'%（bond tent 谷底：退休前后是序列风险最危险的窗口，先用债券垫住头几年支出）→ 退休后 10 年、社保开始后回升到 '+Math.max(50,recStock-5)+'%（后半程通胀又成了主要敌人，股票不能太低）。'}
+}
 document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc();if(document.getElementById('f-loan-bal'))loanCalc();if(document.getElementById('f-pia-a'))paycheckCalc();if(document.getElementById('f-risk-sigma'))riskCalc()});
 </script>
 </body></html>
