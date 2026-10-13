@@ -664,6 +664,20 @@
 <p style="color:#aaa;font-size:.78em;line-height:1.7;margin:6px 0 0">账户定位（asset location）演示原则：债券优先放 Traditional（利息按普通收入计税，放免税增长账户里浪费空间）；预期增长最高的资产优先 Roth（终身免税，涨得越多越划算）；税效高的宽基指数放 Taxable（长期资本利得税率低、还能做税损收割）；未来 2–3 年要用的桥接资金留现金/短债，别放在股票里赌。再平衡：任一大类偏离目标超过 ±5 个百分点才动手，用新增储蓄优先补低配的那一类，少卖出、少触发税。</p>
 <p style="color:#888;font-size:.72em;margin:6px 0 0">预期回报 building blocks（名义，演示简化中点）：股票 6.4%（美股/国际混合）、债券 4.8%、现金 3.0%；波动率：股票 17%、债券 6%、现金 1%，股债相关性按 0.2 估组合波动。参考来源：J.P. Morgan 2026 Long-Term Capital Market Assumptions（美股大盘 6.7%、60/40 组合 6.4%，marketsmedia.com 发布稿）与 Vanguard Capital Markets Model 展望（美股 2.8%–4.8%、美国以外股票 6.9%–8.9%、美国债券 4.3%–5.3%，经 Morningstar 2026 专家预测汇总转述）——各家分歧很大，这里只取简化中点做规划演示，不是收益保证。本模块为教育与规划用途，非个性化投资建议，不连接券商、不下单。</p>
 </div>
+<div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
+<h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🛤️ 退休路径演示（怎么退 · 均为虚构数字）</h3>
+<p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0 0 8px">退休不是一个开关，是两条时间线：每人都可以全职 → 降档（收入打折多干几年）→ 全退。下面把六种走法用同一套引擎并排算：谁先退、谁降档，差别不只在自由时间，还在医保——只要还有一人在全职，家庭走雇主医保（便宜得多）；两人都退了或降档不带医保，就要自己扛 ACA 到 65 岁。演示简化：以年龄较长者（A）的年龄为时间轴，B 小 2 岁；储蓄按在岗人数/档位等比缩放（双全职 100%、一人全职 50%、双降档 50%、一人降档 25%、F 双降档 60%）。</p>
+<div class="fire-grid">
+<label>推荐优先级<select id="f-path-prio" onchange="pathCalc()"><option value="safest_fewest" selected>最稳前提下工作年最少（默认）</option><option value="earliest">最早全退</option><option value="fewest_work">工作年最少</option><option value="most_balance">期末余额最多</option></select></label>
+<label>雇主医保家庭年成本 ($)<input type="number" id="f-path-emp" value="6000" min="0" step="500" oninput="pathCalc()"></label>
+<label>降档岗位带医保？<select id="f-path-downhealth" onchange="pathCalc()"><option value="off" selected>不带（默认，自己走 ACA）</option><option value="on">带雇主医保</option></select></label>
+</div>
+<p id="f-path-rec" style="color:#cfe3ff;font-size:.88em;line-height:1.8;margin:8px 0 0">—</p>
+<div id="f-path-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px"></div>
+<div id="f-path-timeline" style="margin-top:10px"></div>
+<div style="overflow-x:auto;margin-top:10px"><table class="fire-table"><thead><tr><th>指标</th><th>A 👥 双人同退</th><th>B 🚶 一人先退</th><th>C 🐢 双人降档</th><th>D 🌓 一人降档+一人全退</th><th>E 🏁 双人全职到底（基准）</th><th>F 🪜 分阶段</th></tr></thead><tbody id="f-path-tbody"></tbody></table></div>
+<p style="color:#888;font-size:.72em;margin:6px 0 0">口径：全程实际美元、Fisher 精确式；MC = 每选项 200 次固定种子 20261013、σ 沿用上方风险演示设置、中途断粮 = 失败；工作年成本 = 双人全职年合计 + 0.5×降档年合计（降档一年按半个全职年计价）；退休前医疗累计 = 从现在到两人全退前一年逐年累加（有全职在岗的年份按雇主医保输入值、无人全职的年份按 ACA 演示 $14,400/年 = ACA 全额保费输入 ×1.5 的两人补贴后简化值，降档带医保时该年改按雇主值）；桥接期 = 第一人全退到 67 岁（社保 FRA 演示领取龄）的年数。边际换算 = 相对 E 的通过率差 ÷ 全职年差。继续工作可能替换社保低收入年份、提高 PIA，仅作提示，不做 AIME 精算。私人版可调每人降档起止/比例/带医保并代入主推演；本页为固定结构演示，不保存任何输入。教育演示，非财务建议。</p>
+</div>
 <svg id="f-chart" viewBox="0 0 600 220" style="width:100%;background:#16213e;border-radius:10px;margin-top:10px" role="img" aria-label="资产轨迹与 Coast 门槛双线图"></svg>
 <p style="color:#888;font-size:.75em;margin-top:6px">图：三条资产轨迹是情景带——基准（青）/ 保守（橙）/ 乐观（绿）；黄线 = Coast 门槛（随年龄逼近 Full FI）。资产线越过 Full FI 虚线即达标。</p>
 <details style="margin-top:12px"><summary style="color:#4ecdc4;font-size:.85em;cursor:pointer">📅 逐年现金流表（积累期投入 / 退休期取款，全程实际美元）</summary>
@@ -748,7 +762,7 @@ function fireCalc(){
  // yearly cashflow table
  var tb=document.getElementById('f-tbody');if(tb){var yr=new Date().getFullYear();tb.innerHTML=sim.rows.map(function(r){return '<tr'+(r.short?' class="fire-short"':'')+'><td>'+r.age+' 岁（'+(yr+(r.age-age))+'）</td><td>'+r.phase+(r.short?' · 断粮':'')+'</td><td>'+fireFmt(r.start)+'</td><td>'+(r.flow>=0?'+':'−')+fireFmt(Math.abs(r.flow)).replace('$','$')+'</td><td>'+fireFmt(r.growth)+'</td><td>'+fireFmt(r.end)+'</td></tr>'}).join('')}
  scenarioCalc();
- if(document.getElementById('f-risk-out'))riskCalc();if(document.getElementById('f-alloc-tbody'))allocCalc();
+ if(document.getElementById('f-risk-out'))riskCalc();if(document.getElementById('f-alloc-tbody'))allocCalc();if(document.getElementById('f-path-tbody'))pathCalc();
  // scenario band chart: conservative / base / optimistic asset trajectories to retirement + coast line
  var svg=document.getElementById('f-chart');if(!svg)return;
  var yrs=Math.max(5,ret-age);
@@ -909,6 +923,82 @@ function allocCalc(){
  var g=document.getElementById('f-alloc-glide');
  if(g){var tent=Math.max(40,recStock-15);g.textContent='Glide path（推荐的滑动路径）：现在股票 '+recStock+'% → 退休前 5 年降到 '+Math.max(45,recStock-10)+'% → 退休当年 '+tent+'%（bond tent 谷底：退休前后是序列风险最危险的窗口，先用债券垫住头几年支出）→ 退休后 10 年、社保开始后回升到 '+Math.max(50,recStock-5)+'%（后半程通胀又成了主要敌人，股票不能太低）。'}
 }
+
+function pathSegs(o){
+ var R=o.ret,A=o.age,emp=+document.getElementById('f-path-emp').value||0;
+ var aca=(+document.getElementById('f-aca').value||9600)*1.5;
+ var downHealth=document.getElementById('f-path-downhealth').value==='on';
+ function mk(id,icon,name,def,fullRet,fracFn,p1,p2,firstRet,tag){
+   var health=0;for(var a=A;a<fullRet;a++){var f=fracFn(a);health+=(f.anyFull||(downHealth&&f.anyDown))?emp:aca}
+   var fullY=p1.full+p2.full,downY=p1.down+p2.down;
+   return {id:id,icon:icon,name:name,def:def,fullRet:fullRet,fracFn:fracFn,p1:p1,p2:p2,firstRet:firstRet,fullY:fullY,downY:downY,cost:fullY+0.5*downY,health:health,bridge:Math.max(0,67-firstRet),tag:tag}}
+ function F(frac,anyFull,anyDown){return {frac:frac,anyFull:anyFull,anyDown:anyDown}}
+ return [
+  mk('A','👥','双人同退','两人同一年一起全退，最干脆',R,function(a){return F(1,true,false)},{full:R-A,down:0},{full:R-A,down:0},R,'🏖️ 自由最早，但桥接期最长、医疗全自担'),
+  mk('B','🚶','一人先退','一人先退，另一人全职多干 5 年',R+5,function(a){return a<R?F(1,true,false):F(0.5,true,false)},{full:R-A,down:0},{full:R+5-A,down:0},R,'⚠️ 单收入依赖：先退后家庭收入只靠一人，但医保一直有雇主兜底'),
+  mk('C','🐢','双人降档','两人提前 5 年降档到 50%，多干 3 年再全退',R+3,function(a){return a<R-5?F(1,true,false):F(0.5,false,true)},{full:Math.max(0,R-5-A),down:8},{full:Math.max(0,R-5-A),down:8},R+3,'💪 双人均有收入、抗单点变动；代价是无人全职年份要自扛 ACA'),
+  mk('D','🌓','一人降档+一人全退','一人按时全退，另一人降档 50% 再干 3 年',R+3,function(a){return a<R?F(1,true,false):F(0.25,false,true)},{full:R-A,down:0},{full:R-A,down:3},R,'⚠️ 单收入依赖（且是降档收入）：先退者自由，扛收入的人压力最大'),
+  mk('E','🏁','双人全职到底','基准：两人各干到计划年龄（B 小 2 岁，晚 2 年全退）',R+2,function(a){return a<R?F(1,true,false):F(0.5,true,false)},{full:R-A,down:0},{full:R+2-A,down:0},R,'🏁 对照基准：不做任何路径优化'),
+  mk('F','🪜','分阶段','两人先降档 60% 三年，再一起全退',R,function(a){return a<R-3?F(1,true,false):F(0.6,false,true)},{full:Math.max(0,R-3-A),down:3},{full:Math.max(0,R-3-A),down:3},R,'🪜 软着陆：全退年份不推迟，代价是降档三年储蓄变慢、无人全职年份自扛 ACA')
+ ]}
+function pathSim(o,path,realFn){
+ var a=o.assets,failed=false,failAge=null;
+ for(var age=o.age;age<o.life;age++){
+   var real=realFn(age),start=a,growth=start*real,end;
+   if(age<path.fullRet){end=start+growth+o.save*path.fracFn(age).frac}
+   else{if(start+growth<o.spend){failed=true;failAge=age;a=0;break}end=start+growth-o.spend}
+   a=end}
+ return {failed:failed,failAge:failAge,endBalance:a}}
+function pathMC(o,path,sigma,n){
+ var rng=fireRng(20261013),mu=fireRealReturn(o.nom,o.infl),ends=[],ok=0;
+ for(var i=0;i<n;i++){var r=pathSim(o,path,function(){var x=mu+sigma*fireGauss(rng);return Math.max(-0.95,x)});ends.push(r.endBalance);if(!r.failed)ok++}
+ ends.sort(function(x,y){return x-y});
+ return {rate:ok/n,p50:ends[Math.floor(0.5*n)]}}
+function pathCalc(){
+ var tb=document.getElementById('f-path-tbody');if(!tb)return;
+ var rec=document.getElementById('f-path-rec'),cards=document.getElementById('f-path-cards'),tl=document.getElementById('f-path-timeline');
+ var o=fireInputs(),emp=+document.getElementById('f-path-emp').value||0;
+ if(emp<0){rec.textContent='⚠️ 雇主医保年成本不能为负，请修正。';tb.innerHTML='';return}
+ var sigmaEl=document.getElementById('f-risk-sigma'),sigma=sigmaEl?((+sigmaEl.value||12)/100):0.12;if(!(sigma>0)||sigma>0.4)sigma=0.12;
+ var real=fireRealReturn(o.nom,o.infl),swr=+document.getElementById('f-swr').value||0.035;
+ var paths=pathSegs(o).map(function(p){
+   var det=pathSim(o,p,function(){return real}),mc=pathMC(o,p,sigma,200);
+   p.det=det;p.mc=mc;p.fi=fireFINumber(o.spend,swr);p.simFi=fireSimFI(o.spend,real,Math.max(0,o.life-p.fullRet));return p});
+ var E=paths[4];
+ var prio=document.getElementById('f-path-prio').value;
+ var sorted=paths.slice();
+ var recPath,why=[];
+ if(prio==='earliest'){sorted.sort(function(x,y){return x.fullRet-y.fullRet||y.mc.rate-x.mc.rate});recPath=sorted[0];why=['全退年份 '+recPath.fullRet+' 岁为六者最早','通过率 '+(recPath.mc.rate*100).toFixed(1)+'%']}
+ else if(prio==='fewest_work'){sorted.sort(function(x,y){return x.cost-y.cost});recPath=sorted[0];why=['工作年成本 '+recPath.cost.toFixed(1)+' 年为六者最少','通过率 '+(recPath.mc.rate*100).toFixed(1)+'%']}
+ else if(prio==='most_balance'){sorted.sort(function(x,y){return y.mc.p50-x.mc.p50});recPath=sorted[0];why=['期末 P50 '+fireFmt(recPath.mc.p50)+' 为六者最高','通过率 '+(recPath.mc.rate*100).toFixed(1)+'%']}
+ else{var ok=paths.filter(function(p){return p.mc.rate>=0.9});
+   if(ok.length){ok.sort(function(x,y){return x.cost-y.cost});recPath=ok[0];why=['通过率 '+(recPath.mc.rate*100).toFixed(1)+'% ≥ 90% 门槛','在达标选项中工作年成本最少（'+recPath.cost.toFixed(1)+' 年）']}
+   else{sorted.sort(function(x,y){return y.mc.rate-x.mc.rate});recPath=sorted[0];why=['没有任何选项达到 90% 通过率，取最高者 '+(recPath.mc.rate*100).toFixed(1)+'%','建议同时考虑推迟全退或降低支出，光换路径不够']}}
+ var ranking;
+ if(prio==='earliest')ranking=paths.slice().sort(function(x,y){return x.fullRet-y.fullRet||y.mc.rate-x.mc.rate});
+ else if(prio==='fewest_work')ranking=paths.slice().sort(function(x,y){return x.cost-y.cost});
+ else if(prio==='most_balance')ranking=paths.slice().sort(function(x,y){return y.mc.p50-x.mc.p50});
+ else{var ok2=paths.filter(function(x){return x.mc.rate>=0.9}).sort(function(x,y){return x.cost-y.cost});var not2=paths.filter(function(x){return x.mc.rate<0.9}).sort(function(x,y){return y.mc.rate-x.mc.rate});ranking=ok2.length?ok2.concat(not2):not2}
+ var second=ranking[1]||null;
+ var gapTxt=second?('；第二名 '+second.icon+' '+second.name+'：通过率 '+(second.mc.rate*100).toFixed(1)+'%（差 '+((recPath.mc.rate-second.mc.rate)*100).toFixed(1)+' pp）、工作年 '+second.cost.toFixed(1)+'（差 '+(recPath.cost-second.cost>=0?'+':'')+(recPath.cost-second.cost).toFixed(1)+' 年）、期末 P50 '+fireFmt(second.mc.p50)):'';
+ rec.innerHTML='⭐ 推荐（优先级：'+document.getElementById('f-path-prio').selectedOptions[0].textContent+'）：<b>'+recPath.icon+' '+recPath.name+'</b> —— '+why.join('；')+gapTxt+'。';
+ cards.innerHTML=paths.map(function(p){var isR=p===recPath;return '<div style="background:'+(isR?'#1d3557':'#1a1a2e')+';border:1px solid '+(isR?'#ffd93d':'#33415e')+';border-radius:10px;padding:10px"><div style="font-size:.9em;color:#ffd93d">'+p.icon+' '+p.name+(isR?' ⭐推荐':'')+'</div><div style="color:#aaa;font-size:.75em;line-height:1.5;margin:4px 0">'+p.def+'</div><div style="color:#cfe3ff;font-size:.8em;line-height:1.6">全退 '+p.fullRet+' 岁<br>MC 通过率 '+(p.mc.rate*100).toFixed(1)+'% '+(p.det.failed?('· ❌ '+p.det.failAge+' 岁断粮'):'· ✅ 不断粮')+'<br>工作年 '+p.cost.toFixed(1)+'（全职 '+p.fullY.toFixed(0)+' + 降档 '+p.downY.toFixed(0)+'）</div></div>'}).join('');
+ function bar(person,label){var total=Math.max(1,person.full+person.down+10);var wF=person.full/total*100,wD=person.down/total*100,wR=Math.max(8,100-wF-wD);return '<div style="display:flex;align-items:center;gap:6px;margin-top:4px"><span style="color:#aaa;font-size:.75em;width:52px">'+label+'</span><div style="flex:1;display:flex;height:18px;border-radius:6px;overflow:hidden;font-size:.68em;color:#0b0b12">'+(person.full?'<div style="width:'+wF+'%;background:#4ecdc4;display:flex;align-items:center;justify-content:center;white-space:nowrap">💼 全职 '+person.full+' 年</div>':'')+(person.down?'<div style="width:'+wD+'%;background:#ffd93d;display:flex;align-items:center;justify-content:center;white-space:nowrap">🐢 降档 '+person.down+' 年</div>':'')+'<div style="width:'+wR+'%;background:#5b6b8c;color:#e8eefc;display:flex;align-items:center;justify-content:center;white-space:nowrap">🏖️ 退休</div></div></div>'}
+ tl.innerHTML='<div style="color:#cfe3ff;font-size:.82em">双人时间线（推荐选项 '+recPath.icon+' '+recPath.name+'）：</div>'+bar(recPath.p1,'A（长者）')+bar(recPath.p2,'B（小 2 岁）');
+ function delta(v,b,unit){if(Math.abs(v-b)<1e-9)return '与 E 相同';return (v>b?'+':'−')+(unit==='money'?fireFmt(Math.abs(v-b)).replace('$','$'):Math.abs(v-b).toFixed(unit==='pp'?1:0)+(unit==='pp'?' pp':''))}
+ function row(label,fn,dfn){return '<tr><td>'+label+'</td>'+paths.map(function(p,i){var v=fn(p);if(dfn&&p!==E)v+='<br><span style="color:#8fb8ff;font-size:.85em">'+dfn(p)+'</span>';return '<td>'+v+'</td>'}).join('')+'</tr>'}
+ tb.innerHTML=
+  row('全退年龄',function(p){return p.fullRet+' 岁'},function(p){return '比 E '+(p.fullRet<E.fullRet?'早 '+(E.fullRet-p.fullRet)+' 年':(p.fullRet>E.fullRet?'晚 '+(p.fullRet-E.fullRet)+' 年':'同年'))})+
+  row('FI 目标 / 模拟求解 FI',function(p){return fireFmt(p.fi)+' / '+fireFmt(p.simFi)},function(p){return '模拟 FI '+delta(p.simFi,E.simFi,'money')})+
+  row('MC 通过率（200 次）',function(p){return (p.mc.rate*100).toFixed(1)+'%'},function(p){return delta(p.mc.rate*100,E.mc.rate*100,'pp')})+
+  row('期末余额（确定性 / MC P50）',function(p){return fireFmt(p.det.endBalance)+(p.det.failed?('（'+p.det.failAge+' 岁断粮 ❌）'):'')+' / '+fireFmt(p.mc.p50)},function(p){return 'P50 '+delta(p.mc.p50,E.mc.p50,'money')})+
+  row('工作年成本（全职+降档）',function(p){return p.cost.toFixed(1)+' 年（全职 '+p.fullY.toFixed(0)+' + 降档 '+p.downY.toFixed(0)+'）'},function(p){return delta(p.cost,E.cost,'yr')})+
+  row('桥接期（第一人全退→67 岁）',function(p){return p.bridge+' 年'})+
+  row('退休前医疗累计',function(p){return fireFmt(p.health)},function(p){return delta(p.health,E.health,'money')})+
+  row('边际：相对 E 每多 1 全职年换通过率',function(p){var d=p.fullY-E.fullY,rd=(p.mc.rate-E.mc.rate)*100;if(!d)return '—（与 E 全职年相同）';if(d<0)return '少干 '+(-d)+' 个全职年，通过率 '+(rd>=0?'+':'')+rd.toFixed(1)+' pp（靠降档/结构换来）';return ((rd/d)>=0?'+':'')+(rd/d).toFixed(2)+' pp / 年'})+
+  row('风险标签',function(p){return p.tag});
+}
+
 document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc();if(document.getElementById('f-loan-bal'))loanCalc();if(document.getElementById('f-pia-a'))paycheckCalc();if(document.getElementById('f-risk-sigma'))riskCalc()});
 </script>
 </body></html>
