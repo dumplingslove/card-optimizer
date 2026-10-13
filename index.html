@@ -626,6 +626,13 @@
 <p id="f-pay-out" style="color:#cfe3ff;font-size:.85em;line-height:1.8;margin:8px 0 0">—</p>
 <p style="color:#888;font-size:.72em;margin:6px 0 0">社保系数（FRA 67）：62 岁 70.0% · 63 岁 75.0% · 64 岁 80.0% · 65 岁 86.7% · 66 岁 93.3% · 67 岁 100% · 68 岁 108% · 69 岁 116% · 70 岁 124%。规则：提前领按月扣（前 36 个月每月 5/9%、其后每月 5/12%），延迟领每月 +2/3%、封顶 70 岁。Medicare 按 2026 年 Part B 标准保费 $202.90/月（$2,434.80/年）+ 补充险演示 $2,400/年计。ACA 为规划级简化三档（MAGI 代理 ≤$85k 付 30%、≤$150k 付 65%、否则全额），非补贴精确计算。税务为平均税率 gross-up 简化估算，非报税级；WA 无州所得税。</p>
 </div>
+<div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
+<h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🔀 场景对比演示（改什么最有用 · 均为虚构数字）</h3>
+<p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0 0 8px">同一个家庭、同一笔现状，只改一个未来假设，看结论怎么变：退休年龄、支出、储蓄各拉一个杠杆，与基准并排比。达标年龄与期末余额的差值都写成文字，不只靠颜色。</p>
+<p id="f-scen-verdict" style="color:#cfe3ff;font-size:.85em;line-height:1.7;margin:0 0 8px">—</p>
+<div style="overflow-x:auto"><table class="fire-table"><thead><tr><th>指标</th><th>基准</th><th>提前 5 年退休</th><th>推迟 5 年退休</th><th>支出 −10%</th><th>支出 +10%</th><th>每年多存 20%</th></tr></thead><tbody id="f-scen-tbody"></tbody></table></div>
+<p style="color:#888;font-size:.72em;margin:6px 0 0">口径与上方快速模式完全一致：全程实际美元、Fisher 精确式实际回报、FI 目标 = 年支出 ÷ 所选 SWR、模拟求解 FI = 退休时资产恰好撑到预期寿命；中途任一年断粮 = 失败。改上方任何输入，本表即时重算。私人版支持自定义场景（两人各自退休年龄、二孩开关、卖出租房等）并排对比；本页只做固定杠杆演示，不保存任何输入。</p>
+</div>
 <svg id="f-chart" viewBox="0 0 600 220" style="width:100%;background:#16213e;border-radius:10px;margin-top:10px" role="img" aria-label="资产轨迹与 Coast 门槛双线图"></svg>
 <p style="color:#888;font-size:.75em;margin-top:6px">图：三条资产轨迹是情景带——基准（青）/ 保守（橙）/ 乐观（绿）；黄线 = Coast 门槛（随年龄逼近 Full FI）。资产线越过 Full FI 虚线即达标。</p>
 <details style="margin-top:12px"><summary style="color:#4ecdc4;font-size:.85em;cursor:pointer">📅 逐年现金流表（积累期投入 / 退休期取款，全程实际美元）</summary>
@@ -709,6 +716,7 @@ function fireCalc(){
  document.getElementById('f-assump').textContent='关键假设：名义回报 '+(nom*100).toFixed(1)+'% · 通胀 '+(infl*100).toFixed(1)+'% · 实际回报 '+(real*100).toFixed(2)+'%（Fisher 精确式） · SWR '+(swr*100).toFixed(2)+'% · 年支出 '+fireFmt(spend)+' · 每年投入 '+fireFmt(save)+' · 退休年龄 '+ret+' 岁 · 预期寿命 '+life+' 岁。全程实际美元（今天购买力）。税务：估算，非报税级。';
  // yearly cashflow table
  var tb=document.getElementById('f-tbody');if(tb){var yr=new Date().getFullYear();tb.innerHTML=sim.rows.map(function(r){return '<tr'+(r.short?' class="fire-short"':'')+'><td>'+r.age+' 岁（'+(yr+(r.age-age))+'）</td><td>'+r.phase+(r.short?' · 断粮':'')+'</td><td>'+fireFmt(r.start)+'</td><td>'+(r.flow>=0?'+':'−')+fireFmt(Math.abs(r.flow)).replace('$','$')+'</td><td>'+fireFmt(r.growth)+'</td><td>'+fireFmt(r.end)+'</td></tr>'}).join('')}
+ scenarioCalc();
  // scenario band chart: conservative / base / optimistic asset trajectories to retirement + coast line
  var svg=document.getElementById('f-chart');if(!svg)return;
  var yrs=Math.max(5,ret-age);
@@ -726,6 +734,41 @@ function fireCalc(){
  svg.innerHTML=html;
 }
 
+function fireScenario(o){ // o: assets, save, spend, real, age, retire, life, swr
+ var fi=fireFINumber(o.spend,o.swr);
+ var simYears=Math.max(0,o.life-o.retire),simFi=fireSimFI(o.spend,o.real,simYears);
+ var sim=fireSimulate({assets:o.assets,save:o.save,spend:o.spend,real:o.real,age:o.age,retire:o.retire,life:o.life});
+ var proj=fireProject(o.assets,o.save,o.real,fi,o.age);
+ return {fi:fi,simFi:simFi,proj:proj,failed:sim.failed,failAge:sim.failAge,retireBalance:sim.retireBalance,endBalance:sim.endBalance,retire:o.retire,spend:o.spend,save:o.save}}
+function scenarioCalc(){
+ var tb=document.getElementById('f-scen-tbody');if(!tb)return;
+ var age=+document.getElementById('f-age').value||0,ret=+document.getElementById('f-retire').value||0,life=+document.getElementById('f-life').value||95;
+ var assets=+document.getElementById('f-assets').value||0,save=+document.getElementById('f-save').value||0,spend=+document.getElementById('f-spend').value||0;
+ var nom=(+document.getElementById('f-nom').value||0)/100,infl=(+document.getElementById('f-infl').value||0)/100,swr=+document.getElementById('f-swr').value||0.035;
+ var real=fireRealReturn(nom,infl);
+ var base={assets:assets,save:save,spend:spend,real:real,age:age,retire:ret,life:life,swr:swr};
+ function mk(over){var o={},k;for(k in base)o[k]=base[k];for(k in over)o[k]=over[k];return fireScenario(o)}
+ var names=['基准','提前 5 年退休','推迟 5 年退休','支出 −10%','支出 +10%','每年多存 20%'];
+ var scens=[mk({}),mk({retire:Math.max(age+1,ret-5)}),mk({retire:Math.min(life-1,ret+5)}),mk({spend:spend*0.9}),mk({spend:spend*1.1}),mk({save:save*1.2})];
+ var b=scens[0];
+ function dAge(s){if(!s.proj&&!b.proj)return '同为未达标';if(!s.proj)return '基准达标，此场景未达标';if(!b.proj)return '基准未达标，此场景达标';var d=s.proj.age-b.proj.age;return d===0?'与基准同岁达标':(d<0?'比基准早 '+(-d)+' 年':'比基准晚 '+d+' 年')}
+ function dMoney(v,baseV){var d=v-baseV;if(Math.abs(d)<1)return '与基准相同';return (d>0?'比基准多 ':'比基准少 ')+fireFmt(Math.abs(d))}
+ function row(label,fn,deltaFn){return '<tr><td>'+label+'</td>'+scens.map(function(s,i){var v=fn(s,i);if(i>0&&deltaFn)v+='<br><span style="color:#8fb8ff;font-size:.85em">'+deltaFn(s)+'</span>';return '<td>'+v+'</td>'}).join('')+'</tr>'}
+ tb.innerHTML=
+  row('退休年龄',function(s){return s.retire+' 岁'})+
+  row('退休后年支出',function(s){return fireFmt(s.spend)},function(s){return dMoney(s.spend,b.spend)})+
+  row('FI 目标（年支出 ÷ SWR）',function(s){return fireFmt(s.fi)},function(s){return dMoney(s.fi,b.fi)})+
+  row('模拟求解 FI（退休时需有）',function(s){return fireFmt(s.simFi)},function(s){return dMoney(s.simFi,b.simFi)})+
+  row('预计达标',function(s){return s.proj?(s.proj.age+' 岁 / '+s.proj.year+' 年'):'80 年内未达标'},function(s){return dAge(s)})+
+  row('退休时预计资产',function(s){return fireFmt(s.retireBalance)},function(s){return dMoney(s.retireBalance,b.retireBalance)})+
+  row('全程结论（断粮 = 失败）',function(s){return s.failed?('❌ '+s.failAge+' 岁断粮'):('✅ 撑到 '+life+' 岁')})+
+  row('推演期末余额',function(s){return fireFmt(s.endBalance)},function(s){return dMoney(s.endBalance,b.endBalance)});
+ var best=null;scens.forEach(function(s,i){if(s.proj&&(!best||s.proj.age<best.s.proj.age))best={s:s,i:i}});
+ var vd=document.getElementById('f-scen-verdict');
+ if(vd){if(!best)vd.textContent='结论：这组场景在 80 年内都没达到 Full FI 目标——先看上方缺口，优先试试推迟退休或降低支出这两个杠杆。';
+ else if(best.i===0)vd.textContent='结论：这组杠杆里基准达标最早（'+best.s.proj.age+' 岁）——提前退休、加支出都会更晚，多存 20% 也没能反超基准。';
+ else vd.textContent='结论：这组场景里达标最早的是「'+names[best.i]+'」（'+best.s.proj.age+' 岁达标'+(b.proj?('，比基准'+(best.s.proj.age<b.proj.age?'早 '+(b.proj.age-best.s.proj.age)+' 年':'同岁')+''):'，基准则未达标')+'）。'}
+}
 function ssFactor(claimAge){var fra=67;claimAge=Math.max(62,Math.min(70,claimAge));
  if(claimAge>=fra)return 1+(claimAge-fra)*12*(2/3)/100;
  var m=(fra-claimAge)*12;return 1-(Math.min(m,36)*(5/9)+Math.max(0,m-36)*(5/12))/100}
