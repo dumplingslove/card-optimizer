@@ -633,6 +633,22 @@
 <div style="overflow-x:auto"><table class="fire-table"><thead><tr><th>指标</th><th>基准</th><th>提前 5 年退休</th><th>推迟 5 年退休</th><th>支出 −10%</th><th>支出 +10%</th><th>每年多存 20%</th></tr></thead><tbody id="f-scen-tbody"></tbody></table></div>
 <p style="color:#888;font-size:.72em;margin:6px 0 0">口径与上方快速模式完全一致：全程实际美元、Fisher 精确式实际回报、FI 目标 = 年支出 ÷ 所选 SWR、模拟求解 FI = 退休时资产恰好撑到预期寿命；中途任一年断粮 = 失败。改上方任何输入，本表即时重算。私人版支持自定义场景（两人各自退休年龄、二孩开关、卖出租房等）并排对比；本页只做固定杠杆演示，不保存任何输入。</p>
 </div>
+<div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
+<h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🎲 风险演示（Monte Carlo + 压力测试 · 均为虚构数字）</h3>
+<p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0 0 8px">上面的结论用的是固定回报；真实世界回报每年不一样。把每年实际回报换成随机抽取（均值 = 上方 Fisher 实际回报，波动率可调），同一计划跑 300 次，看有多少次能撑到预期寿命——中途任一年断粮即算失败，不只看期末余额。固定种子 20261013，同参数重复运行结果逐位一致、可复现。</p>
+<div class="fire-grid">
+<label>年回报波动率 σ (%)<input type="number" id="f-risk-sigma" value="12" min="1" max="40" step="0.5" oninput="riskCalc()"></label>
+<label>护栏规则<select id="f-risk-guard" onchange="riskCalc()"><option value="on" selected>开：大跌年次年自动降支 10%</option><option value="off">关：支出雷打不动</option></select></label>
+</div>
+<p id="f-risk-out" style="color:#cfe3ff;font-size:.85em;line-height:1.8;margin:8px 0 0">—</p>
+<div style="margin-top:8px">
+<button type="button" onclick="riskStress('crash')" style="background:#24365e;color:#cfe3ff;border:1px solid #4ecdc4;border-radius:8px;padding:6px 10px;margin:0 6px 6px 0;cursor:pointer">压力：退休头 5 年累计 −30%</button>
+<button type="button" onclick="riskStress('infl')" style="background:#24365e;color:#cfe3ff;border:1px solid #4ecdc4;border-radius:8px;padding:6px 10px;margin:0 6px 6px 0;cursor:pointer">压力：退休头 3 年通胀 6%</button>
+<button type="button" onclick="riskStress('long')" style="background:#24365e;color:#cfe3ff;border:1px solid #4ecdc4;border-radius:8px;padding:6px 10px;margin:0 6px 6px 0;cursor:pointer">压力：长寿到 100 岁</button>
+</div>
+<p id="f-stress-out" style="color:#cfe3ff;font-size:.85em;line-height:1.8;margin:4px 0 0">点一个压力按钮，看这个计划在坏运气下还撑不撑得住。</p>
+<p style="color:#888;font-size:.72em;margin:6px 0 0">口径：Monte Carlo 回报逐年独立抽取（正态，均值 = Fisher 实际回报，σ 如上），每次试验与上方快速模式同一套逐年现金流；护栏规则 = 退休期某年年末余额较该年年初下跌超 20% 时，次年支出下调 10%（演示简化，私人版可调 Must/Like 与阈值），未触发年份恢复原支出。压力测试为确定性重演：大跌 = 退休头 5 年每年回报额外乘 (0.70)^(1/5)；高通胀 = 头 3 年实际回报改按 Fisher(名义回报, 6%)；长寿 = 模拟终点改 100 岁。简化模型，未建模回报自相关与税制变化；教育演示，非投资建议。</p>
+</div>
 <svg id="f-chart" viewBox="0 0 600 220" style="width:100%;background:#16213e;border-radius:10px;margin-top:10px" role="img" aria-label="资产轨迹与 Coast 门槛双线图"></svg>
 <p style="color:#888;font-size:.75em;margin-top:6px">图：三条资产轨迹是情景带——基准（青）/ 保守（橙）/ 乐观（绿）；黄线 = Coast 门槛（随年龄逼近 Full FI）。资产线越过 Full FI 虚线即达标。</p>
 <details style="margin-top:12px"><summary style="color:#4ecdc4;font-size:.85em;cursor:pointer">📅 逐年现金流表（积累期投入 / 退休期取款，全程实际美元）</summary>
@@ -717,6 +733,7 @@ function fireCalc(){
  // yearly cashflow table
  var tb=document.getElementById('f-tbody');if(tb){var yr=new Date().getFullYear();tb.innerHTML=sim.rows.map(function(r){return '<tr'+(r.short?' class="fire-short"':'')+'><td>'+r.age+' 岁（'+(yr+(r.age-age))+'）</td><td>'+r.phase+(r.short?' · 断粮':'')+'</td><td>'+fireFmt(r.start)+'</td><td>'+(r.flow>=0?'+':'−')+fireFmt(Math.abs(r.flow)).replace('$','$')+'</td><td>'+fireFmt(r.growth)+'</td><td>'+fireFmt(r.end)+'</td></tr>'}).join('')}
  scenarioCalc();
+ if(document.getElementById('f-risk-out'))riskCalc();
  // scenario band chart: conservative / base / optimistic asset trajectories to retirement + coast line
  var svg=document.getElementById('f-chart');if(!svg)return;
  var yrs=Math.max(5,ret-age);
@@ -809,6 +826,45 @@ function loanCalc(){var b=+document.getElementById('f-loan-bal').value||0,rate=(
  var out=document.getElementById('f-loan-out');if(!out)return;var a=loanAmortize(b,rate,y);
  if(!a){out.textContent='请输入有效的贷款余额与期限。';return}
  out.textContent='月供 '+fireFmt(a.pmt)+'（精确 $'+a.pmt.toFixed(2)+'）· 第 12 期后余额 '+fireFmt(a.bal12)+' · 总利息 '+fireFmt(a.totalInterest)+' · '+a.payoffYears+' 年还清（期末余额 '+fireFmt(a.finalBal)+'）· 逐年余额单调下降：'+(a.monotonic?'是 ✅':'否 ❌')}
-document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc();if(document.getElementById('f-loan-bal'))loanCalc();if(document.getElementById('f-pia-a'))paycheckCalc()});
+function fireRng(seed){var s=seed>>>0;return function(){s=(s+0x6D2B79F5)>>>0;var t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function fireGauss(rng){var u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function fireSimulateR(o,realFn,guard){ // like fireSimulate but per-year real return via realFn(age,phase) and optional guardrail spend cut
+ var a=o.assets,failed=false,failAge=null,cutNext=false;
+ for(var age=o.age;age<o.life;age++){
+   var real=realFn(age,age<o.ret?'acc':'ret'),start=a,growth=start*real,end,spendNow=o.spend;
+   if(age<o.ret){end=start+growth+o.save}
+   else{
+     if(guard&&cutNext)spendNow=o.spend*0.9;
+     if(start+growth<spendNow){failed=true;failAge=age;a=0;break}
+     end=start+growth-spendNow;
+     cutNext=(end<start*0.8)}
+   a=end}
+ return {failed:failed,failAge:failAge,endBalance:a}}
+function fireInputs(){return {age:+document.getElementById('f-age').value||0,ret:+document.getElementById('f-retire').value||0,life:+document.getElementById('f-life').value||95,assets:+document.getElementById('f-assets').value||0,save:+document.getElementById('f-save').value||0,spend:+document.getElementById('f-spend').value||0,nom:(+document.getElementById('f-nom').value||0)/100,infl:(+document.getElementById('f-infl').value||0)/100}}
+function mcRun(o,sigma,guard,seed,n){var rng=fireRng(seed),mu=fireRealReturn(o.nom,o.infl),ends=[],ok=0;
+ for(var t=0;t<n;t++){var r=fireSimulateR(o,function(){var x=mu+sigma*fireGauss(rng);return Math.max(-0.95,x)},guard);ends.push(r.endBalance);if(!r.failed)ok++}
+ ends.sort(function(x,y){return x-y});
+ function pct(p){return ends[Math.min(n-1,Math.max(0,Math.floor(p*n)))]}
+ return {rate:ok/n,p10:pct(0.10),p50:pct(0.50),p90:pct(0.90)}}
+function riskCalc(){
+ var out=document.getElementById('f-risk-out');if(!out)return;
+ var o=fireInputs(),sigma=(+document.getElementById('f-risk-sigma').value||0)/100;
+ var guardSel=document.getElementById('f-risk-guard').value==='on';
+ if(!(sigma>0)||sigma>0.4){out.textContent='⚠️ 波动率 σ 需在 1%–40% 之间，请修正后再看结果。';return}
+ var n=300,seed=20261013;
+ var g=mcRun(o,sigma,true,seed,n),s=mcRun(o,sigma,false,seed,n),cur=guardSel?g:s;
+ out.innerHTML='结论（当前选择护栏'+(guardSel?'开':'关')+'）：300 次 Monte Carlo 通过率 <b>'+(cur.rate*100).toFixed(1)+'%</b>（'+(cur.rate>=0.9?'稳健 ✅':(cur.rate>=0.8?'尚可，仍有翻车风险 ⚠️':'风险偏高 ❌ 两次里约有一次以上撑不到底'))+'）· 期末余额 P10 '+fireFmt(cur.p10)+' / P50 '+fireFmt(cur.p50)+' / P90 '+fireFmt(cur.p90)+'<br>'
+ +'护栏对比（同种子同参数）：开护栏通过率 '+(g.rate*100).toFixed(1)+'% · 关护栏通过率 '+(s.rate*100).toFixed(1)+'%'+(g.rate>s.rate?'——大跌后自动降支确实提高了通过率':(g.rate<s.rate?'——本组参数下护栏反而略低（降支次年恢复口径所致）':'——两者相同'))+'。固定种子 '+seed+'，重复运行结果不变。'}
+var RISK_STRESS={};
+function riskStress(kind){
+ var out=document.getElementById('f-stress-out');if(!out)return;
+ var o=fireInputs(),mu=fireRealReturn(o.nom,o.infl);
+ var base=fireSimulate({assets:o.assets,save:o.save,spend:o.spend,real:mu,age:o.age,retire:o.ret,life:o.life});
+ var label='',r;
+ if(kind==='crash'){var f=Math.pow(0.70,1/5);label='退休头 5 年累计 −30%';r=fireSimulateR(o,function(age,ph){return (ph==='ret'&&age<o.ret+5)?(1+mu)*f-1:mu},false)}
+ else if(kind==='infl'){var ri=fireRealReturn(o.nom,0.06);label='退休头 3 年通胀 6%（实际回报降至 '+(ri*100).toFixed(2)+'%）';r=fireSimulateR(o,function(age,ph){return (ph==='ret'&&age<o.ret+3)?ri:mu},false)}
+ else{label='长寿到 100 岁';var o2={};for(var k in o)o2[k]=o[k];o2.life=100;r=fireSimulateR(o2,function(){return mu},false)}
+ out.innerHTML='压力「'+label+'」：'+(r.failed?('❌ '+r.failAge+' 岁断粮'):'✅ 不断粮')+' · 期末余额 '+fireFmt(r.endBalance)+'（基准无压力：'+(base.failed?('❌ '+base.failAge+' 岁断粮'):'✅ 不断粮')+' · 期末 '+fireFmt(base.endBalance)+' · 差值 '+(r.endBalance-base.endBalance>=0?'+':'−')+fireFmt(Math.abs(r.endBalance-base.endBalance)).replace('$','$')+'）'}
+document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('f-age'))fireCalc();if(document.getElementById('f-loan-bal'))loanCalc();if(document.getElementById('f-pia-a'))paycheckCalc();if(document.getElementById('f-risk-sigma'))riskCalc()});
 </script>
 </body></html>
