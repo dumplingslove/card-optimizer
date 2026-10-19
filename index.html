@@ -97,6 +97,17 @@
 
 .cc-cardline{background:#2a2410;border:1px solid #ffd93d;color:#ffe9a8;border-radius:7px;padding:7px 9px;font-size:.92em;line-height:1.55;margin-bottom:8px}
 .cdash-sum{font-size:.95em;color:#fff;padding:2px 0 6px}
+.cdash-cards{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 2px}
+.cdash-card-chip{background:#1d2f4d;border:1px solid #3a5a8a;color:#cfe3ff;border-radius:12px;padding:3px 10px;font-size:.82em}
+.cdash-card-chip b{color:#ffd93d}
+.cc-group{margin:13px 0 4px}
+.cc-group-head{display:flex;align-items:baseline;gap:8px}
+.cc-group-name{font-weight:bold;color:#fff;font-size:1.02em}
+.cc-group-rem{color:#8fa3b8;font-size:.82em}
+.cc-group-rem b{color:#ffd93d}
+.cc-group-bar{margin:5px 0 4px}
+.cc-done-fold{color:#7fc97f;font-size:.8em;cursor:pointer;padding:4px 2px;user-select:none}
+.cc-done-fold:hover{color:#a5e3a5}
 .cc-row{border-left:5px solid #666;background:#16213e;border-radius:8px;padding:9px 11px;margin:7px 0}
 .cc-row.st-todo{border-left-color:#ffb020}
 .cc-row.st-todo.urgent{border-left-color:#ff4d4d;background:#2a1620}
@@ -1367,11 +1378,14 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       var rem = (total == null || used == null) ? null : Math.max(0, total - used);
       return { r: r, total: total, used: used, rem: rem, days: daysLeft(r.period_end), state: r.state || "unknown" };
     });
+    function remL(it){ return it.total == null ? null : Math.max(0, it.total - (it.used == null ? 0 : it.used)); }
+    function effUsed(it){ if (it.state === "done") return it.total == null ? 0 : it.total; return it.used == null ? 0 : it.used; }
+    function shortCard(n){ return String(n || "").replace("Chase Sapphire Reserve", "CSR").replace("Amex Platinum", "Platinum").replace("Amex Gold", "Gold").replace("Marriott Brilliant", "Brilliant").replace("Bilt Palladium", "Bilt"); }
     var todoRem = 0, urgentRem = 0, pendRem = 0, latest = "";
     items.forEach(function(it){
       if (it.r.updated_at && it.r.updated_at > latest) latest = it.r.updated_at;
       if (it.state === "todo" && it.rem != null) { todoRem += it.rem; if (it.days != null && it.days <= 30) urgentRem += it.rem; }
-      if (it.state === "pending" && it.rem != null) pendRem += it.rem;
+      if (it.state === "pending") { var rlp = remL(it); if (rlp != null) pendRem += rlp; }
     });
     var dash = $("creditDash");
     if (dash) {
@@ -1380,19 +1394,14 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       document.querySelectorAll(".credit-item").forEach(function(el){ el.style.display = "none"; });
       var extra = $("extraCredits"); if (extra) extra.style.display = "none";
       var order = { todo: 0, pending: 1, unknown: 2, done: 3 };
-      var sorted = items.slice();
-      sorted.sort(function(a, b){
+      function byStateDays(a, b){
         var d = (order[a.state] != null ? order[a.state] : 2) - (order[b.state] != null ? order[b.state] : 2);
         if (d) return d;
         var da = a.days == null ? 9999 : a.days, db = b.days == null ? 9999 : b.days;
         return da - db;
-      });
-      var parts = [];
-      parts.push("还没花 <b style=\"color:#ffd93d\">" + fmtM(todoRem) + "</b>");
-      if (urgentRem > 0) parts.push("<b style=\"color:#ff8080\">" + fmtM(urgentRem) + " 在 30 天内到期</b>");
-      if (pendRem > 0) parts.push("待入账/待兑现 " + fmtM(pendRem));
-      var html = "<div class=\"cdash-sum\">💰 我的待办：" + parts.join(" · ") + (latest ? "<span style=\"color:#888;font-size:0.8em\">（数据更新于 " + latest.slice(0, 10) + "）</span>" : "") + "</div>";
-      sorted.forEach(function(it){
+      }
+      function itemHtml(it){
+        var s = "";
         var r = it.r;
         var urgent = it.state === "todo" && it.days != null && it.days <= 30;
         var chip = "", chipCls = "chip-gray";
@@ -1406,16 +1415,83 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         else if (it.state === "pending") amt = "待入账 / 待兑现 <b>" + fmtM(it.rem) + "</b>";
         else amt = "还没花 <b>" + fmtM(it.rem) + "</b>" + (it.total ? "<span style=\"color:#8fa3b8\"> / 本期 " + fmtM(it.total) + "</span>" : "");
         var pct = (it.total && it.used != null) ? Math.min(100, Math.round(it.used / it.total * 100)) : 0;
-        html += "<div class=\"cc-row st-" + it.state + (urgent ? " urgent" : "") + "\">"
+        s += "<div class=\"cc-row st-" + it.state + (urgent ? " urgent" : "") + "\">"
           + "<div class=\"cc-main\"><span class=\"cc-name\">" + esc(r.credit_name) + "</span><span class=\"cc-card\">" + esc(r.card_name) + (r.period_label ? " · " + esc(r.period_label) : "") + (r.amount_text ? " · " + esc(r.amount_text) : "") + "</span><span class=\"cc-chip " + chipCls + "\">" + esc(chip) + "</span></div>"
           + "<div class=\"cc-amt\">" + amt + "</div>"
           + (it.total ? "<div class=\"cc-bar\"><i style=\"width:" + pct + "%\"></i></div>" : "")
           + (r.how_to_use ? "<div class=\"cc-how\">👉 " + esc(r.how_to_use) + "</div>" : "")
           + (r.status_text ? "<div class=\"cc-status\">" + esc(r.status_text) + "</div>" : "")
           + "</div>";
+        return s;
+      }
+      var parts = [];
+      parts.push("还没花 <b style=\"color:#ffd93d\">" + fmtM(todoRem) + "</b>");
+      if (urgentRem > 0) parts.push("<b style=\"color:#ff8080\">" + fmtM(urgentRem) + " 在 30 天内到期</b>");
+      if (pendRem > 0) parts.push("待入账/待兑现 " + fmtM(pendRem));
+      var html = "<div class=\"cdash-sum\">💰 我的待办：" + parts.join(" · ") + (latest ? "<span style=\"color:#888;font-size:0.8em\">（数据更新于 " + latest.slice(0, 10) + "）</span>" : "") + "</div>";
+      var cardRem = {};
+      items.forEach(function(it){
+        if (it.state === "done") return;
+        var rl = remL(it); if (rl == null) return;
+        cardRem[it.r.card_name] = (cardRem[it.r.card_name] || 0) + rl;
       });
+      var cardNames = Object.keys(cardRem).filter(function(k){ return cardRem[k] > 0; });
+      cardNames.sort(function(a, b){ return cardRem[b] - cardRem[a]; });
+      if (cardNames.length) {
+        html += '<div class="cdash-cards">' + cardNames.map(function(k){
+          return '<span class="cdash-card-chip">' + esc(shortCard(k)) + ' 还剩 <b>' + fmtM(cardRem[k]) + '</b></span>';
+        }).join("") + '</div>';
+      }
+      var GROUPS = [
+        { cats: ["dining"], label: "🍽️ 吃饭" },
+        { cats: ["travel", "airline"], label: "✈️ 旅行" },
+        { cats: ["hotel"], label: "🏨 酒店" },
+        { cats: ["shopping"], label: "🛍️ 购物" },
+        { cats: ["entertainment"], label: "🎬 娱乐" },
+        { cats: ["rideshare"], label: "🚕 打车" }
+      ];
+      var groupLists = GROUPS.map(function(){ return []; });
+      var otherItems = [];
+      items.forEach(function(it){
+        var placed = false;
+        for (var gi = 0; gi < GROUPS.length; gi++) {
+          if (GROUPS[gi].cats.indexOf(it.r.category) >= 0) { groupLists[gi].push(it); placed = true; break; }
+        }
+        if (!placed) otherItems.push(it);
+      });
+      function groupHtml(label, list){
+        if (!list.length) return "";
+        var active = list.filter(function(it){ return it.state !== "done"; }).sort(byStateDays);
+        var dones = list.filter(function(it){ return it.state === "done"; }).sort(byStateDays);
+        var gRem = 0, gUsed = 0;
+        list.forEach(function(it){
+          gUsed += effUsed(it);
+          if (it.state !== "done") { var rl = remL(it); if (rl != null) gRem += rl; }
+        });
+        var gpct = (gUsed + gRem) > 0 ? Math.min(100, Math.round(gUsed / (gUsed + gRem) * 100)) : 0;
+        var s = '<div class="cc-group"><div class="cc-group-head"><span class="cc-group-name">' + label + '</span><span class="cc-group-rem">还剩 <b>' + fmtM(gRem) + '</b></span></div>'
+          + '<div class="cc-bar cc-group-bar"><i style="width:' + gpct + '%"></i></div>';
+        active.forEach(function(it){ s += itemHtml(it); });
+        if (dones.length) {
+          s += '<div class="cc-done-fold">✅ 本类已用完 ' + dones.length + ' 项 <span class="cc-done-arrow">▾</span></div><div class="cc-done-list" style="display:none">';
+          dones.forEach(function(it){ s += itemHtml(it); });
+          s += '</div>';
+        }
+        return s + '</div>';
+      }
+      GROUPS.forEach(function(g, gi){ html += groupHtml(g.label, groupLists[gi]); });
+      if (otherItems.length) html += groupHtml("🧩 其他", otherItems);
       dash.innerHTML = html;
       dash.style.display = "block";
+      dash.querySelectorAll(".cc-done-fold").forEach(function(el){
+        el.addEventListener("click", function(){
+          var list = el.nextElementSibling;
+          if (!list) return;
+          var open = list.style.display !== "none";
+          list.style.display = open ? "none" : "block";
+          var ar = el.querySelector(".cc-done-arrow"); if (ar) ar.textContent = open ? "▾" : "▴";
+        });
+      });
     }
     var byCat = {};
     items.forEach(function(it){
