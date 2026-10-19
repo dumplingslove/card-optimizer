@@ -248,6 +248,16 @@ var REC_CATS = [
       { n: "Freedom Flex/老Freedom", s: "Freedom 5x", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "grocery"] },
       { n: "Amex Gold", s: "Amex Gold 4x", cur: "MR", m: 4, rate: "4x MR≈8%" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
+  { g: 1, icon: "🌿", name: "Whole Foods",
+    why: function() {
+      if (rotOn("chase", "grocery")) { var R = REC_ROTATION.chase; return "💡 Whole Foods 按超市(grocery)编码:" + REC_ROTATION.qLabel + "轮转 Freedom " + R.cats.grocery + "x UR≈10% 最高,高于 Prime Visa 5% cash 与 Gold 4x MR≈8%;额度$" + R.cap.toLocaleString() + "/卡/季(与超市+餐饮共用)," + R.activateBy + "前激活。"; }
+      return "💡 Whole Foods 按超市(grocery)编码:本季轮转没有超市,Gold 4x MR≈8%(Amex 认的美国超市)最优;Prime Visa 5% cash 备选。";
+    },
+    candidates: [
+      { n: "Freedom Flex/老Freedom", s: "Freedom 5x", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "grocery"] },
+      { n: "Amex Gold", s: "Amex Gold 4x", cur: "MR", m: 4, rate: "4x MR≈8%" },
+      { n: "Amazon Prime Visa", s: "Prime Visa 5%", cur: "cash", m: 5, rate: "5%" },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
   { g: 1, icon: "🍽️", name: "餐饮", ccat: "dining",
     why: function() {
       if (rotOn("chase", "dining")) { var R = REC_ROTATION.chase; return "💡 " + REC_ROTATION.qLabel + " Flex餐饮=常驻3x+季度" + (R.cats.dining - 1) + "x=" + (R.cats.dining + 2) + "x UR≈14%,本季最强;与超市共用$" + R.cap.toLocaleString() + "/卡额度(老Freedom餐饮只有" + R.cats.dining + "x);" + R.activateBy + "前激活可追溯。额度用完→Gold 4x。不收Amex→Atmos 3x(≈4.65%)"; }
@@ -275,8 +285,11 @@ var REC_CATS = [
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
       { n: "Amex Platinum", s: "Plat Uber $15/月credit(关前)", cur: "cash", m: 0, rate: "" } ] },
-  { g: 1, icon: "📦", name: "Amazon", why: "💡 Amazon+Whole Foods 5%无敌", alts: "无",
-    candidates: [ { n: "Amazon Prime Visa", cur: "cash", m: 5, rate: "5%" } ] },
+  { g: 1, icon: "📦", name: "Amazon.com", why: "💡 在线零售,不按超市编码。Prime Visa 常驻5% cash;轮转命中 Amazon 的季度(如 2026 Q2 Chase 类别含 Amazon)Freedom 5x UR≈10% 更值。",
+    candidates: [
+      { n: "Amazon Prime Visa", cur: "cash", m: 5, rate: "5%" },
+      { n: "Freedom Flex/老Freedom", s: "Freedom 5x(轮转命中时)", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "amazon"] },
+      { n: "Discover it", s: "Discover 5%(轮转命中时)", cur: "cash", m: 1, rate: "1%", rot: ["discover", "amazon"] } ] },
   { g: 1, icon: "🏪", name: "Costco", why: "💡 Costco收Visa✓。Smartly 4%>Costco卡2%。Bilt是MC不能用",
     candidates: [
       { n: "U.S. Bank Smartly", cur: "cash", m: 4, rate: "4% cash" },
