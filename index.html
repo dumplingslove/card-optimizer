@@ -94,14 +94,8 @@
 .tab-page.active{display:block;animation:fadein .18s ease}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-.ccmd{border:2px solid #ffd93d;background:#1a1a2e;border-radius:12px;margin:10px 0;padding:0;overflow:hidden}
-.ccmd-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;flex-wrap:wrap}
-.ccmd-title{font-weight:bold;color:#ffd93d;font-size:1.05em}
-.ccmd-sum{color:#fff;font-size:0.9em;flex:1}
-.ccmd-arrow{color:#ffd93d;font-size:1.3em;transition:transform .2s}
-.ccmd.open .ccmd-arrow{transform:rotate(90deg)}
-.ccmd-body{display:none;border-top:1px solid #333;padding:8px 10px}
-.ccmd.open .ccmd-body{display:block}
+.cc-cardline{background:#2a2410;border:1px solid #ffd93d;color:#ffe9a8;border-radius:7px;padding:7px 9px;font-size:.92em;line-height:1.55;margin-bottom:8px}
+.cdash-sum{font-size:.95em;color:#fff;padding:2px 0 6px}
 .cc-row{border-left:5px solid #666;background:#16213e;border-radius:8px;padding:9px 11px;margin:7px 0}
 .cc-row.st-todo{border-left-color:#ffb020}
 .cc-row.st-todo.urgent{border-left-color:#ff4d4d;background:#2a1620}
@@ -140,10 +134,6 @@
 <button class="tab-btn" data-tab="updates" onclick="goTab('updates')">📢 动态</button>
 <button class="tab-btn" data-tab="fire" onclick="goTab('fire')">🔥 FIRE</button>
 </nav>
-<div class="section ccmd" id="creditCommand">
-<div class="ccmd-head" onclick="document.getElementById('creditCommand').classList.toggle('open')"><span class="ccmd-title">💰 Credit 待办</span><span class="ccmd-sum" id="ccmdSum">🔒 登录后这里会显示：你本期还没花的 credit 总额、哪些快到期、具体怎么花</span><span class="ccmd-arrow">›</span></div>
-<div class="ccmd-body" id="ccmdBody"></div>
-</div>
 
 
 <div class="tab-page" id="tp-home">
@@ -295,7 +285,8 @@
 <!-- Credits -->
 <div class="section credits-section">
 <h2>📅 Credits追踪</h2>
-<p style="font-size:0.78em;color:#9fd8ff;margin:2px 0 6px">以下为各卡 credit 规则（公开版）。蓝字实测状态属个人信息，存放在 Supabase，登录后按卡显示。</p><div id="creditLockNote" style="font-size:0.82em;color:#ffd93d;padding:2px 0 8px">🔒 实测状态已锁定 — 点页面顶部「登录查看我的卡组」，用邮箱魔法链接登录后即可看到。</div>
+<p id="creditIntro" style="font-size:0.78em;color:#9fd8ff;margin:2px 0 6px">以下为各卡 credit 规则（公开版）。蓝字实测状态属个人信息，存放在 Supabase，登录后按卡显示。</p><div id="creditLockNote" style="font-size:0.82em;color:#ffd93d;padding:2px 0 8px">🔒 实测状态已锁定 — 点页面顶部「登录查看我的卡组」，用邮箱魔法链接登录后即可看到。</div>
+<div id="creditDash" style="display:none"></div>
 <div class="credit-item"><div><b>Uber Cash</b><br><span style="color:#888;font-size:0.8em">Gold+Plat</span></div><span style="color:#4ecdc4;font-weight:bold">$10+$15</span><span style="color:#ffd93d">每月</span></div>
 <div class="credit-item" data-card="Amex Gold" data-credit="Dining Credit"><div><b>Dining Credit</b><br><span style="color:#888;font-size:0.8em">Amex Gold</span></div><span style="color:#4ecdc4;font-weight:bold">$10</span><span style="color:#ffd93d">每月</span></div>
 <div class="credit-item" data-card="Amex Platinum" data-credit="Digital Entertainment"><div><b>Digital Entertainment</b><br><span style="color:#888;font-size:0.8em">Plat(关前!)</span></div><span style="color:#4ecdc4;font-weight:bold">$20</span><span style="color:#ffd93d">每月</span></div>
@@ -583,6 +574,7 @@
 <div class="st-tags-row"><span class="st-label">👀 追踪项目</span><div class="st-tags"><span>季度 5% 类别</span><span>年费·credits·福利变化</span><span>开卡奖励</span><span>贬值·转分 bonus</span><span>博主爆料</span><span>行动节点倒计时</span></div></div>
 </div>
 <!-- CHANGELOG-START -->
+<div class="change-item"><span class="ch-date">2026-10-18</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>按反馈调整布局：撤掉全局常驻待办条，改为融进卡片页</b>——顶部那个每个页面都占地方的「Credit 待办」条已移除。详细待办整合回卡片页原来的 Credits 区：登录后该区直接换成待办视图（还没花总额、30 天内到期红字、逐项进度条 + 倒计时 + 怎么花），与公开规则清单只显示其一、不再重复。每张卡点开详情时，顶部会先列出这张卡还没花的 credit；卡名旁的「未用 $X」角标保留。消费推荐里点开餐饮 / 酒店 / 机票等类别时顺带提示可用 credit 的做法不变。</div></div>
 <div class="change-item"><span class="ch-date">2026-10-18</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>网站改版：Credit 待办指挥台上线</b>——页面顶部新增常驻「💰 Credit 待办」：登录后一屏看清本期还没花的 credit 总额、哪些在 30 天内到期（红字标出）、哪些已触发在等入账；每一项都带进度条、到期倒计时和一句话「怎么花」。消费推荐里也织进了提醒：查餐饮 / 酒店 / 机票 / 购物该刷哪张卡时，会顺带提示对应还没花的 credit（比如 Gold 的 Dining / Resy 要先报名、Plat 航司 fee credit 关卡前用掉）；卡片一览里每张卡名字旁多了「未用 $X」角标，有临期未用的会标红。数据来自 Supabase（Plaid + 邮箱每周核查更新），公开页面仍不含任何个人数据。</div></div>
 <div class="change-item"><span class="ch-date">2026-10-18</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>网站补全：全部卡片加「境外手续费」标签 + Credits 实测状态上线</b>——卡片一览每张卡已标注 🌍 免境外手续费（11 张）或 ⚠️ 境外手续费 3%（Smartly / USB Cash+ / CFU / CF / Citi Double Cash，出国别带）；CSR 卡片补上此前漏写的 <b>The Edit credit $250×2/年 + Select Hotels credit $250（2026 限定）</b>、Points Boost 与 Peloton/Apple 福利，Global Entry 更正为 $120。Credits 实测状态改为登录后可见：个人实测数据已迁入 Supabase（与旅游站同一项目），公开页只保留 credit 规则，白名单邮箱魔法链接登录后按卡显示实测状态与账户信息。</div></div>
 <div class="change-item urgent"><span class="ch-date">2026-10-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">⏰ 紧急</span><div class="ch-text"><b>转分 bonus 本周到期：Amex MR→Hilton 30%（10/14 截止）、Chase UR→Marriott 70%（10/15 截止）</b>——只剩 2-3 天。Hilton 那笔：1,000 MR→2,600 Hilton，年底行程如果住 Hilton 系酒店现在转还来得及；Marriott 70% 是今年最大数字，但 Marriott 贬值快，只建议有明确兑换计划（比如 12 月行程的万豪酒店）再转。还没到期的：<b>Citi TYP→JAL 30% / →Avianca 25%（10/24 截止）</b>、新 bonus <b>Citi→Qatar 最高 35%（10/31 截止）</b>——你的 Double Cash 攒的是 TYP，有日韩航线兑换计划可以考虑。转出去不可撤回。（来源：<a href="https://milestomemories.com/current-transfer-bonuses/">Miles to Memories</a> / <a href="https://frequentmiler.com/current-point-transfer-bonuses/">Frequent Miler</a>）</div></div>
@@ -1101,33 +1093,6 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     sb.from("card_credit_status").select("card_name,credit_name,amount_text,status_text,updated_at,period_label,period_total,period_used,period_end,how_to_use,category,state").order("id")
       .then(function(res){
         if (res.error) { console.warn("credit_status", res.error.message); return; }
-        var used = {};
-        res.data.forEach(function(row){
-          var key = row.card_name + "|" + row.credit_name;
-          var el = document.querySelector('.credit-item[data-card="' + row.card_name + '"][data-credit="' + row.credit_name + '"]');
-          if (el) {
-            if (!el.querySelector(".cstat")) {
-              var s = document.createElement("span");
-              s.className = "cstat"; s.textContent = row.status_text || "";
-              el.appendChild(s);
-            }
-            used[key] = true;
-          }
-        });
-        var extra = $("extraCredits");
-        res.data.forEach(function(row){
-          var key = row.card_name + "|" + row.credit_name;
-          if (used[key]) return;
-          var d = document.createElement("div");
-          d.className = "credit-item";
-          d.innerHTML = "<div><b>" + esc(row.credit_name) + "</b><br><span style=\"color:#888;font-size:0.8em\">" + esc(row.card_name) + "</span></div>"
-            + "<span style=\"color:#4ecdc4;font-weight:bold\">" + esc(row.amount_text || "") + "</span>";
-          var s = document.createElement("span");
-          s.className = "cstat"; s.textContent = row.status_text || "";
-          d.appendChild(s);
-          extra.appendChild(d);
-        });
-        var note = $("creditLockNote"); if (note) note.style.display = "none";
         renderCreditSystems(res.data);
       });
     sb.from("card_accounts").select("card_name,mask,balance,statement_balance,min_payment,due_date,apr,credit_limit,updated_at").order("id")
@@ -1165,34 +1130,34 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       var rem = (total == null || used == null) ? null : Math.max(0, total - used);
       return { r: r, total: total, used: used, rem: rem, days: daysLeft(r.period_end), state: r.state || "unknown" };
     });
-    var todoRem = 0, urgentRem = 0, pendRem = 0;
+    var todoRem = 0, urgentRem = 0, pendRem = 0, latest = "";
     items.forEach(function(it){
+      if (it.r.updated_at && it.r.updated_at > latest) latest = it.r.updated_at;
       if (it.state === "todo" && it.rem != null) { todoRem += it.rem; if (it.days != null && it.days <= 30) urgentRem += it.rem; }
       if (it.state === "pending" && it.rem != null) pendRem += it.rem;
     });
-    var sum = $("ccmdSum");
-    if (sum) {
+    var dash = $("creditDash");
+    if (dash) {
+      var note = $("creditLockNote"); if (note) note.style.display = "none";
+      var intro = $("creditIntro"); if (intro) intro.style.display = "none";
+      document.querySelectorAll(".credit-item").forEach(function(el){ el.style.display = "none"; });
+      var extra = $("extraCredits"); if (extra) extra.style.display = "none";
+      var order = { todo: 0, pending: 1, unknown: 2, done: 3 };
+      var sorted = items.slice();
+      sorted.sort(function(a, b){
+        var d = (order[a.state] != null ? order[a.state] : 2) - (order[b.state] != null ? order[b.state] : 2);
+        if (d) return d;
+        var da = a.days == null ? 9999 : a.days, db = b.days == null ? 9999 : b.days;
+        return da - db;
+      });
       var parts = [];
       parts.push("还没花 <b style=\"color:#ffd93d\">" + fmtM(todoRem) + "</b>");
       if (urgentRem > 0) parts.push("<b style=\"color:#ff8080\">" + fmtM(urgentRem) + " 在 30 天内到期</b>");
       if (pendRem > 0) parts.push("待入账/待兑现 " + fmtM(pendRem));
-      sum.innerHTML = parts.join(" · ");
-    }
-    var order = { todo: 0, pending: 1, unknown: 2, done: 3 };
-    items.sort(function(a, b){
-      var d = (order[a.state] != null ? order[a.state] : 2) - (order[b.state] != null ? order[b.state] : 2);
-      if (d) return d;
-      var da = a.days == null ? 9999 : a.days, db = b.days == null ? 9999 : b.days;
-      return da - db;
-    });
-    var body = $("ccmdBody");
-    if (body) {
-      body.innerHTML = "";
-      items.forEach(function(it){
+      var html = "<div class=\"cdash-sum\">💰 我的待办：" + parts.join(" · ") + (latest ? "<span style=\"color:#888;font-size:0.8em\">（数据更新于 " + latest.slice(0, 10) + "）</span>" : "") + "</div>";
+      sorted.forEach(function(it){
         var r = it.r;
-        var div = document.createElement("div");
         var urgent = it.state === "todo" && it.days != null && it.days <= 30;
-        div.className = "cc-row st-" + it.state + (urgent ? " urgent" : "");
         var chip = "", chipCls = "chip-gray";
         if (it.state === "done") { chip = "✅ 已用完"; chipCls = "chip-green"; }
         else if (it.state === "pending") { chip = "💸 钱在路上"; chipCls = "chip-blue"; }
@@ -1204,15 +1169,16 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         else if (it.state === "pending") amt = "待入账 / 待兑现 <b>" + fmtM(it.rem) + "</b>";
         else amt = "还没花 <b>" + fmtM(it.rem) + "</b>" + (it.total ? "<span style=\"color:#8fa3b8\"> / 本期 " + fmtM(it.total) + "</span>" : "");
         var pct = (it.total && it.used != null) ? Math.min(100, Math.round(it.used / it.total * 100)) : 0;
-        div.innerHTML = "<div class=\"cc-main\"><span class=\"cc-name\">" + esc(r.credit_name) + "</span><span class=\"cc-card\">" + esc(r.card_name) + (r.period_label ? " · " + esc(r.period_label) : "") + "</span><span class=\"cc-chip " + chipCls + "\">" + esc(chip) + "</span></div>"
+        html += "<div class=\"cc-row st-" + it.state + (urgent ? " urgent" : "") + "\">"
+          + "<div class=\"cc-main\"><span class=\"cc-name\">" + esc(r.credit_name) + "</span><span class=\"cc-card\">" + esc(r.card_name) + (r.period_label ? " · " + esc(r.period_label) : "") + (r.amount_text ? " · " + esc(r.amount_text) : "") + "</span><span class=\"cc-chip " + chipCls + "\">" + esc(chip) + "</span></div>"
           + "<div class=\"cc-amt\">" + amt + "</div>"
           + (it.total ? "<div class=\"cc-bar\"><i style=\"width:" + pct + "%\"></i></div>" : "")
           + (r.how_to_use ? "<div class=\"cc-how\">👉 " + esc(r.how_to_use) + "</div>" : "")
-          + (r.status_text ? "<div class=\"cc-status\">" + esc(r.status_text) + "</div>" : "");
-        body.appendChild(div);
+          + (r.status_text ? "<div class=\"cc-status\">" + esc(r.status_text) + "</div>" : "")
+          + "</div>";
       });
-      var cmd = $("creditCommand");
-      if (cmd && todoRem > 0) cmd.classList.add("open");
+      dash.innerHTML = html;
+      dash.style.display = "block";
     }
     var byCat = {};
     items.forEach(function(it){
@@ -1236,22 +1202,44 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         el.appendChild(h);
       });
     });
+    var boxes = {};
+    document.querySelectorAll(".card-box").forEach(function(box){
+      var cn = box.querySelector(".cn");
+      if (cn) boxes[cn.textContent.trim()] = box;
+    });
     var perCard = {};
     items.forEach(function(it){
+      if (it.state === "done") return;
+      var k = it.r.card_name;
+      perCard[k] = perCard[k] || { amt: 0, urgent: false, lines: [] };
       if (it.state === "todo" && it.rem != null) {
-        var k = it.r.card_name;
-        perCard[k] = perCard[k] || { amt: 0, urgent: false };
         perCard[k].amt += it.rem;
         if (it.days != null && it.days <= 30) perCard[k].urgent = true;
+        perCard[k].lines.push(it.r.credit_name + " <b>" + fmtM(it.rem) + "</b>" + (it.days != null ? "（剩 " + it.days + " 天）" : ""));
+      } else if (it.state === "pending" && it.rem != null) {
+        perCard[k].lines.push(it.r.credit_name + " " + fmtM(it.rem) + " 待入账");
+      } else if (it.state === "unknown") {
+        perCard[k].lines.push(it.r.credit_name + "（待确认）");
       }
     });
-    document.querySelectorAll(".card-box .cn").forEach(function(cn){
-      var info = perCard[cn.textContent.trim()];
-      if (!info || info.amt <= 0) return;
-      var b = document.createElement("span");
-      b.className = "cc-badge" + (info.urgent ? "" : " soft");
-      b.textContent = "未用 " + fmtM(info.amt);
-      cn.appendChild(b);
+    Object.keys(perCard).forEach(function(name){
+      var box = boxes[name];
+      if (!box) return;
+      var info = perCard[name];
+      var cn = box.querySelector(".cn");
+      if (cn && info.amt > 0 && !cn.querySelector(".cc-badge")) {
+        var b = document.createElement("span");
+        b.className = "cc-badge" + (info.urgent ? "" : " soft");
+        b.textContent = "未用 " + fmtM(info.amt);
+        cn.appendChild(b);
+      }
+      var cd = box.querySelector(".cd");
+      if (cd && info.lines.length && !cd.querySelector(".cc-cardline")) {
+        var line = document.createElement("div");
+        line.className = "cc-cardline";
+        line.innerHTML = "💰 这张卡还没花的 credit：" + info.lines.join(" · ");
+        cd.insertBefore(line, cd.firstChild);
+      }
     });
   }
   sb.auth.getSession().then(function(res){ renderUser(res.data.session ? res.data.session.user : null); });
