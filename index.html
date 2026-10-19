@@ -93,6 +93,35 @@
 .tab-page{display:none}
 .tab-page.active{display:block;animation:fadein .18s ease}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.ccmd{border:2px solid #ffd93d;background:#1a1a2e;border-radius:12px;margin:10px 0;padding:0;overflow:hidden}
+.ccmd-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;flex-wrap:wrap}
+.ccmd-title{font-weight:bold;color:#ffd93d;font-size:1.05em}
+.ccmd-sum{color:#fff;font-size:0.9em;flex:1}
+.ccmd-arrow{color:#ffd93d;font-size:1.3em;transition:transform .2s}
+.ccmd.open .ccmd-arrow{transform:rotate(90deg)}
+.ccmd-body{display:none;border-top:1px solid #333;padding:8px 10px}
+.ccmd.open .ccmd-body{display:block}
+.cc-row{border-left:5px solid #666;background:#16213e;border-radius:8px;padding:9px 11px;margin:7px 0}
+.cc-row.st-todo{border-left-color:#ffb020}
+.cc-row.st-todo.urgent{border-left-color:#ff4d4d;background:#2a1620}
+.cc-row.st-pending{border-left-color:#4ea8ff}
+.cc-row.st-unknown{border-left-color:#888}
+.cc-row.st-done{border-left-color:#2fbf71;opacity:.62}
+.cc-main{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.cc-name{font-weight:bold;color:#fff}
+.cc-card{color:#9fb3c8;font-size:.82em}
+.cc-chip{margin-left:auto;font-size:.75em;font-weight:bold;padding:2px 8px;border-radius:9px;background:#333;color:#ddd;white-space:nowrap}
+.chip-red{background:#5a1620;color:#ff9d9d}.chip-orange{background:#4d3200;color:#ffd93d}.chip-blue{background:#123a5c;color:#9fd0ff}.chip-green{background:#0d3325;color:#4ade80}.chip-gray{background:#2c2c34;color:#aaa}
+.cc-amt{color:#ffd93d;font-size:.92em;margin-top:2px}
+.cc-amt b{font-size:1.25em;color:#fff}
+.cc-bar{height:7px;background:#0d0d1a;border-radius:4px;margin:6px 0 2px;overflow:hidden}
+.cc-bar i{display:block;height:100%;background:linear-gradient(90deg,#2fbf71,#4ecdc4);border-radius:4px}
+.cc-how{color:#ffe9a8;font-size:.88em;margin-top:3px}
+.cc-status{color:#8fa3b8;font-size:.78em;margin-top:2px}
+.cc-hint{margin-top:7px;background:#2a2410;border:1px solid #ffd93d;color:#ffe9a8;border-radius:7px;padding:7px 9px;font-size:.85em;line-height:1.5}
+.cc-badge{display:inline-block;background:#5a1620;color:#ff9d9d;border:1px solid #e5484d;border-radius:8px;padding:1px 7px;font-size:.72em;font-weight:bold;margin-left:8px;vertical-align:2px}
+.cc-badge.soft{background:#26260f;color:#ffd93d;border-color:#8a7a1f}
 </style>
 </head>
 <body>
@@ -111,6 +140,11 @@
 <button class="tab-btn" data-tab="updates" onclick="goTab('updates')">📢 动态</button>
 <button class="tab-btn" data-tab="fire" onclick="goTab('fire')">🔥 FIRE</button>
 </nav>
+<div class="section ccmd" id="creditCommand">
+<div class="ccmd-head" onclick="document.getElementById('creditCommand').classList.toggle('open')"><span class="ccmd-title">💰 Credit 待办</span><span class="ccmd-sum" id="ccmdSum">🔒 登录后这里会显示：你本期还没花的 credit 总额、哪些快到期、具体怎么花</span><span class="ccmd-arrow">›</span></div>
+<div class="ccmd-body" id="ccmdBody"></div>
+</div>
+
 
 <div class="tab-page" id="tp-home">
 <!-- Warnings -->
@@ -172,18 +206,18 @@
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🥦</span><span class="cat-name">超市</span><span class="best-name">Amex Gold</span><span class="best-rate">4x MR≈8%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 4x MR≈8%(转航司，TPG 2.0cpp)。$25K/年cap。不收Amex→Bilt 2x(凑比例+≈5%Hyatt)</div><div class="alts"><b>备选：</b>Bilt 2x(凑比例) | 轮转5%(当季)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🍽️</span><span class="cat-name">餐饮</span><span class="best-name">Amex Gold</span><span class="best-rate">4x MR≈8%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 全球餐厅最高。不收Amex→Atmos 3x(≈4.65%)</div><div class="alts"><b>备选：</b>Atmos 3x | Bilt 2x(凑比例) | Marriott Brilliant 3x</div></div>
+<div class="rec-detail" data-ccat="dining"><div class="why">💡 全球餐厅最高。不收Amex→Atmos 3x(≈4.65%)</div><div class="alts"><b>备选：</b>Atmos 3x | Bilt 2x(凑比例) | Marriott Brilliant 3x</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">⛽</span><span class="cat-name">加油</span><span class="best-name">⚡CFF/CF/Discover</span><span class="best-rate">5%本季!</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Q3三卡加油5%！总额度$4,500。用完→Costco 4%</div><div class="alts"><b>备选：</b>Costco 4%(额度完后) | Smartly 4%</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🚕</span><span class="cat-name">打车</span><span class="best-name">⚡CSR Lyft 5x / Gold Uber</span><span class="best-rate">5x UR!≈10.3%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Lyft用CSR=5x UR(合作伙伴)！Uber用Gold拿$10/月credit。CSR降级后→Bilt 2x或Smartly 4%</div><div class="alts"><b>备选：</b>Bilt 2x(凑比例) | Smartly 4% | Plat Uber $15/月credit(关前)</div></div>
+<div class="rec-detail" data-ccat="rideshare"><div class="why">💡 Lyft用CSR=5x UR(合作伙伴)！Uber用Gold拿$10/月credit。CSR降级后→Bilt 2x或Smartly 4%</div><div class="alts"><b>备选：</b>Bilt 2x(凑比例) | Smartly 4% | Plat Uber $15/月credit(关前)</div></div>
 
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">📦</span><span class="cat-name">Amazon</span><span class="best-name">Amazon Prime Visa</span><span class="best-rate">5%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Amazon+Whole Foods 5%无敌</div><div class="alts"><b>备选：</b>无</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🏪</span><span class="cat-name">Costco</span><span class="best-name">U.S. Bank Smartly</span><span class="best-rate">4% cash</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Costco收Visa✓。Smartly 4%>Costco卡2%。Bilt是MC不能用</div><div class="alts"><b>备选：</b>Costco Visa 2%</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🏬</span><span class="cat-name">百货商店</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x≈5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Bilt 2x(≈5%Hyatt)+凑比例。无特定百货bonus卡</div><div class="alts"><b>备选：</b>Smartly 4% | USB Cash+5%(如选百货为类别)</div></div>
+<div class="rec-detail" data-ccat="shopping"><div class="why">💡 Bilt 2x(≈5%Hyatt)+凑比例。无特定百货bonus卡</div><div class="alts"><b>备选：</b>Smartly 4% | USB Cash+5%(如选百货为类别)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🔨</span><span class="cat-name">Home Improvement</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x≈5%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Home Depot/Lowes等。Bilt 2x凑比例+≈5%Hyatt</div><div class="alts"><b>备选：</b>Smartly 4% | USB Cash+5%(如选Home Improvement为类别) | CFF/Discover 5%(如当季)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">⭐</span><span class="cat-name">其他</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x≈5%</span><span class="arrow">›</span></div>
@@ -194,19 +228,19 @@
 <div class="group-header" onclick="this.classList.toggle('open')"><h3>✈️ 旅行预订</h3><span class="garrow">›</span></div>
 <div class="group-body">
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">✈️</span><span class="cat-name">Alaska机票</span><span class="best-name">Atmos Summit</span><span class="best-rate">3x+Status≈4.65%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 3x+status pts攒MVP。可兑oneworld商务舱</div><div class="alts"><b>备选：</b>CSR Portal 5x(降级前!) | Plat 5x(关前!)</div></div>
+<div class="rec-detail" data-ccat="airline"><div class="why">💡 3x+status pts攒MVP。可兑oneworld商务舱</div><div class="alts"><b>备选：</b>CSR Portal 5x(降级前!) | Plat 5x(关前!)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🛫</span><span class="cat-name">其他机票</span><span class="best-name">⚡CSR Portal / Amex Plat</span><span class="best-rate">5x≈10%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 CSR Portal订=5x UR(降级前!)。直接航司买=Amex Plat 5x MR(关前!)。两个都没了后→Atmos 3x(境外) 或 Bilt 2x</div><div class="alts"><b>备选：</b>Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)</div></div>
+<div class="rec-detail" data-ccat="airline"><div class="why">💡 CSR Portal订=5x UR(降级前!)。直接航司买=Amex Plat 5x MR(关前!)。两个都没了后→Atmos 3x(境外) 或 Bilt 2x</div><div class="alts"><b>备选：</b>Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🚗</span><span class="cat-name">租车</span><span class="best-name">⚡CSR Portal</span><span class="best-rate">10x UR!≈20.5%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Chase Portal租车=10x UR！(降级前猛用!) 降级后→Bilt 2x或Smartly 4%</div><div class="alts"><b>备选：</b>Bilt 2x(≈5%Hyatt+凑比例) | Smartly 4%</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🏨</span><span class="cat-name">Marriott酒店</span><span class="best-name">Marriott Brilliant</span><span class="best-rate">6x≈4.2%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 最高Marriott倍率+Platinum Elite升级</div><div class="alts"><b>备选：</b>CSR Portal 10x(降级前!)</div></div>
+<div class="rec-detail" data-ccat="hotel"><div class="why">💡 最高Marriott倍率+Platinum Elite升级</div><div class="alts"><b>备选：</b>CSR Portal 10x(降级前!)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🛏️</span><span class="cat-name">其他酒店</span><span class="best-name">⚡CSR Portal</span><span class="best-rate">10x UR!≈20.5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Portal订=10x UR超值！降级前多用。之后→Bilt Portal($400 credit) 或 Plat FHR($200)</div><div class="alts"><b>备选：</b>Amex Gold 5x(Amex Travel预付!) | Plat FHR($200) | Bilt Portal($400) | Smartly 4%</div></div>
+<div class="rec-detail" data-ccat="hotel"><div class="why">💡 Portal订=10x UR超值！降级前多用。之后→Bilt Portal($400 credit) 或 Plat FHR($200)</div><div class="alts"><b>备选：</b>Amex Gold 5x(Amex Travel预付!) | Plat FHR($200) | Bilt Portal($400) | Smartly 4%</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🌍</span><span class="cat-name">境外消费</span><span class="best-name">Atmos Summit</span><span class="best-rate">3x≈4.65%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 无FTF+兑Cathay商务舱可达约9.8cpp。Bilt月度没达标→先Bilt</div><div class="alts"><b>备选：</b>Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🌏</span><span class="cat-name">境外餐饮</span><span class="best-name">Amex Gold</span><span class="best-rate">4x MR≈8%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x</div><div class="alts"><b>备选：</b>Atmos 3x | Bilt 2x(凑比例)</div></div>
+<div class="rec-detail" data-ccat="dining"><div class="why">💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x</div><div class="alts"><b>备选：</b>Atmos 3x | Bilt 2x(凑比例)</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🚇</span><span class="cat-name">公交/地铁</span><span class="best-name">⚡CFF/CF</span><span class="best-rate">5%本季!</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Q3公交=Chase轮转5%！</div><div class="alts"><b>备选：</b>Bilt 2x(凑比例) | Smartly 4%</div></div>
 </div>
@@ -215,7 +249,7 @@
 <div class="group-header" onclick="this.classList.toggle('open')"><h3>🏠 账单 & 订阅</h3><span class="garrow">›</span></div>
 <div class="group-body">
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">📺</span><span class="cat-name">流媒体</span><span class="best-name">Amex Platinum</span><span class="best-rate">$20/月报销!</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Disney+/Hulu/ESPN+/NYT $20/月报销！关卡(12/17)后→USB Cash+ 5%</div><div class="alts"><b>备选：</b>USB Cash+ 5%(Plat关后) | Bilt 2x</div></div>
+<div class="rec-detail" data-ccat="entertainment"><div class="why">💡 Disney+/Hulu/ESPN+/NYT $20/月报销！关卡(12/17)后→USB Cash+ 5%</div><div class="alts"><b>备选：</b>USB Cash+ 5%(Plat关后) | Bilt 2x</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">📱</span><span class="cat-name">手机账单</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x+手机保险≈4.4%</span><span class="arrow">›</span></div>
 <div class="rec-detail"><div class="why">💡 Cell Phone Protection $800/次+凑比例+≈5%Hyatt</div><div class="alts"><b>备选：</b>USB Cash+ 5%(无保险) | Smartly 4%</div></div>
 <div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">💡</span><span class="cat-name">水电</span><span class="best-name">USB Cash+</span><span class="best-rate">5%</span><span class="arrow">›</span></div>
@@ -549,6 +583,7 @@
 <div class="st-tags-row"><span class="st-label">👀 追踪项目</span><div class="st-tags"><span>季度 5% 类别</span><span>年费·credits·福利变化</span><span>开卡奖励</span><span>贬值·转分 bonus</span><span>博主爆料</span><span>行动节点倒计时</span></div></div>
 </div>
 <!-- CHANGELOG-START -->
+<div class="change-item"><span class="ch-date">2026-10-18</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>网站改版：Credit 待办指挥台上线</b>——页面顶部新增常驻「💰 Credit 待办」：登录后一屏看清本期还没花的 credit 总额、哪些在 30 天内到期（红字标出）、哪些已触发在等入账；每一项都带进度条、到期倒计时和一句话「怎么花」。消费推荐里也织进了提醒：查餐饮 / 酒店 / 机票 / 购物该刷哪张卡时，会顺带提示对应还没花的 credit（比如 Gold 的 Dining / Resy 要先报名、Plat 航司 fee credit 关卡前用掉）；卡片一览里每张卡名字旁多了「未用 $X」角标，有临期未用的会标红。数据来自 Supabase（Plaid + 邮箱每周核查更新），公开页面仍不含任何个人数据。</div></div>
 <div class="change-item"><span class="ch-date">2026-10-18</span><span class="ch-tag new">NEW</span><div class="ch-text"><b>网站补全：全部卡片加「境外手续费」标签 + Credits 实测状态上线</b>——卡片一览每张卡已标注 🌍 免境外手续费（11 张）或 ⚠️ 境外手续费 3%（Smartly / USB Cash+ / CFU / CF / Citi Double Cash，出国别带）；CSR 卡片补上此前漏写的 <b>The Edit credit $250×2/年 + Select Hotels credit $250（2026 限定）</b>、Points Boost 与 Peloton/Apple 福利，Global Entry 更正为 $120。Credits 实测状态改为登录后可见：个人实测数据已迁入 Supabase（与旅游站同一项目），公开页只保留 credit 规则，白名单邮箱魔法链接登录后按卡显示实测状态与账户信息。</div></div>
 <div class="change-item urgent"><span class="ch-date">2026-10-12</span><span class="ch-tag new">NEW</span><span class="ch-tag urgent">⏰ 紧急</span><div class="ch-text"><b>转分 bonus 本周到期：Amex MR→Hilton 30%（10/14 截止）、Chase UR→Marriott 70%（10/15 截止）</b>——只剩 2-3 天。Hilton 那笔：1,000 MR→2,600 Hilton，年底行程如果住 Hilton 系酒店现在转还来得及；Marriott 70% 是今年最大数字，但 Marriott 贬值快，只建议有明确兑换计划（比如 12 月行程的万豪酒店）再转。还没到期的：<b>Citi TYP→JAL 30% / →Avianca 25%（10/24 截止）</b>、新 bonus <b>Citi→Qatar 最高 35%（10/31 截止）</b>——你的 Double Cash 攒的是 TYP，有日韩航线兑换计划可以考虑。转出去不可撤回。（来源：<a href="https://milestomemories.com/current-transfer-bonuses/">Miles to Memories</a> / <a href="https://frequentmiler.com/current-point-transfer-bonuses/">Frequent Miler</a>）</div></div>
 <div class="change-item"><span class="ch-date">2026-10-12</span><span class="ch-tag new">NEW</span><span class="ch-tag info">博主预警</span><div class="ch-text"><b>Chase Freedom/Flex Q1 2027（1-3月）5% 类别提前公布：超市 + 主流流媒体</b>（DoC 9/20 首爆、TPG 确认）——Chase 史无前例提前整整一季放出类别，12/15 起可激活、额度仍是 $1,500/卡。超市连续两季 5%（Q4→Q1 头一次）：你超市消费接下来 6 个月都刷 Flex 拿 5x UR；流媒体（Netflix/Spotify 等）记得把自动扣费挪到 Flex。轮转板块已加下季预告。（来源：<a href="https://www.doctorofcredit.com/chase-freedom-q1-2027-categories-grocery-streaming/">Doctor of Credit</a> / <a href="https://thepointsguy.com/credit-cards/activate-chase-freedom-5x-earnings/">TPG</a>）</div></div>
@@ -1063,7 +1098,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     }
   }
   function loadPersonal(){
-    sb.from("card_credit_status").select("card_name,credit_name,amount_text,status_text,updated_at").order("id")
+    sb.from("card_credit_status").select("card_name,credit_name,amount_text,status_text,updated_at,period_label,period_total,period_used,period_end,how_to_use,category,state").order("id")
       .then(function(res){
         if (res.error) { console.warn("credit_status", res.error.message); return; }
         var used = {};
@@ -1093,6 +1128,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
           extra.appendChild(d);
         });
         var note = $("creditLockNote"); if (note) note.style.display = "none";
+        renderCreditSystems(res.data);
       });
     sb.from("card_accounts").select("card_name,mask,balance,statement_balance,min_payment,due_date,apr,credit_limit,updated_at").order("id")
       .then(function(res){
@@ -1113,6 +1149,110 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         });
         if (latest) $("acctMeta").textContent = "数据更新于 " + latest.slice(0, 10) + "（Plaid 同步，登录可见）";
       });
+  }
+
+  function fmtM(v){ return "$" + Number(v).toLocaleString("en-US"); }
+  function daysLeft(pe){
+    if (!pe) return null;
+    var end = new Date(pe + "T23:59:59");
+    return Math.ceil((end - new Date()) / 86400000);
+  }
+  function renderCreditSystems(rows){
+    if (!rows || !rows.length) return;
+    var items = rows.map(function(r){
+      var total = r.period_total == null ? null : Number(r.period_total);
+      var used = r.period_used == null ? null : Number(r.period_used);
+      var rem = (total == null || used == null) ? null : Math.max(0, total - used);
+      return { r: r, total: total, used: used, rem: rem, days: daysLeft(r.period_end), state: r.state || "unknown" };
+    });
+    var todoRem = 0, urgentRem = 0, pendRem = 0;
+    items.forEach(function(it){
+      if (it.state === "todo" && it.rem != null) { todoRem += it.rem; if (it.days != null && it.days <= 30) urgentRem += it.rem; }
+      if (it.state === "pending" && it.rem != null) pendRem += it.rem;
+    });
+    var sum = $("ccmdSum");
+    if (sum) {
+      var parts = [];
+      parts.push("还没花 <b style=\"color:#ffd93d\">" + fmtM(todoRem) + "</b>");
+      if (urgentRem > 0) parts.push("<b style=\"color:#ff8080\">" + fmtM(urgentRem) + " 在 30 天内到期</b>");
+      if (pendRem > 0) parts.push("待入账/待兑现 " + fmtM(pendRem));
+      sum.innerHTML = parts.join(" · ");
+    }
+    var order = { todo: 0, pending: 1, unknown: 2, done: 3 };
+    items.sort(function(a, b){
+      var d = (order[a.state] != null ? order[a.state] : 2) - (order[b.state] != null ? order[b.state] : 2);
+      if (d) return d;
+      var da = a.days == null ? 9999 : a.days, db = b.days == null ? 9999 : b.days;
+      return da - db;
+    });
+    var body = $("ccmdBody");
+    if (body) {
+      body.innerHTML = "";
+      items.forEach(function(it){
+        var r = it.r;
+        var div = document.createElement("div");
+        var urgent = it.state === "todo" && it.days != null && it.days <= 30;
+        div.className = "cc-row st-" + it.state + (urgent ? " urgent" : "");
+        var chip = "", chipCls = "chip-gray";
+        if (it.state === "done") { chip = "✅ 已用完"; chipCls = "chip-green"; }
+        else if (it.state === "pending") { chip = "💸 钱在路上"; chipCls = "chip-blue"; }
+        else if (it.days != null) { chip = "剩 " + it.days + " 天"; chipCls = it.days <= 14 ? "chip-red" : (it.days <= 45 ? "chip-orange" : "chip-gray"); }
+        else chip = r.period_label || "";
+        var amt = "";
+        if (it.state === "done") amt = "本期已用完 ✅";
+        else if (it.rem == null) amt = "已用多少待确认（去 App / 账单看）";
+        else if (it.state === "pending") amt = "待入账 / 待兑现 <b>" + fmtM(it.rem) + "</b>";
+        else amt = "还没花 <b>" + fmtM(it.rem) + "</b>" + (it.total ? "<span style=\"color:#8fa3b8\"> / 本期 " + fmtM(it.total) + "</span>" : "");
+        var pct = (it.total && it.used != null) ? Math.min(100, Math.round(it.used / it.total * 100)) : 0;
+        div.innerHTML = "<div class=\"cc-main\"><span class=\"cc-name\">" + esc(r.credit_name) + "</span><span class=\"cc-card\">" + esc(r.card_name) + (r.period_label ? " · " + esc(r.period_label) : "") + "</span><span class=\"cc-chip " + chipCls + "\">" + esc(chip) + "</span></div>"
+          + "<div class=\"cc-amt\">" + amt + "</div>"
+          + (it.total ? "<div class=\"cc-bar\"><i style=\"width:" + pct + "%\"></i></div>" : "")
+          + (r.how_to_use ? "<div class=\"cc-how\">👉 " + esc(r.how_to_use) + "</div>" : "")
+          + (r.status_text ? "<div class=\"cc-status\">" + esc(r.status_text) + "</div>" : "");
+        body.appendChild(div);
+      });
+      var cmd = $("creditCommand");
+      if (cmd && todoRem > 0) cmd.classList.add("open");
+    }
+    var byCat = {};
+    items.forEach(function(it){
+      if (!it.r.category) return;
+      if (it.state !== "todo" && it.state !== "unknown") return;
+      (byCat[it.r.category] = byCat[it.r.category] || []).push(it);
+    });
+    Object.keys(byCat).forEach(function(cat){
+      var list = byCat[cat].slice();
+      list.sort(function(a, b){ return (a.state === "todo" ? 0 : 1) - (b.state === "todo" ? 0 : 1); });
+      var txt = list.slice(0, 3).map(function(it){
+        var nm = it.r.card_name.replace("Chase Sapphire Reserve", "CSR").replace("Amex Platinum", "Plat").replace("Amex Gold", "Gold").replace("Marriott Brilliant", "Brilliant").replace("Bilt Palladium", "Bilt");
+        if (it.state === "unknown") return nm + " " + it.r.credit_name + "（待确认）";
+        return "<b>" + nm + " " + it.r.credit_name + " " + fmtM(it.rem) + "</b>" + (it.days != null ? "（剩 " + it.days + " 天）" : "");
+      }).join(" · ");
+      document.querySelectorAll('[data-ccat="' + cat + '"]').forEach(function(el){
+        if (el.querySelector(".cc-hint")) return;
+        var h = document.createElement("div");
+        h.className = "cc-hint";
+        h.innerHTML = "💰 顺手把 credit 花掉：" + txt;
+        el.appendChild(h);
+      });
+    });
+    var perCard = {};
+    items.forEach(function(it){
+      if (it.state === "todo" && it.rem != null) {
+        var k = it.r.card_name;
+        perCard[k] = perCard[k] || { amt: 0, urgent: false };
+        perCard[k].amt += it.rem;
+        if (it.days != null && it.days <= 30) perCard[k].urgent = true;
+      }
+    });
+    document.querySelectorAll(".card-box .cn").forEach(function(cn){
+      var info = perCard[cn.textContent.trim()];
+      if (!info || info.amt <= 0) return;
+      var b = document.createElement("span");
+      b.className = "cc-badge" + (info.urgent ? "" : " soft");
+      b.textContent = "未用 " + fmtM(info.amt);
+      cn.appendChild(b);
+    });
   }
   sb.auth.getSession().then(function(res){ renderUser(res.data.session ? res.data.session.user : null); });
   sb.auth.onAuthStateChange(function(event, session){ renderUser(session ? session.user : null); });
