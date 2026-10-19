@@ -1260,82 +1260,831 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
 <script>
 (function(){
 'use strict';
-/* Private FIRE engine reconstruction (parameterized semantics for calibration).
-   All money in DOLLARS (floats) inside the engine; state JSON uses cents. */
+/* Faithful JS translation of the private FIRE app's engine
+   (ts-spaces/fire-planner-private/client/src/engine.ts, Phase 5.75 state),
+   assembled into FamilyInputs exactly like the app's App.tsx
+   (effectiveForScenario + familyInputsFromDraft + scenarioMetrics).
+   The core runs in CENTS, identical to the original, so results match the
+   original app bit-for-bit; the outer API keeps the port's dollar-based
+   contract that the site UI (ui-1..5) was built against.
+   Two UI devices from the port are preserved as explicit options (never
+   active in the main run): paths' coast mode (surplus not saved) and the
+   Barista part-time-until-67 inflow. */
 const C = 100; // cents per dollar
 
+/* ================= original primitives ================= */
+
 function ssFactor(claimAge) {
-  const fra = 67;
-  claimAge = Math.max(62, Math.min(70, claimAge));
-  if (claimAge >= fra) return 1 + (claimAge - fra) * 12 * (2 / 3) / 100;
-  const m = (fra - claimAge) * 12;
-  return 1 - (Math.min(m, 36) * (5 / 9) + Math.max(0, m - 36) * (5 / 12)) / 100;
+  const FRA = 67;
+  const age = Math.min(70, Math.max(62, Math.round(claimAge)));
+  if (age < FRA) {
+    const monthsEarly = (FRA - age) * 12;
+    const first36 = Math.min(36, monthsEarly);
+    const beyond = Math.max(0, monthsEarly - 36);
+    return 1 - first36 * (5 / 9 / 100) - beyond * (5 / 12 / 100);
+  }
+  if (age > FRA) {
+    const monthsLate = (age - FRA) * 12;
+    return 1 + monthsLate * (2 / 3 / 100);
+  }
+  return 1;
+}
+function ssAnnualCents(monthlyAtFraCents, claimAge) {
+  return monthlyAtFraCents * 12 * ssFactor(claimAge);
 }
 function fisher(nom, infl) { return (1 + nom) / (1 + infl) - 1; }
+function realReturn(nominalBps, inflationBps) {
+  return (1 + nominalBps / 10000) / (1 + inflationBps / 10000) - 1;
+}
+
+/* Loan helpers in dollars (public sanity surface, T5). The monthly loop
+   mirrors the original amortizeLoan: final payment capped at balance. */
 function loanPmt(principal, annualRate, months) {
+  if (principal <= 0) return 0;
+  if (months <= 0) return principal;
   const r = annualRate / 12;
-  if (months <= 0 || principal <= 0) return 0;
-  if (Math.abs(r) < 1e-12) return principal / months;
-  return principal * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1);
+  if (r <= 0) return principal / months;
+  const f = Math.pow(1 + r, months);
+  return (principal * r * f) / (f - 1);
 }
 function loanBalanceAfter(principal, annualRate, monthsTotal, paymentsMade) {
-  const r = annualRate / 12, p = loanPmt(principal, annualRate, monthsTotal);
+  const r = annualRate / 12;
+  const pmt = loanPmt(principal, annualRate, monthsTotal);
   let bal = principal;
-  for (let i = 0; i < Math.min(paymentsMade, monthsTotal); i++) bal = bal + bal * r - p;
-  return Math.max(0, bal);
+  for (let m = 1; m <= paymentsMade; m++) {
+    if (bal > 0 && pmt > 0) {
+      const interest = bal * r;
+      let principalPaid = pmt - interest;
+      if (principalPaid >= bal) principalPaid = bal;
+      if (principalPaid > 0) bal -= principalPaid;
+    }
+  }
+  return bal;
 }
+
+/* mulberry32 + polar-method gaussian with spare, exactly as the original
+   (the port's Box-Muller-cos sampler consumed the stream differently). */
 function mulberry32(seed) {
-  let s = seed >>> 0;
+  let a = seed >>> 0;
   return function () {
-    s = (s + 0x6D2B79F5) >>> 0;
-    let t = s;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = a;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-function gauss(rng) {
-  let u = 0, v = 0;
-  while (u === 0) u = rng();
-  while (v === 0) v = rng();
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+function gaussianSampler(uniform) {
+  let spare = null;
+  return function () {
+    if (spare != null) { const v = spare; spare = null; return v; }
+    let u = 0, v = 0, s = 0;
+    do {
+      u = uniform() * 2 - 1;
+      v = uniform() * 2 - 1;
+      s = u * u + v * v;
+    } while (s >= 1 || s === 0);
+    const mul = Math.sqrt((-2 * Math.log(s)) / s);
+    spare = v * mul;
+    return u * mul;
+  };
+}
+/* Single-draw compatibility helper (fresh sampler per call). */
+function gauss(rng) { return gaussianSampler(rng)(); }
+
+function sampleRealReturn(meanReal, sigma, distribution, gaussFn) {
+  const z = gaussFn();
+  if (distribution === 'normal') {
+    return Math.max(-0.999999, meanReal + sigma * z);
+  }
+  const gross = 1 + meanReal;
+  const s2 = Math.log(1 + (sigma * sigma) / (gross * gross));
+  const m = Math.log(gross) - s2 / 2;
+  return Math.exp(m + Math.sqrt(s2) * z) - 1;
+}
+/* Linear-interpolation percentile of an ascending-sorted array (original). */
+function percentileSorted(sortedAsc, p) {
+  if (sortedAsc.length === 0) return 0;
+  if (sortedAsc.length === 1) return sortedAsc[0] ?? 0;
+  const idx = p * (sortedAsc.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  const frac = idx - lo;
+  const a = sortedAsc[lo] ?? 0;
+  const b = sortedAsc[hi] ?? a;
+  return a + (b - a) * frac;
+}
+
+/* ================= original core, in cents ================= */
+
+const LIFESPAN_AGE = 95;
+const MEDICARE_PART_B_ANNUAL_CENTS = 243480; // $202.90 x 12
+const IRMAA_JOINT_THRESHOLD_CENTS = 21800000; // $218,000
+const SALE_COST_BPS = 500;
+
+function acaShareBps(magiProxyCents) {
+  if (magiProxyCents <= 8500000) return 3000;
+  if (magiProxyCents <= 15000000) return 6500;
+  return 10000;
+}
+function childCostAtAge(curve, age) {
+  if (age < 0) return 0;
+  if (age <= 2) return curve.age0To2Cents;
+  if (age <= 5) return curve.age3To5Cents;
+  if (age <= 12) return curve.age6To12Cents;
+  if (age <= 17) return curve.age13To17Cents;
+  if (age <= 21) return curve.educationCents;
+  return 0;
+}
+function standardMonthlyPayment(balanceCents, annualRateBps, months) {
+  if (balanceCents <= 0) return 0;
+  if (months <= 0) return balanceCents;
+  const r = annualRateBps / 10000 / 12;
+  if (r <= 0) return balanceCents / months;
+  const f = Math.pow(1 + r, months);
+  return (balanceCents * r * f) / (f - 1);
+}
+function amortizeLoan(balanceCents, annualRateBps, monthlyPaymentCents, baseYear, horizonYears) {
+  const r = annualRateBps / 10000 / 12;
+  let months = null;
+  if (balanceCents > 0 && monthlyPaymentCents > 0) {
+    if (r <= 0) {
+      months = Math.ceil(balanceCents / monthlyPaymentCents);
+    } else if (monthlyPaymentCents > balanceCents * r) {
+      const exact =
+        Math.log(monthlyPaymentCents / (monthlyPaymentCents - balanceCents * r)) /
+        Math.log(1 + r);
+      months = Math.ceil(exact - 0.02);
+    }
+  }
+  const standard =
+    months != null ? standardMonthlyPayment(balanceCents, annualRateBps, months) : 0;
+  const yearlyEndBalances = [];
+  let balance = balanceCents;
+  let balanceAfter12 = balanceCents;
+  const totalMonths = Math.max(0, horizonYears) * 12;
+  for (let m = 1; m <= totalMonths; m++) {
+    if (balance > 0 && monthlyPaymentCents > 0) {
+      const interest = balance * r;
+      let principal = monthlyPaymentCents - interest;
+      if (principal >= balance) principal = balance;
+      if (principal > 0) balance -= principal;
+    }
+    if (m === 12) balanceAfter12 = balance;
+    if (m % 12 === 0) yearlyEndBalances.push(balance);
+  }
+  if (totalMonths < 12) balanceAfter12 = balance;
+  return {
+    standardMonthlyPaymentCents: standard,
+    remainingMonths: months,
+    payoffYear: months != null ? baseYear + Math.ceil(months / 12) : null,
+    balanceAfter12Cents: balanceAfter12,
+    yearlyEndBalances,
+  };
+}
+function amortizeLoanFull(balanceCents, annualRateBps, monthlyPaymentCents, baseYear, horizonYears) {
+  const base = amortizeLoan(balanceCents, annualRateBps, monthlyPaymentCents, baseYear, horizonYears);
+  const r = annualRateBps / 10000 / 12;
+  const yearlyPaidCents = [];
+  let balance = balanceCents;
+  const totalMonths = Math.max(0, horizonYears) * 12;
+  let paidThisYear = 0;
+  for (let m = 1; m <= totalMonths; m++) {
+    if (balance > 0 && monthlyPaymentCents > 0) {
+      const interest = balance * r;
+      let due = monthlyPaymentCents;
+      if (monthlyPaymentCents - interest >= balance) {
+        due = balance + interest; // final payment
+      }
+      const principal = due - interest;
+      if (principal > 0) {
+        balance -= principal;
+        paidThisYear += due;
+      }
+    }
+    if (m % 12 === 0) {
+      yearlyPaidCents.push(paidThisYear);
+      paidThisYear = 0;
+    }
+  }
+  return { ...base, yearlyPaidCents };
 }
 
 const CATS = ['cash', 'taxable', 'traditional', 'roth', 'hsa'];
-const WD_ORDER = ['cash', 'taxable', 'traditional', 'roth', 'hsa'];
+const CATS6 = ['cash', 'taxable', 'traditional', 'roth', 'hsa', 'other'];
+const WITHDRAWAL_ORDER = CATS6;
+function emptyCategories() { return { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0, other: 0 }; }
+function totalCategories(c) { return c.cash + c.taxable + c.traditional + c.roth + c.hsa + c.other; }
+function categoryOfType(type) {
+  switch (type) {
+    case 'cash': return 'cash';
+    case 'taxable': return 'taxable';
+    case 'traditional': return 'traditional';
+    case 'roth': return 'roth';
+    case 'hsa': return 'hsa';
+    default: return 'other';
+  }
+}
+function decomposeWithdrawal(grown, amount) {
+  const out = emptyCategories();
+  let remaining = Math.max(0, amount);
+  for (const key of WITHDRAWAL_ORDER) {
+    if (remaining <= 0) break;
+    const take = Math.min(Math.max(0, grown[key]), remaining);
+    out[key] = take;
+    remaining -= take;
+  }
+  return out;
+}
+function adultFullRetireAge(a) {
+  return a.downshiftStartAge != null ? (a.downshiftEndAge ?? a.retireAge) : a.retireAge;
+}
+function adultWorkPhase(a, age) {
+  const full = adultFullRetireAge(a);
+  if (age >= full) return 'retired';
+  if (a.downshiftStartAge != null && age >= a.downshiftStartAge) return 'downshift';
+  return 'full';
+}
+function workPhaseScale(a, phase) {
+  if (phase === 'full') return 1;
+  if (phase === 'downshift') return (a.downshiftPctBps ?? 5000) / 10000;
+  return 0;
+}
 
-/* Build effective inputs from state + scenario override (or null for active). */
+/* simulateFamily — faithful translation. Extra opts beyond the original:
+   coast (port path-E device: surplus years do not allocate) and
+   partTimeUntil67Cents (port path-F device). Both default off. */
+function simulateFamily(inputs) {
+  const adults = inputs.adults;
+  const oldestBirthYear =
+    adults.length > 0 ? Math.min(...adults.map((a) => a.birthYear)) : null;
+  const lifespanAge = inputs.lifespanAge ?? LIFESPAN_AGE;
+  const horizonYear =
+    oldestBirthYear != null ? oldestBirthYear + lifespanAge : inputs.baseYear + 60;
+  const finalYear = horizonYear - 1;
+  const horizonYears = Math.max(1, finalYear - inputs.baseYear + 1);
+
+  const fullRetirementYear =
+    adults.length > 0
+      ? Math.max(...adults.map((a) => a.birthYear + adultFullRetireAge(a)))
+      : null;
+  const earliestRetirementYear =
+    adults.length > 0
+      ? Math.min(...adults.map((a) => a.birthYear + adultFullRetireAge(a)))
+      : null;
+  const bridgeEndYear =
+    adults.length > 0
+      ? Math.max(
+          ...adults.map((a) =>
+            Math.max(
+              a.birthYear + Math.min(70, Math.max(62, Math.round(a.ssClaimAge))),
+              a.birthYear + 65,
+            ),
+          ),
+        )
+      : null;
+
+  const loanAmorts = inputs.loans.map((l) => ({
+    loan: l,
+    amort: amortizeLoanFull(
+      l.balanceCents, l.annualRateBps, l.monthlyPaymentCents, inputs.baseYear, horizonYears,
+    ),
+  }));
+  const loansForProperty = (key) => loanAmorts.filter((x) => x.loan.propertyClientKey === key);
+  const orphanLoans = loanAmorts.filter(
+    (x) =>
+      x.loan.propertyClientKey == null ||
+      !inputs.properties.some((p) => p.clientKey === x.loan.propertyClientKey),
+  );
+
+  const rentalSoldByYear = new Map();
+  for (const p of inputs.properties) {
+    if (p.kind === 'rental' && p.sellYear != null) {
+      rentalSoldByYear.set(p.clientKey, p.sellYear);
+    }
+  }
+
+  let cats = { ...inputs.categoryStarts };
+  const catDiff = inputs.startCents - totalCategories(cats);
+  if (Math.abs(catDiff) > 0.5) cats.taxable += catDiff;
+
+  const years = [];
+  let firstShortfallYear = null;
+  let firstRetirementShortfallYear = null;
+
+  const gr = inputs.guardrails?.enabled ? inputs.guardrails : null;
+  let grCutActive = false;
+  let grPrevRetireEnd = null;
+  let grTriggerLow = null;
+
+  for (let year = inputs.baseYear; year <= finalYear; year++) {
+    const t = year - inputs.baseYear;
+    const yearRate = inputs.yearRates?.[t] ?? inputs.realRate;
+    const ages = adults.map((a) => year - a.birthYear);
+    const workPhases = adults.map((a, i) => adultWorkPhase(a, ages[i] ?? 0));
+    const working = workPhases.map((p) => p !== 'retired');
+    const anyWorking = working.some(Boolean);
+    const phase = adults.length === 0 || !anyWorking ? 'retirement' : 'accumulation';
+
+    const incomes = adults.map(
+      (a, i) =>
+        a.annualIncomeCents *
+        Math.pow(1 + a.incomeGrowthBps / 10000, t) *
+        workPhaseScale(a, workPhases[i] ?? 'retired'),
+    );
+    const income1 = incomes[0] ?? 0;
+    const income2 = incomes[1] ?? 0;
+    const incomeTotal = incomes.reduce((s, v) => s + v, 0);
+    const contrib401kMatch = adults.reduce(
+      (s, a, i) =>
+        s + (a.annual401kCents + a.annualMatchCents) * workPhaseScale(a, workPhases[i] ?? 'retired'),
+      0,
+    );
+    const matchTotal = adults.reduce(
+      (s, a, i) => s + a.annualMatchCents * workPhaseScale(a, workPhases[i] ?? 'retired'),
+      0,
+    );
+
+    const ssByPerson = adults.map((a) =>
+      year >= a.birthYear + Math.min(70, Math.max(62, Math.round(a.ssClaimAge)))
+        ? ssAnnualCents(a.ssMonthlyAtFraCents, a.ssClaimAge)
+        : 0,
+    );
+    const ssTotal = ssByPerson.reduce((s, v) => s + v, 0);
+
+    let rentalNet = 0;
+    let saleProceeds = 0;
+    let rentalMortgagePaid = 0; // display split only (already inside rentalNet)
+    for (const p of inputs.properties) {
+      if (p.kind !== 'rental') continue;
+      const sellYear = rentalSoldByYear.get(p.clientKey) ?? null;
+      if (sellYear != null && year >= sellYear) {
+        if (year === sellYear) {
+          const k = sellYear - inputs.baseYear;
+          const valueAtSale = p.valueCents * Math.pow(1 + p.valueGrowthBps / 10000, k);
+          const balanceAtSale = loansForProperty(p.clientKey).reduce(
+            (s, x) => s + (k === 0 ? x.loan.balanceCents : (x.amort.yearlyEndBalances[k - 1] ?? 0)),
+            0,
+          );
+          saleProceeds += valueAtSale - balanceAtSale - (valueAtSale * SALE_COST_BPS) / 10000;
+        }
+        continue;
+      }
+      const rentAnnual =
+        p.monthlyRentCents * 12 * Math.pow(1 + p.rentGrowthBps / 10000, t) * (1 - p.vacancyBps / 10000);
+      const opsAnnual = p.monthlyCostsCents * 12;
+      const mortgagePaid = loansForProperty(p.clientKey).reduce(
+        (s, x) => s + (x.amort.yearlyPaidCents[t] ?? 0),
+        0,
+      );
+      rentalMortgagePaid += mortgagePaid;
+      rentalNet += rentAnnual - opsAnnual - mortgagePaid;
+    }
+
+    let primaryHome = 0;
+    let primaryMortgagePaid = 0; // display split only (already inside primaryHome)
+    for (const p of inputs.properties) {
+      if (p.kind !== 'primary') continue;
+      primaryHome += p.monthlyCostsCents * 12;
+      const mp = loansForProperty(p.clientKey).reduce(
+        (s, x) => s + (x.amort.yearlyPaidCents[t] ?? 0),
+        0,
+      );
+      primaryMortgagePaid += mp;
+      primaryHome += mp;
+    }
+    {
+      const mp = orphanLoans.reduce((s, x) => s + (x.amort.yearlyPaidCents[t] ?? 0), 0);
+      primaryMortgagePaid += mp;
+      primaryHome += mp;
+    }
+
+    let child1 = 0;
+    for (const by of inputs.childBirthYears) {
+      child1 += childCostAtAge(inputs.curve, year - by);
+    }
+    let child2 = 0;
+    if (inputs.secondChild.enabled && inputs.secondChild.birthYear != null) {
+      child2 =
+        childCostAtAge(inputs.curve, year - inputs.secondChild.birthYear) *
+        (inputs.secondChild.scaleBps / 10000);
+    }
+    const child = child1 + child2;
+
+    let eventsNet = 0;
+    let eventsIncome = 0;
+    let eventsExpense = 0;
+    for (const e of inputs.events) {
+      if (e.year === year) {
+        if (e.kind === 'expense') {
+          eventsNet -= e.amountCents;
+          eventsExpense += e.amountCents;
+        } else {
+          eventsNet += e.amountCents;
+          eventsIncome += e.amountCents;
+        }
+      }
+    }
+
+    const startTotal = totalCategories(cats);
+    const startCats = { ...cats };
+    const grown = {
+      cash: cats.cash * (1 + yearRate),
+      taxable: cats.taxable * (1 + yearRate),
+      traditional: cats.traditional * (1 + yearRate),
+      roth: cats.roth * (1 + yearRate),
+      hsa: cats.hsa * (1 + yearRate),
+      other: cats.other * (1 + yearRate),
+    };
+    const growth = totalCategories(grown) - startTotal;
+
+    // Port path-F device (off unless requested): part-time inflow while any
+    // adult is retired and any adult is still under 67.
+    let partTimeCents = 0;
+    if (
+      inputs.partTimeUntil67Cents != null &&
+      workPhases.some((p) => p === 'retired') &&
+      ages.some((age) => age < 67)
+    ) {
+      partTimeCents = inputs.partTimeUntil67Cents;
+    }
+
+    const likeThisYear =
+      gr != null && phase === 'retirement' && grCutActive
+        ? inputs.likeCents * (1 - gr.cutBps / 10000)
+        : inputs.likeCents;
+    const extraExpense = inputs.extraExpenseByYear?.get(year) ?? 0;
+    const baseNet =
+      incomeTotal +
+      matchTotal +
+      rentalNet +
+      saleProceeds +
+      ssTotal +
+      eventsNet +
+      partTimeCents +
+      (phase === 'accumulation' ? inputs.annualSavingsCents : 0) -
+      inputs.mustCents -
+      likeThisYear -
+      child -
+      primaryHome -
+      extraExpense;
+
+    const rentalPositive = Math.max(0, rentalNet);
+    let tradEst = 0;
+    let taxCents = 0;
+    let taxableProxy = 0;
+    let magiProxy = incomeTotal + ssTotal + rentalPositive;
+    let healthcareByPerson = adults.map(() => 0);
+    let healthcare = 0;
+    let healthcareMode = 'staged';
+    let irmaaWarning = false;
+    const computeHealthcare = (magi) => {
+      const employerCents = inputs.employerHealthcareAnnualCents;
+      if (employerCents != null) {
+        const anyFull = workPhases.some((p) => p === 'full');
+        const anyDownHc = adults.some(
+          (a, i) => workPhases[i] === 'downshift' && a.downshiftHasHealthcare === true,
+        );
+        if (anyFull || anyDownHc) {
+          const n = Math.max(1, adults.length);
+          return { byPerson: adults.map(() => employerCents / n), total: employerCents, mode: 'employer' };
+        }
+      }
+      const byPerson = adults.map((_a, i) => {
+        if (workPhases[i] === 'full') return 0;
+        const age = ages[i] ?? 0;
+        if (age < 65) {
+          return (inputs.acaAnnualPerPersonCents * acaShareBps(magi)) / 10000;
+        }
+        return MEDICARE_PART_B_ANNUAL_CENTS + inputs.medicareSupplementAnnualCents;
+      });
+      return { byPerson, total: byPerson.reduce((s, v) => s + v, 0), mode: 'staged' };
+    };
+    for (let iter = 0; iter < 2; iter++) {
+      magiProxy = incomeTotal + ssTotal + tradEst + rentalPositive;
+      const hc = computeHealthcare(magiProxy);
+      healthcareByPerson = hc.byPerson;
+      healthcare = hc.total;
+      healthcareMode = hc.mode;
+      irmaaWarning =
+        magiProxy > IRMAA_JOINT_THRESHOLD_CENTS &&
+        healthcareByPerson.some((v, i) => v > 0 && (ages[i] ?? 0) >= 65);
+      const deficitWithTax = Math.max(0, -(baseNet - healthcare - taxCents));
+      const est = decomposeWithdrawal(grown, deficitWithTax);
+      tradEst = est.traditional;
+      taxableProxy = tradEst + ssTotal * 0.85 + rentalPositive;
+      taxCents =
+        phase === 'retirement' ? (taxableProxy * inputs.retirementAvgTaxBps) / 10000 : 0;
+    }
+    magiProxy = incomeTotal + ssTotal + tradEst + rentalPositive;
+    {
+      const hc = computeHealthcare(magiProxy);
+      healthcareByPerson = hc.byPerson;
+      healthcare = hc.total;
+      healthcareMode = hc.mode;
+    }
+    irmaaWarning =
+      magiProxy > IRMAA_JOINT_THRESHOLD_CENTS &&
+      healthcareByPerson.some((v, i) => v > 0 && (ages[i] ?? 0) >= 65);
+
+    const netFlow = baseNet - healthcare - taxCents;
+
+    const withdrawals = emptyCategories();
+    const allocations = emptyCategories();
+    let endCats;
+    let shortfall = false;
+    if (netFlow >= 0) {
+      if (inputs.coast) {
+        // Port path-E device: surplus is spent, not saved.
+        endCats = { ...grown };
+      } else {
+        let remaining = netFlow;
+        const alloc = (key, desired) => {
+          const amount = Math.min(Math.max(0, desired), remaining);
+          allocations[key] += amount;
+          remaining -= amount;
+        };
+        if (phase === 'accumulation') {
+          alloc(
+            'traditional',
+            adults.reduce(
+              (s, a, i) =>
+                s + (a.annual401kCents + a.annualMatchCents) * workPhaseScale(a, workPhases[i] ?? 'retired'),
+              0,
+            ),
+          );
+          alloc('roth', inputs.categoryContributions.roth);
+          alloc('hsa', inputs.categoryContributions.hsa);
+          alloc('cash', inputs.categoryContributions.cash);
+          alloc('other', inputs.categoryContributions.other);
+          alloc('taxable', inputs.categoryContributions.taxable + remaining);
+        } else {
+          allocations.taxable += remaining;
+          remaining = 0;
+        }
+        endCats = {
+          cash: grown.cash + allocations.cash,
+          taxable: grown.taxable + allocations.taxable,
+          traditional: grown.traditional + allocations.traditional,
+          roth: grown.roth + allocations.roth,
+          hsa: grown.hsa + allocations.hsa,
+          other: grown.other + allocations.other,
+        };
+      }
+    } else {
+      const taken = decomposeWithdrawal(grown, -netFlow);
+      withdrawals.cash = taken.cash;
+      withdrawals.taxable = taken.taxable;
+      withdrawals.traditional = taken.traditional;
+      withdrawals.roth = taken.roth;
+      withdrawals.hsa = taken.hsa;
+      withdrawals.other = taken.other;
+      endCats = {
+        cash: grown.cash - taken.cash,
+        taxable: grown.taxable - taken.taxable,
+        traditional: grown.traditional - taken.traditional,
+        roth: grown.roth - taken.roth,
+        hsa: grown.hsa - taken.hsa,
+        other: grown.other - taken.other,
+      };
+      if (totalCategories(grown) + netFlow < -0.5) {
+        shortfall = true;
+        endCats = emptyCategories();
+        if (firstShortfallYear == null) firstShortfallYear = year;
+        if (phase === 'retirement' && firstRetirementShortfallYear == null) {
+          firstRetirementShortfallYear = year;
+        }
+      }
+    }
+    const withdrawalTotal = totalCategories(withdrawals);
+    cats = endCats;
+    const balance = totalCategories(endCats);
+
+    const anyNotClaiming = adults.some(
+      (a) => year < a.birthYear + Math.min(70, Math.max(62, Math.round(a.ssClaimAge))),
+    );
+    const rothHint =
+      phase === 'retirement' && adults.length > 0 && anyNotClaiming && endCats.traditional > 0
+        ? Math.max(0, inputs.rothBracketCapCents - taxableProxy)
+        : null;
+
+    const isBridge =
+      earliestRetirementYear != null &&
+      bridgeEndYear != null &&
+      year >= earliestRetirementYear &&
+      year < bridgeEndYear;
+
+    years.push({
+      year,
+      ages: ages.slice(0, 2),
+      startCents: startTotal,
+      startCategories: startCats,
+      income1Cents: income1,
+      income2Cents: income2,
+      incomeTotalCents: incomeTotal,
+      contrib401kMatchCents: contrib401kMatch,
+      rentalNetCents: rentalNet,
+      rentalMortgagePaidCents: rentalMortgagePaid,
+      saleProceedsCents: saleProceeds,
+      mustCents: inputs.mustCents,
+      likeCents: likeThisYear,
+      guardrailCutActive: gr != null && phase === 'retirement' && grCutActive,
+      childCents: child,
+      child1Cents: child1,
+      child2Cents: child2,
+      eventsCents: eventsNet,
+      eventsIncomeCents: eventsIncome,
+      eventsExpenseCents: eventsExpense,
+      primaryHomeCents: primaryHome,
+      primaryMortgagePaidCents: primaryMortgagePaid,
+      partTimeCents,
+      netFlowCents: netFlow,
+      growthCents: growth,
+      endCents: balance,
+      phase,
+      shortfall,
+      ssByPersonCents: ssByPerson,
+      ssTotalCents: ssTotal,
+      healthcareCents: healthcare,
+      healthcareByPersonCents: healthcareByPerson,
+      healthcareMode,
+      workPhases: [...workPhases],
+      taxCents,
+      taxableProxyCents: taxableProxy,
+      magiProxyCents: magiProxy,
+      irmaaWarning,
+      rothConversionHintCents: rothHint,
+      withdrawals,
+      withdrawalTotalCents: withdrawalTotal,
+      allocations,
+      endCategories: { ...endCats },
+      isBridge,
+    });
+
+    if (gr != null && phase === 'retirement') {
+      if (!grCutActive) {
+        if (
+          grPrevRetireEnd != null &&
+          grPrevRetireEnd > 0 &&
+          balance < grPrevRetireEnd * (1 - gr.triggerDropBps / 10000)
+        ) {
+          grCutActive = true;
+          grTriggerLow = balance;
+        }
+      } else {
+        if (grTriggerLow == null || balance < grTriggerLow) {
+          grTriggerLow = balance;
+        }
+        if (grTriggerLow != null && balance > grTriggerLow * (1 + gr.restoreRiseBps / 10000)) {
+          grCutActive = false;
+          grTriggerLow = null;
+        }
+      }
+      grPrevRetireEnd = balance;
+    }
+  }
+
+  return {
+    years,
+    success: firstRetirementShortfallYear == null,
+    firstShortfallYear,
+    firstRetirementShortfallYear,
+    fullRetirementYear,
+    finalYear,
+    horizonYear,
+    oldestBirthYear,
+    earliestRetirementYear,
+    bridgeEndYear,
+  };
+}
+
+/* FI solve — original bisection over retirementSurvives (cents). */
+function retirementSurvives(startCents, annualSpendingCents, realRate, withdrawalYears) {
+  let balance = startCents;
+  for (let i = 0; i < withdrawalYears; i++) {
+    const growth = balance * realRate;
+    if (balance + growth < annualSpendingCents) return false;
+    balance = balance + growth - annualSpendingCents;
+  }
+  return true;
+}
+function solveFiForWithdrawalYears(annualSpendingCents, realRate, withdrawalYears) {
+  if (withdrawalYears <= 0 || annualSpendingCents <= 0) return 0;
+  let lo = 0;
+  let hi = Math.max(annualSpendingCents, 1);
+  let guard = 0;
+  while (!retirementSurvives(hi, annualSpendingCents, realRate, withdrawalYears)) {
+    lo = hi;
+    hi *= 2;
+    guard += 1;
+    if (guard > 200) break;
+  }
+  for (let i = 0; i < 80; i++) {
+    const mid = (lo + hi) / 2;
+    if (retirementSurvives(mid, annualSpendingCents, realRate, withdrawalYears)) {
+      hi = mid;
+    } else {
+      lo = mid;
+    }
+  }
+  return hi;
+}
+
+/* Monte Carlo — original: one mulberry32 stream + one polar gaussian for
+   the whole run; per trial the full per-year path is sampled up front;
+   a trial fails iff simulateFamily's verdict fails (retirement shortfall). */
+function runMonteCarloCents(baseInputs, meanRealRate, fiTargetCents, params) {
+  const horizonYears = Math.max(
+    1,
+    (baseInputs.adults.length > 0
+      ? Math.min(...baseInputs.adults.map((a) => a.birthYear)) + (baseInputs.lifespanAge ?? LIFESPAN_AGE)
+      : baseInputs.baseYear + 60) - baseInputs.baseYear,
+  );
+  const rng = mulberry32(params.seed);
+  const gaussFn = gaussianSampler(rng);
+  const sigma = params.sigmaBps / 10000;
+  const guardrails =
+    baseInputs.guardrails != null
+      ? { ...baseInputs.guardrails, enabled: params.guardrailsOn }
+      : undefined;
+
+  const finals = [];
+  let successes = 0;
+  for (let trial = 0; trial < params.runs; trial++) {
+    const yearRates = [];
+    for (let t = 0; t < horizonYears; t++) {
+      yearRates.push(sampleRealReturn(meanRealRate, sigma, params.distribution, gaussFn));
+    }
+    const result = simulateFamily({ ...baseInputs, yearRates, guardrails });
+    const finalBal = result.years[result.years.length - 1]?.endCents ?? 0;
+    finals.push(finalBal);
+    if (result.success) successes += 1;
+  }
+  const sortedFinals = [...finals].sort((a, b) => a - b);
+  return {
+    runs: params.runs,
+    successes,
+    passRate: params.runs > 0 ? successes / params.runs : 0,
+    finalP10: percentileSorted(sortedFinals, 0.1),
+    finalP50: percentileSorted(sortedFinals, 0.5),
+    finalP90: percentileSorted(sortedFinals, 0.9),
+    finals,
+  };
+}
+
+/* ================= input assembly (App.tsx equivalent, cents) ================= */
+
+/* Build effective inputs from state + scenario override (or null for active).
+   Dollar view fields mirror the port's eff contract; eff.fam is the
+   original FamilyInputs in cents. */
 function effectiveInputs(state, scenario) {
   const hh = state.household, A = state.assumptions;
-  const sc = scenario || state.scenarios.find(s => s.isActive) || state.scenarios[0] || null;
+  const sc = scenario || state.scenarios.find((s) => s.isActive) || state.scenarios[0] || null;
   const ov = sc || {};
-  const persons = state.persons.map(p => ({ ...p }));
-  const adults = persons.filter(p => p.role === 'adult');
-  if (ov.retireAgeP1 != null && adults[0]) adults[0].retirementAge = ov.retireAgeP1;
-  if (ov.retireAgeP2 != null && adults[1]) adults[1].retirementAge = ov.retireAgeP2;
+  const persons = state.persons.map((p) => ({ ...p }));
+  const adultsP = persons.filter((p) => p.role === 'adult');
+  if (ov.retireAgeP1 != null && adultsP[0]) adultsP[0].retirementAge = ov.retireAgeP1;
+  if (ov.retireAgeP2 != null && adultsP[1]) adultsP[1].retirementAge = ov.retireAgeP2;
   if (ov.plannedRetirementAge != null) {
-    if (ov.retireAgeP1 == null && adults[0]) adults[0].retirementAge = ov.plannedRetirementAge;
-    if (ov.retireAgeP2 == null && adults[1]) adults[1].retirementAge = ov.plannedRetirementAge;
+    if (ov.retireAgeP1 == null && adultsP[0]) adultsP[0].retirementAge = ov.plannedRetirementAge;
+    if (ov.retireAgeP2 == null && adultsP[1]) adultsP[1].retirementAge = ov.plannedRetirementAge;
   }
-  let spendMust = hh.spendingMustCents / C, spendLike = hh.spendingLikeCents / C;
-  if (ov.annualSpendingCents != null) {
-    const total = ov.annualSpendingCents / C, base = spendMust + spendLike;
-    if (base > 0) { spendMust = total * spendMust / base; spendLike = total * spendLike / base; }
-    else { spendMust = total; spendLike = 0; }
+  // Spending in cents, original rounding (absolute override wins, else scale).
+  const baseMust = Math.max(0, hh.spendingMustCents);
+  const baseLike = Math.max(0, hh.spendingLikeCents);
+  const baseTotal = baseMust + baseLike;
+  let target = null;
+  if (ov.annualSpendingCents != null) target = Math.max(0, ov.annualSpendingCents);
+  else if (ov.spendingScaleBps != null) target = Math.round((baseTotal * ov.spendingScaleBps) / 10000);
+  let mustCents = baseMust, likeCents = baseLike;
+  if (target != null) {
+    if (baseTotal > 0) {
+      mustCents = Math.round((baseMust * target) / baseTotal);
+      likeCents = target - mustCents;
+    } else {
+      mustCents = target;
+      likeCents = 0;
+    }
   }
-  if (ov.spendingScaleBps != null) {
-    spendMust *= ov.spendingScaleBps / 10000; spendLike *= ov.spendingScaleBps / 10000;
-  }
+  const savingsCents = ov.annualSavingsCents != null ? ov.annualSavingsCents : hh.annualSavingsCents;
+  const nominalBps = ov.nominalReturnBps != null ? ov.nominalReturnBps : A.nominalReturnBps;
+  const inflationBps = ov.inflationBps != null ? ov.inflationBps : A.inflationBps;
+  const secondChildEnabled =
+    ov.secondChildEnabledOverride != null ? ov.secondChildEnabledOverride : hh.secondChildEnabled;
+  const sellRentalYear = ov.sellRentalYearOverride != null ? ov.sellRentalYearOverride : null;
+
   const eff = {
     baseYear: hh.baseYear,
-    persons, adults,
-    children: persons.filter(p => p.role === 'child'),
-    spendMust, spendLike,
-    annualSavings: (ov.annualSavingsCents != null ? ov.annualSavingsCents : hh.annualSavingsCents) / C,
+    persons,
+    adults: adultsP,
+    children: persons.filter((p) => p.role === 'child'),
+    spendMust: mustCents / C,
+    spendLike: likeCents / C,
+    annualSavings: savingsCents / C,
     savingsOverridden: ov.annualSavingsCents != null,
-    nominal: (ov.nominalReturnBps != null ? ov.nominalReturnBps : A.nominalReturnBps) / 10000,
-    inflation: (ov.inflationBps != null ? ov.inflationBps : A.inflationBps) / 10000,
-    swr: [A.swr1Bps, A.swr2Bps, A.swr3Bps].map(x => x / 10000),
+    nominal: nominalBps / 10000,
+    inflation: inflationBps / 10000,
+    swr: [A.swr1Bps, A.swr2Bps, A.swr3Bps].map((x) => x / 10000),
     partTime: A.partTimeIncomeCents / C,
     retTaxRate: A.retirementAvgTaxBps / 10000,
     rothCap: A.rothBracketCapCents / C,
@@ -1347,414 +2096,286 @@ function effectiveInputs(state, scenario) {
     loans: state.loans,
     properties: state.properties,
     hh, A,
-    secondChildEnabled: ov.secondChildEnabledOverride != null ? ov.secondChildEnabledOverride : hh.secondChildEnabled,
-    sellRentalYear: ov.sellRentalYearOverride != null ? ov.sellRentalYearOverride : null,
+    secondChildEnabled,
+    sellRentalYear,
+    scenarioName: sc ? (sc.name ?? null) : null,
   };
   eff.real = fisher(eff.nominal, eff.inflation);
+
+  // --- FamilyInputs (cents), familyInputsFromDraft equivalent ---
+  const categoryStarts = emptyCategories();
+  const categoryContributions = emptyCategories();
+  for (const a of state.accounts) {
+    if (!a.includeInInvestable) continue;
+    const key = categoryOfType(a.type);
+    categoryStarts[key] += a.balanceCents;
+    categoryContributions[key] += Math.max(0, a.annualContributionCents);
+  }
+  categoryContributions.traditional = 0; // same money as the owner's 401(k)
+  const investable = state.accounts
+    .filter((a) => a.includeInInvestable)
+    .reduce((s, a) => s + a.balanceCents, 0);
+  const famAdults = adultsP.map((p) => ({
+    name: p.name,
+    birthYear: p.birthYear,
+    retireAge: p.retirementAge,
+    annualIncomeCents: p.annualIncomeCents,
+    incomeGrowthBps: p.incomeGrowthBps,
+    annual401kCents: Math.max(0, p.annual401kCents),
+    annualMatchCents: Math.max(0, p.annualMatchCents),
+    ssMonthlyAtFraCents: Math.max(0, p.ssMonthlyAtFraCents),
+    ssClaimAge: Math.min(70, Math.max(62, Math.round(p.ssClaimAge))),
+    downshiftStartAge: p.downshiftStartAge ?? null,
+    downshiftEndAge: p.downshiftRetireAge ?? null,
+    downshiftPctBps: p.downshiftPctBps ?? 5000,
+    downshiftHasHealthcare: p.downshiftHasHealthcare === true,
+  }));
+  eff.fam = {
+    startCents: investable,
+    annualSavingsCents: savingsCents,
+    mustCents,
+    likeCents,
+    realRate: eff.real,
+    baseYear: hh.baseYear,
+    adults: famAdults,
+    childBirthYears: eff.children.map((p) => p.birthYear),
+    curve: {
+      age0To2Cents: Math.max(0, hh.childCost0To2Cents),
+      age3To5Cents: Math.max(0, hh.childCost3To5Cents),
+      age6To12Cents: Math.max(0, hh.childCost6To12Cents),
+      age13To17Cents: Math.max(0, hh.childCost13To17Cents),
+      educationCents: Math.max(0, hh.childEducationCents),
+    },
+    secondChild: {
+      enabled: secondChildEnabled,
+      birthYear: hh.secondChildBirthYear ?? null,
+      scaleBps: hh.secondChildScaleBps,
+    },
+    properties: state.properties.map((p) => ({
+      clientKey: p.clientKey,
+      kind: p.kind,
+      valueCents: p.valueCents,
+      monthlyRentCents: p.monthlyRentCents,
+      monthlyCostsCents: p.monthlyCostsCents,
+      rentGrowthBps: p.rentGrowthBps,
+      vacancyBps: Math.min(10000, Math.max(0, p.vacancyBps)),
+      sellYear:
+        p.kind === 'rental' && sellRentalYear != null
+          ? (sellRentalYear === 0 ? null : sellRentalYear)
+          : (p.sellYear ?? null),
+      valueGrowthBps: p.valueGrowthBps,
+    })),
+    loans: state.loans.map((l) => ({
+      propertyClientKey: l.propertyClientKey || null,
+      balanceCents: l.balanceCents,
+      annualRateBps: l.annualRateBps,
+      monthlyPaymentCents: l.monthlyPaymentCents,
+    })),
+    events: state.events.map((e) => ({ year: e.year, amountCents: e.amountCents, kind: e.kind })),
+    categoryStarts,
+    categoryContributions,
+    retirementAvgTaxBps: A.retirementAvgTaxBps,
+    rothBracketCapCents: A.rothBracketCapCents,
+    acaAnnualPerPersonCents: A.acaAnnualPerPersonCents,
+    medicareSupplementAnnualCents: A.medicareSupplementAnnualCents,
+    // App rule: employer-healthcare mode only engages when some adult has
+    // a downshift segment configured.
+    employerHealthcareAnnualCents:
+      famAdults.some((a) => a.downshiftStartAge != null)
+        ? Math.max(0, A.employerHealthcareAnnualCents)
+        : undefined,
+  };
   return eff;
 }
 
 function startBalances(eff) {
-  const bal = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 };
-  for (const a of eff.accounts) {
-    if (!a.includeInInvestable) continue;
-    if (CATS.includes(a.type)) bal[a.type] += a.balanceCents / C;
-  }
-  return bal;
+  const cs = eff.fam.categoryStarts;
+  return {
+    cash: cs.cash / C, taxable: cs.taxable / C, traditional: cs.traditional / C,
+    roth: cs.roth / C, hsa: cs.hsa / C, other: cs.other / C,
+  };
 }
-function totalBal(bal) { return CATS.reduce((s, k) => s + bal[k], 0); }
+function totalBal(bal) { return CATS6.reduce((s, k) => s + (bal[k] || 0), 0); }
 
-/* Loan annual payment & active check for calendar year y (loans start at baseYear). */
-function loanYearInfo(eff, y, soldKeys) {
-  let pay = 0;
-  const details = [];
-  for (const L of eff.loans) {
-    if (soldKeys && L.propertyClientKey && soldKeys.has(L.propertyClientKey)) { details.push({ id: L.id, pmt: 0, annual: 0, balanceStart: 0 }); continue; }
-    const P = L.balanceCents / C, rate = L.annualRateBps / 10000, n = L.termMonths;
-    const pmt = loanPmt(P, rate, n);
-    const monthsElapsed = (y - eff.baseYear) * 12;
-    const remaining = n - monthsElapsed;
-    let thisYear = 0;
-    if (remaining > 0) thisYear = pmt * Math.min(12, remaining);
-    pay += thisYear;
-    details.push({ id: L.id, pmt, annual: thisYear, balanceStart: loanBalanceAfter(P, rate, n, Math.max(0, monthsElapsed)) });
-  }
-  return { pay, details };
-}
-
-function childCostFor(eff, birthYear, y, scale) {
-  const age = y - birthYear, hh = eff.hh;
-  let c = 0;
-  if (age >= 0 && age <= 2) c = hh.childCost0To2Cents / C;
-  else if (age >= 3 && age <= 5) c = hh.childCost3To5Cents / C;
-  else if (age >= 6 && age <= 12) c = hh.childCost6To12Cents / C;
-  else if (age >= 13 && age <= 17) c = hh.childCost13To17Cents / C;
-  else if (eff.flags.childEdu === 'annual' && age >= 18 && age <= 21) c = hh.childEducationCents / C;
-  else if (eff.flags.childEdu === 'annual3' && age >= 18 && age <= 20) c = hh.childEducationCents / C;
-  else if (eff.flags.childEdu === 'lump18' && age === 18) c = hh.childEducationCents / C;
-  else if (eff.flags.childEdu === 'spread' && age >= 18 && age <= 21) c = hh.childEducationCents / C / 4;
-  return c * (scale || 1);
-}
-
-/* Person work status in year y: 'full' | 'down' | 'ret' */
+/* Person work status in year y: 'full' | 'down' | 'ret' (port contract). */
 function workStatus(eff, p, y) {
-  const age = y - p.birthYear;
-  const retireAge = p.retirementAge;
-  const ds = p.downshiftStartAge, dr = p.downshiftRetireAge;
-  if (ds != null) {
-    const downEnd = dr != null ? dr : retireAge;
-    if (age >= downEnd) return 'ret';
-    if (age >= ds) return 'down';
-    return 'full';
-  }
-  if (age >= retireAge) return 'ret';
-  return 'full';
-}
-function personIncome(eff, p, y) {
-  const st = workStatus(eff, p, y);
-  if (st === 'ret') return 0;
-  const g = Math.pow(1 + p.incomeGrowthBps / 10000, y - eff.baseYear);
-  let inc = p.annualIncomeCents / C * g;
-  if (st === 'down') inc *= p.downshiftPctBps / 10000;
-  return inc;
-}
-function personSS(eff, p, y) {
-  const age = y - p.birthYear;
-  if (age < p.ssClaimAge) return 0;
-  return p.ssMonthlyAtFraCents / C * 12 * ssFactor(p.ssClaimAge);
+  const a = {
+    birthYear: p.birthYear,
+    retireAge: p.retirementAge,
+    downshiftStartAge: p.downshiftStartAge ?? null,
+    downshiftEndAge: p.downshiftRetireAge ?? null,
+  };
+  const ph = adultWorkPhase(a, y - p.birthYear);
+  return ph === 'retired' ? 'ret' : ph === 'downshift' ? 'down' : 'full';
 }
 
-/* Simulate. opts: { retFn(year)->realReturn|null (null = deterministic eff.real),
-   guardrail:bool, startYear, startBal, stopYear, subSim:false }
-   Returns { rows, failed, failYear, endBalance, endBal, retireYear, balAtYearStart{} } */
+/* simulate — port-shaped wrapper over simulateFamily.
+   opts: { retFn(year)->rate, guardrail:bool, coast:bool, lifespanAge } */
 function simulate(eff, opts) {
   opts = opts || {};
-  const F = eff.flags;
-  const startYear = opts.startYear || eff.baseYear;
-  const endRef = F.endBy === 'p2' ? eff.adults[1] : eff.adults[0];
-  const endYear = opts.stopYear || (endRef.birthYear + 95 - 1); // last year: age 94
-  let bal = opts.startBal ? { ...opts.startBal } : startBalances(eff);
-  const rows = [];
-  let failed = false, failYear = null;
-  let prevEndTotal = totalBal(bal);
-  let guardCutActive = false;
+  const fam = eff.fam;
+  const simInputs = { ...fam };
+  if (opts.retFn) {
+    const oldest = fam.adults.length > 0 ? Math.min(...fam.adults.map((a) => a.birthYear)) : fam.baseYear;
+    const horizon = Math.max(1, oldest + (opts.lifespanAge ?? LIFESPAN_AGE) - fam.baseYear);
+    simInputs.yearRates = [];
+    for (let t = 0; t < horizon; t++) simInputs.yearRates.push(opts.retFn(fam.baseYear + t));
+  }
+  if (opts.guardrail) {
+    const A = eff.A;
+    simInputs.guardrails = {
+      enabled: true,
+      triggerDropBps: A.guardrailTriggerBps,
+      cutBps: A.guardrailCutBps,
+      restoreRiseBps: A.guardrailRestoreBps,
+    };
+  }
+  if (opts.lifespanAge != null) simInputs.lifespanAge = opts.lifespanAge;
+  if (opts.coast) simInputs.coast = true;
+  if (eff.flags && eff.flags.partTime === 'until67') {
+    simInputs.partTimeUntil67Cents = eff.A.partTimeIncomeCents;
+  }
+  const res = simulateFamily(simInputs);
+  const rows = res.years.map((y) => {
+    const wdD = {};
+    for (const k of CATS6) wdD[k] = y.withdrawals[k] / C;
+    const balD = {};
+    for (const k of CATS6) balD[k] = y.endCategories[k] / C;
+    const allRet = y.phase === 'retirement';
+    const anyRetOrDown = y.workPhases.some((p) => p !== 'full');
+    return {
+      year: y.year,
+      ages: y.ages,
+      phase: allRet ? '退休' : (anyRetOrDown ? '过渡' : '积累'),
+      start: y.startCents / C,
+      growth: y.growthCents / C,
+      income: y.incomeTotalCents / C,
+      ss: y.ssTotalCents / C,
+      rentNet: (y.rentalNetCents + y.rentalMortgagePaidCents) / C,
+      partTime: y.partTimeCents / C,
+      sellProceeds: y.saleProceedsCents / C,
+      spend: (y.mustCents + y.likeCents) / C,
+      child: y.childCents / C,
+      primaryCosts: (y.primaryHomeCents - y.primaryMortgagePaidCents) / C,
+      loanPay: (y.rentalMortgagePaidCents + y.primaryMortgagePaidCents) / C,
+      health: y.healthcareCents / C,
+      tax: y.taxCents / C,
+      wd: wdD,
+      wdTotal: y.withdrawalTotalCents / C,
+      deposit: (opts.coast ? 0 : Math.max(0, y.netFlowCents) / C),
+      end: y.endCents / C,
+      bal: balD,
+      failed: y.shortfall,
+    };
+  });
   const balAtYearStart = {};
-  let firstRetYear = null;
-
-  for (let y = startYear; y <= endYear; y++) {
-    balAtYearStart[y] = { ...bal };
-    const r = opts.retFn ? opts.retFn(y) : (F.growthNominal ? eff.nominal : eff.real);
-    // growth first (demo convention); flowFirst variant grows post-flow balances instead
-    const grown = {};
-    if (F.flowFirst) { for (const k of CATS) grown[k] = bal[k]; }
-    else for (const k of CATS) grown[k] = bal[k] * (1 + r);
-    const startTotal = totalBal(bal), grownTotal = totalBal(grown);
-
-    const statuses = eff.adults.map(p => workStatus(eff, p, y));
-    const anyFull = statuses.includes('full');
-    const anyDown = statuses.includes('down');
-    const anyRet = statuses.includes('ret');
-    const downHealth = eff.adults.some((p, i) => statuses[i] === 'down' && p.downshiftHasHealthcare);
-    const covered = anyFull || (anyDown && downHealth);
-    const allRet = statuses.every(s => s === 'ret');
-    if (allRet && firstRetYear === null) firstRetYear = y;
-
-    let income = 0, k401 = 0;
-    eff.adults.forEach((p, i) => {
-      income += personIncome(eff, p, y);
-      if (statuses[i] !== 'ret') k401 += (p.annual401kCents + p.annualMatchCents) / C;
-    });
-    if (opts.noIncome) income = 0;
-    let ss = 0; eff.adults.forEach(p => { ss += personSS(eff, p, y); });
-    if (opts.noSS) ss = 0;
-    const bothClaiming = eff.adults.every(p => (y - p.birthYear) >= p.ssClaimAge);
-
-    // rental / properties
-    let rentNet = 0, primaryCosts = 0, sellProceeds = 0;
-    for (const prop of eff.properties) {
-      const k = y - eff.baseYear;
-      const gRate = F.rentGrowthReal ? prop.rentGrowthBps / 10000 : fisher(prop.rentGrowthBps / 10000, eff.inflation);
-      if (prop.kind === 'rental') {
-        const sellY = eff.sellRentalYear != null ? eff.sellRentalYear : prop.sellYear;
-        if (sellY != null && y === sellY) {
-          const vG = F.rentGrowthReal ? prop.valueGrowthBps / 10000 : fisher(prop.valueGrowthBps / 10000, eff.inflation);
-          const value = prop.valueCents / C * Math.pow(1 + vG, k);
-          const loan = eff.loans.find(L => L.propertyClientKey === prop.clientKey);
-          const lb = loan ? loanBalanceAfter(loan.balanceCents / C, loan.annualRateBps / 10000, loan.termMonths, k * 12) : 0;
-          sellProceeds = value - lb - value * 0.05;
-        } else if (sellY == null || y < sellY) {
-          const gross = prop.monthlyRentCents / C * 12 * Math.pow(1 + gRate, k);
-          rentNet += gross * (1 - prop.vacancyBps / 10000) - (F.rentCosts ? prop.monthlyCostsCents / C * 12 : 0);
-        }
-      } else {
-        if (F.primaryCosts) primaryCosts += prop.monthlyCostsCents / C * 12;
-      }
-    }
-    if (opts.noRent) rentNet = 0;
-    // loans stop once their rental property is sold
-    const soldKeys = new Set();
-    for (const prop of eff.properties) {
-      if (prop.kind !== 'rental') continue;
-      const sellY = eff.sellRentalYear != null ? eff.sellRentalYear : prop.sellYear;
-      if (sellY != null && y >= sellY) soldKeys.add(prop.clientKey);
-    }
-    const loans = loanYearInfo(eff, y, soldKeys);
-    const allRetNow = eff.adults.every(p => workStatus(eff, p, y) === 'ret');
-    let loanPay = 0;
-    if (F.loansInFlow === true) loanPay = loans.pay;
-    else if (F.loansInFlow === 'ret') loanPay = allRetNow ? loans.pay : 0;
-    else if (F.loansInFlow === 'accum') loanPay = allRetNow ? 0 : loans.pay;
-    let child = 0;
-    for (const ch of eff.children) child += childCostFor(eff, ch.birthYear, y, 1);
-    if (eff.secondChildEnabled && eff.hh.secondChildBirthYear != null) {
-      child += childCostFor(eff, eff.hh.secondChildBirthYear, y, eff.hh.secondChildScaleBps / 10000);
-    }
-    // part-time income
-    let partTime = 0;
-    if (!opts.noPartTime) {
-      if (F.partTime === 'all_ret' && anyRet) partTime = eff.partTime;
-      else if (F.partTime === 'bridge' && anyRet && !bothClaiming) partTime = eff.partTime;
-      else if (F.partTime === 'bridge_first' && anyRet && eff.adults.every(p => (y - p.birthYear) < p.ssClaimAge)) partTime = eff.partTime;
-      else if (F.partTime === 'until67' && anyRet && eff.adults.some(p => (y - p.birthYear) < 67)) partTime = eff.partTime;
-    }
-
-    // spending (guardrail may cut Like)
-    let spendLike = eff.spendLike;
-    if (opts.guardrail && guardCutActive) spendLike = eff.spendLike * (1 - eff.A.guardrailCutBps / 10000);
-    const spend = eff.spendMust + spendLike;
-
-    const edu529 = F.edu529Out ? eff.accounts.filter(a => a.type === '529').reduce((s, a) => s + a.annualContributionCents / C, 0) : 0;
-
-    // health: employer-covered path is flat; otherwise per-person ACA/Medicare (needs magi -> iterate with tax)
-    const healthEmployer = (covered && (F.healthAccum || !anyFull)) ? eff.employerHealth : 0;
-    function healthPerPerson(magi) {
-      let h = 0;
-      for (const p of eff.adults) {
-        const age = y - p.birthYear;
-        if (age < 65) {
-          const share = magi <= 85000 ? 0.30 : (magi <= 150000 ? 0.65 : 1.0);
-          h += eff.acaPerPerson * share;
-        } else h += eff.partB + eff.medSupp;
-      }
-      return h;
-    }
-
-    // Iterative solve for health + tax + withdrawals when withdrawal needed.
-    // Fixed outflows/inflows excluding health & tax:
-    const baseIn = income + ss + rentNet + partTime + sellProceeds;
-    const baseOut = spend + child + primaryCosts + loanPay + edu529;
-    let health = covered ? healthEmployer : 0;
-    let tax = 0, wd = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 }, wdTotal = 0, deposit = 0;
-    const need0 = baseOut - baseIn;
-    if (!covered && (need0 + health > 0 || allRet || !anyFull)) {
-      // iterate health/tax twice (build-state: gross-up 2 iterations)
-      let wdTradEst = 0;
-      for (let it = 0; it < 2; it++) {
-        const magi = ss + Math.max(0, rentNet) + wdTradEst;
-        health = healthPerPerson(magi);
-        const need = baseOut + health + tax - baseIn;
-        // withdrawal plan against grown balances
-        wd = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 };
-        let rem = need;
-        if (rem > 0) {
-          for (const k of WD_ORDER) { const take = Math.min(grown[k], rem); wd[k] = take; rem -= take; }
-        }
-        wdTradEst = wd.traditional;
-        tax = (wd.traditional + 0.85 * ss + Math.max(0, rentNet)) * eff.retTaxRate;
-      }
-      const need = baseOut + health + tax - baseIn;
-      wd = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 };
-      let rem = need;
-      if (rem > 0) { for (const k of WD_ORDER) { const take = Math.min(grown[k], rem); wd[k] = take; rem -= take; } }
-      wdTotal = WD_ORDER.reduce((s, k) => s + wd[k], 0);
-      if (rem > 0) { failed = true; failYear = y; }
-      deposit = rem < 0 ? -rem : 0;
-    } else {
-      // covered (employer) health or pure surplus: single pass, tax only if flag
-      health = covered ? healthEmployer : health;
-      const need = baseOut + health - baseIn;
-      if (need > 0) {
-        let rem = need;
-        for (const k of WD_ORDER) { const take = Math.min(grown[k], rem); wd[k] = take; rem -= take; }
-        wdTotal = WD_ORDER.reduce((s, k) => s + wd[k], 0);
-        if (rem > 0) { failed = true; failYear = y; }
-      } else deposit = -need;
-      if (F.taxWorking && (wd.traditional > 0 || ss > 0)) {
-        tax = (wd.traditional + 0.85 * ss + Math.max(0, rentNet)) * eff.retTaxRate;
-        // tax paid from cash then order
-        let rem = tax;
-        for (const k of WD_ORDER) { const avail = grown[k] - wd[k]; const take = Math.min(Math.max(0, avail), rem); wd[k] += take; rem -= take; }
-        wdTotal += tax - rem;
-        if (rem > 0) { failed = true; failYear = y; }
-        deposit = Math.max(0, deposit - tax);
-      }
-    }
-
-    // apply flows
-    if (opts.coast) deposit = 0;
-    if (eff.savingsOverridden && deposit > 0) deposit = Math.max(0, deposit + (eff.annualSavings - eff.hh.annualSavingsCents / C));
-    if (deposit > 0 && F.savingsPlus !== 'none') {
-      let plus = 0;
-      if (F.savingsPlus === 'contrib' || F.savingsPlus === 'annualPlusContrib') plus += eff.accounts.filter(a => a.includeInInvestable && CATS.includes(a.type)).reduce((s, a) => s + a.annualContributionCents / C, 0);
-      if (F.savingsPlus === 'annual' || F.savingsPlus === 'annualPlusContrib') plus += eff.annualSavings;
-      deposit += plus;
-    }
-    const end = {};
-    for (const k of CATS) end[k] = grown[k] - wd[k];
-    if (deposit > 0) {
-      distribute(eff, end, deposit);
-    }
-    if (F.flowFirst && !failed) {
-      for (const k of CATS) end[k] = end[k] * (1 + r);
-    }
-    if (failed) {
-      for (const k of CATS) end[k] = 0;
-    }
-    const endTotal = totalBal(end);
-    rows.push({
-      year: y, ages: eff.adults.map(p => y - p.birthYear), phase: allRet ? '退休' : (anyRet || anyDown ? '过渡' : '积累'),
-      start: startTotal, growth: grownTotal - startTotal, income, ss, rentNet, partTime, sellProceeds,
-      spend, child, primaryCosts, loanPay, health, tax,
-      wd: { ...wd }, wdTotal, deposit, end: endTotal, bal: { ...end }, failed,
-    });
-    // guardrail state for next year: trigger if end total fell > trigger% vs start of this year
-    if (opts.guardrail) {
-      const trig = eff.A.guardrailTriggerBps / 10000, rest = eff.A.guardrailRestoreBps / 10000;
-      if (!guardCutActive && startTotal > 0 && endTotal < startTotal * (1 - trig)) guardCutActive = true;
-      else if (guardCutActive && prevEndTotal > 0 && endTotal >= prevEndTotal * (1 + 0)) guardCutActive = false; // simplified restore
-    }
-    prevEndTotal = endTotal;
-    bal = end;
-    if (failed) break;
+  for (const y of res.years) {
+    const d = {};
+    for (const k of CATS6) d[k] = y.startCategories[k] / C;
+    balAtYearStart[y.year] = d;
   }
-  return { rows, failed, failYear, endBalance: totalBal(bal), endBal: bal, firstRetYear, balAtYearStart };
+  const last = res.years[res.years.length - 1];
+  return {
+    rows,
+    failed: !res.success,
+    failYear: res.firstRetirementShortfallYear,
+    firstShortfallYear: res.firstShortfallYear,
+    endBalance: (last?.endCents ?? 0) / C,
+    endBal: last ? rows[rows.length - 1].bal : startBalances(eff),
+    firstRetYear: res.fullRetirementYear,
+    earliestRetYear: res.earliestRetirementYear,
+    bridgeEndYear: res.bridgeEndYear,
+    horizonYear: res.horizonYear,
+    finalYear: res.finalYear,
+    balAtYearStart,
+    raw: res,
+  };
 }
 
-/* Distribute a surplus into categories per flags.saveSplit. Mutates bal. */
-function distribute(eff, bal, amount) {
-  const F = eff.flags;
-  const accts = eff.accounts.filter(a => a.includeInInvestable && CATS.includes(a.type));
-  const contrib = accts.map(a => ({ type: a.type, amt: a.annualContributionCents / C }));
-  const totContrib = contrib.reduce((s, c) => s + c.amt, 0);
-  if (F.saveSplit === 'all_taxable') { bal.taxable += amount; return; }
-  if (F.saveSplit === 'all_cash') { bal.cash += amount; return; }
-  if (F.saveSplit === 'proportional_balance') {
-    const t = totalBal(bal);
-    if (t <= 0) { bal.taxable += amount; return; }
-    for (const k of CATS) bal[k] += amount * bal[k] / t;
-    return;
-  }
-  if (F.saveSplit === 'contrib_proportional') {
-    if (totContrib <= 0) { bal.taxable += amount; return; }
-    for (const c of contrib) bal[c.type] += amount * c.amt / totContrib;
-    return;
-  }
-  // contrib_then_X
-  let rem = amount;
-  for (const c of contrib) { const give = Math.min(c.amt, rem); bal[c.type] += give; rem -= give; if (rem <= 0) break; }
-  if (rem > 0) bal[F.saveSplit === 'contrib_then_cash' ? 'cash' : 'taxable'] += rem;
-}
-
-/* FI via binary search on retirement sub-model starting at firstRetYear of main run.
-   Calibrated semantics (see port/CALIBRATION.md): the sub-model credits SS and
-   part-time income but NOT rental income. */
+/* FI — the original solve: annuity-withdrawal bisection from the first
+   both-retired year to the oldest adult's 95th birthday (dollars out). */
 function solveFI(eff, mainRun) {
-  const F = eff.flags;
-  if (F.fiMode === 'annuity_gross' || F.fiMode === 'annuity_net') {
-    // find first both-retired year
-    const row = mainRun.rows.find(r => r.phase === '退休');
-    if (!row) return null;
-    const y0 = row.year;
-    const endRef = F.endBy === 'p2' ? eff.adults[1] : eff.adults[0];
-    const years = (endRef.birthYear + 95) - y0;
-    let W;
-    if (F.fiMode === 'annuity_gross') W = eff.spendMust + eff.spendLike;
-    else W = row.wdTotal + row.deposit; // net portfolio withdrawal in first retired year (approx: need met by portfolio)
-    if (Math.abs(eff.real) < 1e-9) return W * years;
-    return W * (1 - Math.pow(1 + eff.real, -years)) / eff.real;
-  }
-  // binary on retirement sub-sim (rent not credited — calibrated)
-  const y0 = mainRun.firstRetYear;
-  if (y0 == null) return null;
-  const startCats = mainRun.balAtYearStart[y0];
-  const tot = totalBal(startCats);
-  if (tot <= 0) return null;
-  const props = {}; for (const k of CATS) props[k] = startCats[k] / tot;
-  function survives(X) {
-    const sb = {}; for (const k of CATS) sb[k] = X * props[k];
-    const sub = simulate(eff, { startYear: y0, startBal: sb, noRent: true });
-    return !sub.failed;
-  }
-  let lo = 0, hi = Math.max(tot, 1);
-  while (survives(hi) && hi < 1e12) hi *= 2;
-  for (let i = 0; i < 60; i++) {
-    const mid = (lo + hi) / 2;
-    if (survives(mid)) hi = mid; else lo = mid;
-  }
-  return hi;
+  if (!mainRun || mainRun.firstRetYear == null || mainRun.horizonYear == null) return null;
+  const withdrawalYears = Math.max(0, mainRun.horizonYear - mainRun.firstRetYear);
+  if (withdrawalYears <= 0) return null;
+  const spendingCents = eff.fam.mustCents + eff.fam.likeCents;
+  return solveFiForWithdrawalYears(spendingCents, eff.real, withdrawalYears) / C;
 }
 
 function defaultFlags() {
   return {
-    saveSplit: 'contrib_proportional',
+    saveSplit: 'original',      // inert under the faithful engine (kept for shape)
     edu529Out: false,
     childEdu: 'annual',
     rentGrowthReal: true,
-    partTime: 'bridge',
-    endBy: 'p1',
-    fiMode: 'binary',
+    partTime: 'none',           // faithful default: no part-time inflow in the main engine
+    endBy: 'oldest',
+    fiMode: 'original',
     taxWorking: false,
     healthAccum: true,
-    loansInFlow: 'ret',
+    loansInFlow: 'always',
     growthNominal: false,
     flowFirst: false,
     rentCosts: true,
     primaryCosts: true,
-    savingsPlus: 'none', // 'contrib' | 'annual' | 'annualPlusContrib'
+    savingsPlus: 'none',
   };
 }
 
 function runAll(state, flags, scenario) {
   const eff = effectiveInputs(state, scenario || null);
   eff.flags = { ...defaultFlags(), ...(flags || {}) };
-  if (!eff.flags.healthAccum) { /* handled inside simulate via flag check below */ }
   const main = simulate(eff, {});
   const fi = solveFI(eff, main);
   let achieveYear = null, achieveAge = null;
   if (fi != null) {
-    /* Calibrated: achievement year = first year whose START balance >= FI. */
-    for (const r of main.rows) { if (r.start >= fi) { achieveYear = r.year; achieveAge = r.ages[0]; break; } }
+    const investable = eff.fam.startCents / C;
+    if (investable >= fi) {
+      achieveYear = eff.baseYear;
+    } else {
+      const hit = main.rows.find((r) => r.end >= fi);
+      if (hit) achieveYear = hit.year;
+    }
+    if (achieveYear != null && eff.fam.adults.length > 0) {
+      achieveAge = achieveYear - Math.min(...eff.fam.adults.map((a) => a.birthYear));
+    }
   }
   return { eff, main, fi, achieveYear, achieveAge, endBalance: main.endBalance };
 }
 
-/* Monte Carlo. opts: { seed, runs, sigma, dist:'lognormal'|'normal', guardrail, streamMode:'shared'|'perRun' } */
+/* Monte Carlo — port-shaped wrapper over the original runMonteCarlo.
+   opts: { seed, runs, sigmaBps, dist, guardrail, streamMode(ignored) } */
 function mcRun(eff, opts) {
+  opts = opts || {};
   const A = eff.A;
   const seed = opts.seed != null ? opts.seed : A.mcSeed;
   const runs = opts.runs != null ? opts.runs : A.mcRuns;
-  const sigma = (opts.sigmaBps != null ? opts.sigmaBps : A.mcSigmaBps) / 10000;
+  const sigmaBps = opts.sigmaBps != null ? opts.sigmaBps : A.mcSigmaBps;
   const dist = opts.dist || A.mcDistribution;
-  const shared = mulberry32(seed);
-  const ends = [];
-  let pass = 0;
-  const mu = Math.log(1 + eff.real) - sigma * sigma / 2;
-  for (let i = 0; i < runs; i++) {
-    const rng = opts.streamMode === 'perRun' ? mulberry32(seed + i) : shared;
-    const retFn = (y) => {
-      const z = gauss(rng);
-      if (dist === 'lognormal') return Math.exp(mu + sigma * z) - 1;
-      return Math.max(-0.95, eff.real + sigma * z);
-    };
-    const res = simulate(eff, { retFn, guardrail: !!opts.guardrail });
-    ends.push(res.endBalance);
-    if (!res.failed) pass++;
-  }
-  ends.sort((a, b) => a - b);
-  const pct = (p) => ends[Math.min(runs - 1, Math.floor(p * runs))];
-  return { passRate: pass / runs, p10: pct(0.10), p50: pct(0.50), p90: pct(0.90), ends };
+  const fam = {
+    ...eff.fam,
+    guardrails: {
+      enabled: A.guardrailEnabled,
+      triggerDropBps: A.guardrailTriggerBps,
+      cutBps: A.guardrailCutBps,
+      restoreRiseBps: A.guardrailRestoreBps,
+    },
+  };
+  const mc = runMonteCarloCents(fam, eff.real, null, {
+    runs,
+    sigmaBps,
+    distribution: dist,
+    seed,
+    guardrailsOn: !!opts.guardrail,
+  });
+  return {
+    passRate: mc.passRate,
+    p10: mc.finalP10 / C,
+    p50: mc.finalP50 / C,
+    p90: mc.finalP90 / C,
+    ends: mc.finals.map((v) => v / C),
+  };
 }
-
 
 
 /* ================= 我的 FIRE（登录后真实模式，数据存 Supabase fire_profile） ================= */
@@ -2180,11 +2801,11 @@ function mfRenderAll(){
   /* 口径与免责 */
   h += "<details style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>📐 口径与免责</summary><div style='color:#aaa;font-size:.85em;line-height:1.8'>"
     + "· 全程实际美元：所有金额按今天购买力计，回报用 Fisher 精确式 (1+名义)/(1+通胀)−1。<br>"
-    + "· 逐年引擎：分类余额（现金/应税/传统/Roth/HSA）同一实际回报增长；积累期存款 = 年度残差按各账户供款比例分流；工作年份的支出预算视为已含住房贷款还款，双人退休后贷款还款单列流出。<br>"
-    + "· 退休取款严格按 现金→应税→传统→Roth→HSA；传统取款与医疗按退休平均税率 gross-up 迭代 2 次（应税代理 = 传统取款 + 社保×85% + 租金正数）。<br>"
-    + "· 社保按 FRA=67 的 ssFactor 表调整领取年龄；医疗：有雇主覆盖用雇主年额，否则 65 岁前 ACA 三档（MAGI ≤$85k 担 30%、≤$150k 担 65%、以上全额），65+ 为 Part B $2,434.80 + 补充保费。<br>"
-    + "· 模拟 FI 为退休子模型二分求解（计社保与兼职、不计租金抵扣）；达标年 = 年初余额首次 ≥ FI 的年份。<br>"
-    + "· Monte Carlo 种子可复现；断粮 = 失败。与私人版审计基准的已知差异见 goal 记录（FI 约 +1%、期末约 −1%、MC 分布更宽），口径细节以本页为准。<br>"
+    + "· 逐年引擎与私人版 FIRE 应用同一套（逐行同口径移植，同一数据下结果逐分一致）：分类余额年初先按当年实际回报增长、再应用当年净现金流；积累期盈余先入在职者 401(k)+match、再按账户供款额分流、余入应税账户，退休期盈余全入应税账户；贷款按月摊还，卖房在卖出年年初按增值后房价结清贷款并扣 5% 售房成本。<br>"
+    + "· 取款严格按 现金→应税→传统→Roth→HSA→其他；仅退休期计税，税与医疗按 MAGI 代理（工资 + 社保 + 传统取款估计 + 租金正数）gross-up 迭代求解（应税代理 = 传统取款 + 社保×85% + 租金正数）。<br>"
+    + "· 社保按 FRA=67 的 ssFactor 规则调整领取年龄；医疗逐人计：全职免自付，无雇主覆盖时 65 岁前 ACA 三档（MAGI ≤$85k 担 30%、≤$150k 担 65%、以上全额），65+ 为 Part B $2,434.80 + 补充保费；有人配置降档且带雇主医保时按雇主年额计。<br>"
+    + "· FI = 按「全员退休年 → 最年长者 95 岁」的取款年数、对年支出（必要+享受）做年金二分求解；达标年 = 年末余额首次 ≥ FI 的年份。<br>"
+    + "· Monte Carlo 与原应用同一随机流（mulberry32 + 极坐标高斯）：每轮预抽全程逐年对数正态实际回报（矩匹配参数化、均值 = Fisher 实际回报），跑完整逐年模拟；任一退休年份断粮 = 该轮失败；百分位为线性插值。<br>"
     + "· 医疗三档阈值、Part B 等为 2026 年前后口径的估计，不是税务/社保官方结论；本工具只做规划演示，不构成财务建议。</div></details>";
   h += "</div>";
   MF.root.innerHTML = h;
