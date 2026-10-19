@@ -117,10 +117,16 @@
 .cc-hint{margin-top:7px;background:#2a2410;border:1px solid #ffd93d;color:#ffe9a8;border-radius:7px;padding:7px 9px;font-size:.85em;line-height:1.5}
 .cc-badge{display:inline-block;background:#5a1620;color:#ff9d9d;border:1px solid #e5484d;border-radius:8px;padding:1px 7px;font-size:.72em;font-weight:bold;margin-left:8px;vertical-align:2px}
 .cc-badge.soft{background:#26260f;color:#ffd93d;border-color:#8a7a1f}
+#alertBanner{margin:0 0 10px;padding:9px 12px;border-radius:8px;font-size:0.85em;line-height:1.65}
+#alertBanner.red{background:#3a1216;border:1px solid #e5484d;color:#ffd7d7}
+#alertBanner.orange{background:#3a2a10;border:1px solid #e8a13a;color:#ffe4b8}
+#alertBanner .ab-close{float:right;cursor:pointer;background:none;border:none;color:inherit;font-size:1.05em;line-height:1;padding:1px 3px}
+.acct-cover b{color:#fff}
 </style>
 </head>
 <body>
 <div class="container">
+<div id="alertBanner" style="display:none"></div>
 <h1>💳 Daran 的信用卡优化器</h1>
 <p class="subtitle">一目了然的刷卡指南 | 房租 $7,000/月</p>
 <div class="auth-bar" id="authBar"><span id="authStatus">🔒 登录后看我的实测数据</span><span id="authBtnWrap"><button class="auth-btn" onclick="toggleLoginForm()">邮箱登录</button></span><div id="loginForm" style="display:none;width:100%;margin-top:6px"><input class="auth-input" id="loginEmail" type="email" placeholder="输入白名单邮箱" autocomplete="email"> <button class="auth-btn" onclick="sendMagicLink()">发送登录链接</button><span id="loginMsg" style="color:#9fd8ff;margin-left:8px"></span></div></div>
@@ -191,65 +197,204 @@
 
 <!-- Group: Daily -->
 <div class="group-header open" onclick="this.classList.toggle('open')"><h3>🛒 日常消费</h3><span class="garrow">›</span></div>
-<div class="group-body" style="display:block">
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🏠</span><span class="cat-name">房租</span><span class="best-name">Bilt Palladium</span><span class="best-rate">最高1.25x≈2.8%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 唯一能赚房租积分的卡。$7K满比例=8,750pts/月(≈$157-219)。需非房租消费≥$7K</div><div class="alts"><b>备选：</b>无替代</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🥦</span><span class="cat-name">超市</span><span class="best-name">⚡Freedom Flex/老Freedom</span><span class="best-rate">5x UR≈10%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Q4(10-12月)轮转:超市5x UR,按转Hyatt≈2¢算≈10%,高于Gold 4x MR≈8%。额度$1,500/卡/季(与餐饮共用),两张卡合计$3,000;不含Walmart/Target;12/14前激活(Chase可追溯)。</div><div class="alts"><b>备选：</b>Amex Gold 4x(额度用完后) | Bilt 2x(凑比例)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🍽️</span><span class="cat-name">餐饮</span><span class="best-name">⚡Freedom Flex</span><span class="best-rate">7x UR≈14%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="dining"><div class="why">💡 Q4 Flex餐饮=常驻3x+季度4x=7x UR≈14%,本季最强;与超市共用$1,500/卡额度(老Freedom餐饮只有5x);12/14前激活可追溯。额度用完→Gold 4x。不收Amex→Atmos 3x(≈4.65%)</div><div class="alts"><b>备选：</b>Atmos 3x | Bilt 2x(凑比例) | Marriott Brilliant 3x</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">⛽</span><span class="cat-name">加油</span><span class="best-name">Costco Anywhere Visa</span><span class="best-rate">4%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Q4轮转没有加油(Q3的5%已结束)。Costco卡加油4%(含Costco油站,年cap $7,000)。</div><div class="alts"><b>备选：</b>Smartly 4% | Bilt 2x(凑比例)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🚕</span><span class="cat-name">打车</span><span class="best-name">⚡CSR Lyft 5x / Gold Uber</span><span class="best-rate">5x UR!≈10.3%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="rideshare"><div class="why">💡 Lyft用CSR=5x UR(合作伙伴)！Uber用Gold拿$10/月credit。CSR降级后→Bilt 2x或Smartly 4%</div><div class="alts"><b>备选：</b>Bilt 2x(凑比例) | Smartly 4% | Plat Uber $15/月credit(关前)</div></div>
-
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">📦</span><span class="cat-name">Amazon</span><span class="best-name">Amazon Prime Visa</span><span class="best-rate">5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Amazon+Whole Foods 5%无敌</div><div class="alts"><b>备选：</b>无</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🏪</span><span class="cat-name">Costco</span><span class="best-name">U.S. Bank Smartly</span><span class="best-rate">4% cash</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Costco收Visa✓。Smartly 4%>Costco卡2%。Bilt是MC不能用</div><div class="alts"><b>备选：</b>Costco Visa 2%</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🏬</span><span class="cat-name">百货商店</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x≈5%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="shopping"><div class="why">💡 Bilt 2x(≈5%Hyatt)+凑比例。无特定百货bonus卡</div><div class="alts"><b>备选：</b>Smartly 4% | USB Cash+5%(如选百货为类别)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🔨</span><span class="cat-name">Home Improvement</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x≈5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Home Depot/Lowes等。Bilt 2x凑比例+≈5%Hyatt</div><div class="alts"><b>备选：</b>Smartly 4% | USB Cash+5%(如选Home Improvement为类别) | CFF/Discover 5%(如当季)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">⭐</span><span class="cat-name">其他</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x≈5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 转Hyatt≈5%+凑房租比例。月度目标后→Smartly 4%</div><div class="alts"><b>备选：</b>Smartly 4%(目标后)</div></div>
-</div>
+<div class="group-body" id="recG1" style="display:block"></div>
 
 <!-- Group: Travel -->
 <div class="group-header" onclick="this.classList.toggle('open')"><h3>✈️ 旅行预订</h3><span class="garrow">›</span></div>
-<div class="group-body">
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">✈️</span><span class="cat-name">Alaska机票</span><span class="best-name">Atmos Summit</span><span class="best-rate">3x+Status≈4.65%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="airline"><div class="why">💡 3x+status pts攒MVP。可兑oneworld商务舱</div><div class="alts"><b>备选：</b>CSR Portal 5x(降级前!) | Plat 5x(关前!)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🛫</span><span class="cat-name">其他机票</span><span class="best-name">⚡CSR Portal / Amex Plat</span><span class="best-rate">5x≈10%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="airline"><div class="why">💡 CSR Portal订=5x UR(降级前!)。直接航司买=Amex Plat 5x MR(关前!)。两个都没了后→Atmos 3x(境外) 或 Bilt 2x</div><div class="alts"><b>备选：</b>Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🚗</span><span class="cat-name">租车</span><span class="best-name">⚡CSR Portal</span><span class="best-rate">10x UR!≈20.5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Chase Portal租车=10x UR！(降级前猛用!) 降级后→Bilt 2x或Smartly 4%</div><div class="alts"><b>备选：</b>Bilt 2x(≈5%Hyatt+凑比例) | Smartly 4%</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🏨</span><span class="cat-name">Marriott酒店</span><span class="best-name">Marriott Brilliant</span><span class="best-rate">6x≈4.2%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="hotel"><div class="why">💡 最高Marriott倍率+Platinum Elite升级</div><div class="alts"><b>备选：</b>CSR Portal 10x(降级前!)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🛏️</span><span class="cat-name">其他酒店</span><span class="best-name">⚡CSR Portal</span><span class="best-rate">10x UR!≈20.5%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="hotel"><div class="why">💡 Portal订=10x UR超值！降级前多用。之后→Bilt Portal($400 credit) 或 Plat FHR($200)</div><div class="alts"><b>备选：</b>Amex Gold 5x(Amex Travel预付!) | Plat FHR($200) | Bilt Portal($400) | Smartly 4%</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🌍</span><span class="cat-name">境外消费</span><span class="best-name">Atmos Summit</span><span class="best-rate">3x≈4.65%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 无FTF+兑Cathay商务舱可达约9.8cpp。Bilt月度没达标→先Bilt</div><div class="alts"><b>备选：</b>Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🌏</span><span class="cat-name">境外餐饮</span><span class="best-name">Amex Gold</span><span class="best-rate">4x MR≈8%</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="dining"><div class="why">💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x</div><div class="alts"><b>备选：</b>Atmos 3x | Bilt 2x(凑比例)</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🚇</span><span class="cat-name">公交/地铁</span><span class="best-name">U.S. Bank Smartly</span><span class="best-rate">4% cash</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Q4轮转没有公交(Q3的5%已结束),4%返现兜底。</div><div class="alts"><b>备选：</b>Bilt 2x(凑比例) | Smartly 4%</div></div>
-</div>
+<div class="group-body" id="recG2"></div>
 
 <!-- Group: Utility/Subscriptions -->
 <div class="group-header" onclick="this.classList.toggle('open')"><h3>🏠 账单 & 订阅</h3><span class="garrow">›</span></div>
-<div class="group-body">
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">📺</span><span class="cat-name">流媒体</span><span class="best-name">Amex Platinum</span><span class="best-rate">$20/月报销!</span><span class="arrow">›</span></div>
-<div class="rec-detail" data-ccat="entertainment"><div class="why">💡 Disney+/Hulu/ESPN+/NYT $20/月报销！关卡(12/17)后→USB Cash+ 5%</div><div class="alts"><b>备选：</b>USB Cash+ 5%(Plat关后) | Bilt 2x</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">📱</span><span class="cat-name">手机账单</span><span class="best-name">Bilt Palladium</span><span class="best-rate">2x+手机保险≈4.4%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 Cell Phone Protection $800/次+凑比例+≈5%Hyatt</div><div class="alts"><b>备选：</b>USB Cash+ 5%(无保险) | Smartly 4%</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">💡</span><span class="cat-name">水电</span><span class="best-name">USB Cash+</span><span class="best-rate">5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 选Utilities为5%类别，固定账单稳赚</div><div class="alts"><b>备选：</b>Bilt 2x(凑比例) | Smartly 4%</div></div>
-<div class="rec-row" onclick="this.classList.toggle('open')"><span class="cat-icon">🌐</span><span class="cat-name">网络/WiFi</span><span class="best-name">USB Cash+</span><span class="best-rate">5%</span><span class="arrow">›</span></div>
-<div class="rec-detail"><div class="why">💡 选TV/Internet/Streaming为5%类别</div><div class="alts"><b>备选：</b>Bilt 2x | Smartly 4%</div></div>
+<div class="group-body" id="recG3"></div>
 </div>
 </div>
-</div>
+
+<script>
+// ===== 消费推荐：数据驱动渲染（改季度只改 REC_ROTATION / 候选数据，禁止手改推荐行）=====
+var REC_CPP = { UR: 2.05, MR: 2.0, Bilt: 2.5, Atmos: 1.55, Marriott: 0.7, cash: 1.0 };
+var REC_ROTATION = {
+  quarter: "2026Q4", qLabel: "Q4(10-12月)",
+  chase: { cats: { grocery: 5, dining: 5, redcross: 5 }, cap: 1500, activateBy: "12/14" },
+  discover: { cats: { dining: 5, entertainment: 5, utilities: 5 }, cap: 1500 }
+};
+function recRotMult(c) {
+  if (!c.rot) return null;
+  var R = REC_ROTATION[c.rot[0]];
+  if (R && R.cats && R.cats[c.rot[1]]) return R.cats[c.rot[1]];
+  return null;
+}
+function recEffM(c) { var r = recRotMult(c); return r == null ? c.m : c.m + r - 1; }
+// sv = 口径分值覆盖：现金优先的类别（加油/公交）里 Bilt 2x 需转Hyatt才≈5%、且凑比例已由其他消费覆盖，计分排在 4% 现金之后
+function recScore(c) { if (c.sv != null) return c.sv; return recEffM(c) * (REC_CPP[c.cur] || 1); }
+function recRate(c) {
+  if (recRotMult(c) != null) {
+    var m = recEffM(c);
+    return c.cur === "cash" ? (m + "%") : (m + "x " + c.cur + "≈" + Math.round(m * REC_CPP[c.cur]) + "%");
+  }
+  return c.rate || "";
+}
+function rotOn(issuer, cat) { var R = REC_ROTATION[issuer]; return !!(R && R.cats && R.cats[cat]); }
+// 候选字段：n 展示名 / s 备选链短名 / cur 币种 / m 常驻倍率 / rate 常驻展示 / rot [发卡方,轮转类别] / pin 规则型置顶
+var REC_CATS = [
+  // ===== 日常消费 (g:1) =====
+  { g: 1, icon: "🏠", name: "房租", why: "💡 唯一能赚房租积分的卡。$7K满比例=8,750pts/月(≈$157-219)。需非房租消费≥$7K", alts: "无替代",
+    candidates: [ { n: "Bilt Palladium", cur: "Bilt", m: 1.25, rate: "最高1.25x≈2.8%", pin: true } ] },
+  { g: 1, icon: "🥦", name: "超市",
+    why: function() {
+      if (rotOn("chase", "grocery")) { var R = REC_ROTATION.chase; return "💡 " + REC_ROTATION.qLabel + "轮转:超市" + R.cats.grocery + "x UR,按转Hyatt≈2¢算≈10%,高于Gold 4x MR≈8%。额度$" + R.cap.toLocaleString() + "/卡/季(与餐饮+捐款共用),两张卡合计$3,000;不含Walmart/Target;" + R.activateBy + "前激活(Chase可追溯)。"; }
+      return "💡 本季轮转没有超市。Amex Gold 4x MR≈8%(转航司,TPG 2.0cpp),$25K/年cap。";
+    },
+    candidates: [
+      { n: "Freedom Flex/老Freedom", s: "Freedom 5x", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "grocery"] },
+      { n: "Amex Gold", s: "Amex Gold 4x", cur: "MR", m: 4, rate: "4x MR≈8%" },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
+  { g: 1, icon: "🍽️", name: "餐饮", ccat: "dining",
+    why: function() {
+      if (rotOn("chase", "dining")) { var R = REC_ROTATION.chase; return "💡 " + REC_ROTATION.qLabel + " Flex餐饮=常驻3x+季度" + (R.cats.dining - 1) + "x=" + (R.cats.dining + 2) + "x UR≈14%,本季最强;与超市共用$" + R.cap.toLocaleString() + "/卡额度(老Freedom餐饮只有" + R.cats.dining + "x);" + R.activateBy + "前激活可追溯。额度用完→Gold 4x。不收Amex→Atmos 3x(≈4.65%)"; }
+      return "💡 Amex Gold 4x MR≈8%全球餐饮最强($50K/年cap)。Flex常驻3x、Atmos 3x为备选。";
+    },
+    candidates: [
+      { n: "Freedom Flex", s: "Freedom Flex 轮转", cur: "UR", m: 3, rate: "3x UR≈6%", rot: ["chase", "dining"] },
+      { n: "老Freedom", s: "老Freedom 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "dining"] },
+      { n: "Amex Gold", s: "Amex Gold 4x", cur: "MR", m: 4, rate: "4x MR≈8%" },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
+      { n: "Marriott Brilliant", s: "Marriott Brilliant 3x", cur: "Marriott", m: 3, rate: "3x≈2.1%" } ] },
+  { g: 1, icon: "⛽", name: "加油",
+    why: function() {
+      if (rotOn("chase", "gas") || rotOn("discover", "gas")) return "💡 本季轮转含加油5%,额度内先刷轮转卡。";
+      return "💡 本季轮转没有加油(Q3的5%已结束)。Costco卡加油4%(含Costco油站,年cap $7,000)。";
+    },
+    candidates: [
+      { n: "Costco Anywhere Visa", s: "Costco 4%", cur: "cash", m: 4, rate: "4%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%", sv: 3.9 } ] },
+  { g: 1, icon: "🚕", name: "打车", ccat: "rideshare", why: "💡 Lyft用CSR=5x UR(合作伙伴)！Uber用Gold拿$10/月credit。CSR降级后→Bilt 2x或Smartly 4%",
+    candidates: [
+      { n: "⚡CSR Lyft 5x / Gold Uber", cur: "UR", m: 5, rate: "5x UR!≈10.3%", pin: true },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
+      { n: "Amex Platinum", s: "Plat Uber $15/月credit(关前)", cur: "cash", m: 0, rate: "" } ] },
+  { g: 1, icon: "📦", name: "Amazon", why: "💡 Amazon+Whole Foods 5%无敌", alts: "无",
+    candidates: [ { n: "Amazon Prime Visa", cur: "cash", m: 5, rate: "5%" } ] },
+  { g: 1, icon: "🏪", name: "Costco", why: "💡 Costco收Visa✓。Smartly 4%>Costco卡2%。Bilt是MC不能用",
+    candidates: [
+      { n: "U.S. Bank Smartly", cur: "cash", m: 4, rate: "4% cash" },
+      { n: "Costco Anywhere Visa", s: "Costco Visa 2%", cur: "cash", m: 2, rate: "2%" } ] },
+  { g: 1, icon: "🏬", name: "百货商店", ccat: "shopping", why: "💡 Bilt 2x(≈5%Hyatt)+凑比例。无特定百货bonus卡",
+    candidates: [
+      { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
+      { n: "USB Cash+", s: "USB Cash+5%(如选百货为类别)", cur: "cash", m: 5, rate: "5%" } ] },
+  { g: 1, icon: "🔨", name: "Home Improvement", why: "💡 Home Depot/Lowes等。Bilt 2x凑比例+≈5%Hyatt",
+    candidates: [
+      { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
+      { n: "USB Cash+", s: "USB Cash+5%(如选Home Improvement为类别)", cur: "cash", m: 5, rate: "5%" },
+      { n: "CFF/Discover", s: "CFF/Discover 5%(如当季)", cur: "cash", m: 1, rate: "1%" } ] },
+  { g: 1, icon: "⭐", name: "其他", why: "💡 转Hyatt≈5%+凑房租比例。月度目标后→Smartly 4%",
+    candidates: [
+      { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%(目标后)", cur: "cash", m: 4, rate: "4%" } ] },
+  // ===== 旅行预订 (g:2) =====
+  { g: 2, icon: "✈️", name: "Alaska机票", ccat: "airline", why: "💡 3x+status pts攒MVP。可兑oneworld商务舱",
+    candidates: [
+      { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x+Status≈4.65%", pin: true },
+      { n: "CSR Portal", s: "CSR Portal 5x(降级前!)", cur: "UR", m: 5, rate: "5x UR≈10%" },
+      { n: "Amex Platinum", s: "Plat 5x(关前!)", cur: "MR", m: 5, rate: "5x MR≈10%" } ] },
+  { g: 2, icon: "🛫", name: "其他机票", ccat: "airline", why: "💡 CSR Portal订=5x UR(降级前!)。直接航司买=Amex Plat 5x MR(关前!)。两个都没了后→Atmos 3x(境外) 或 Bilt 2x", alts: "Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)",
+    candidates: [
+      { n: "⚡CSR Portal / Amex Plat", cur: "UR", m: 5, rate: "5x≈10%", pin: true },
+      { n: "Atmos Summit", s: "Atmos 3x(境外航司)", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
+      { n: "Amex Gold", s: "Amex Gold 3x(航司直购)", cur: "MR", m: 3, rate: "3x MR≈6%" },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
+  { g: 2, icon: "🚗", name: "租车", why: "💡 Chase Portal租车=10x UR！(降级前猛用!) 降级后→Bilt 2x或Smartly 4%",
+    candidates: [
+      { n: "⚡CSR Portal", cur: "UR", m: 10, rate: "10x UR!≈20.5%" },
+      { n: "Bilt Palladium", s: "Bilt 2x(≈5%Hyatt+凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] },
+  { g: 2, icon: "🏨", name: "Marriott酒店", ccat: "hotel", why: "💡 最高Marriott倍率+Platinum Elite升级",
+    candidates: [
+      { n: "Marriott Brilliant", cur: "Marriott", m: 6, rate: "6x≈4.2%", pin: true },
+      { n: "CSR Portal", s: "CSR Portal 10x(降级前!)", cur: "UR", m: 10, rate: "10x UR≈20.5%" } ] },
+  { g: 2, icon: "🛏️", name: "其他酒店", ccat: "hotel", why: "💡 Portal订=10x UR超值！降级前多用。之后→Bilt Portal($400 credit) 或 Plat FHR($200)",
+    candidates: [
+      { n: "⚡CSR Portal", cur: "UR", m: 10, rate: "10x UR!≈20.5%" },
+      { n: "Amex Gold", s: "Amex Gold 5x(Amex Travel预付!)", cur: "MR", m: 5, rate: "5x MR≈10%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
+      { n: "Amex Platinum", s: "Plat FHR($200)", cur: "cash", m: 0, rate: "" },
+      { n: "Bilt Palladium", s: "Bilt Portal($400)", cur: "cash", m: 0, rate: "" } ] },
+  { g: 2, icon: "🌍", name: "境外消费", why: "💡 无FTF+兑Cathay商务舱可达约9.8cpp。Bilt月度没达标→先Bilt", alts: "Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)",
+    candidates: [
+      { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
+      { n: "Bilt Palladium", s: "Bilt 2x(≈5%+凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "Amex Platinum", s: "Plat 5x(仅机票,关前)", cur: "MR", m: 5, rate: "5x MR≈10%" } ] },
+  { g: 2, icon: "🌏", name: "境外餐饮", ccat: "dining", why: "💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x", alts: "Atmos 3x | Bilt 2x(凑比例)",
+    candidates: [
+      { n: "Amex Gold", cur: "MR", m: 4, rate: "4x MR≈8%" },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
+  { g: 2, icon: "🚇", name: "公交/地铁",
+    why: function() {
+      if (rotOn("chase", "transit")) return "💡 本季Chase轮转含公交5x,额度内先刷Freedom。";
+      return "💡 本季轮转没有公交,4%返现兜底。";
+    },
+    candidates: [
+      { n: "U.S. Bank Smartly", cur: "cash", m: 4, rate: "4% cash" },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%", sv: 3.9 },
+      { n: "Freedom Flex/老Freedom", s: "Freedom 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "transit"] } ] },
+  // ===== 账单 & 订阅 (g:3) =====
+  { g: 3, icon: "📺", name: "流媒体", ccat: "entertainment", why: "💡 Disney+/Hulu/ESPN+/NYT $20/月报销！关卡(12/17)后→USB Cash+ 5%",
+    candidates: [
+      { n: "Amex Platinum", cur: "cash", m: 0, rate: "$20/月报销!", pin: true },
+      { n: "USB Cash+", s: "USB Cash+ 5%(Plat关后)", cur: "cash", m: 5, rate: "5%" },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
+  { g: 3, icon: "📱", name: "手机账单", why: "💡 Cell Phone Protection $800/次+凑比例+≈5%Hyatt",
+    candidates: [
+      { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x+手机保险≈4.4%", pin: true },
+      { n: "USB Cash+", s: "USB Cash+ 5%(无保险)", cur: "cash", m: 5, rate: "5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] },
+  { g: 3, icon: "💡", name: "水电", why: "💡 选Utilities为5%类别，固定账单稳赚",
+    candidates: [
+      { n: "USB Cash+", cur: "cash", m: 5, rate: "5%" },
+      { n: "Discover it", s: "Discover 5%(轮转)", cur: "cash", m: 1, rate: "1%", rot: ["discover", "utilities"] },
+      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] },
+  { g: 3, icon: "🌐", name: "网络/WiFi", why: "💡 选TV/Internet/Streaming为5%类别",
+    candidates: [
+      { n: "USB Cash+", cur: "cash", m: 5, rate: "5%" },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] }
+];
+function renderRecs() {
+  var groups = { 1: [], 2: [], 3: [] };
+  REC_CATS.forEach(function(cat) {
+    var cands = cat.candidates.map(function(c, i) { return { c: c, i: i, score: recScore(c) }; });
+    var best = null;
+    cands.forEach(function(x) { if (x.c.pin && !best) best = x; });
+    if (!best) cands.forEach(function(x) { if (!best || x.score > best.score) best = x; });
+    var rest = cands.filter(function(x) { return x !== best; }).sort(function(a, b) { return (b.score - a.score) || (a.i - b.i); });
+    var bname = best.c.n;
+    if (recRotMult(best.c) != null && bname.indexOf("⚡") !== 0) bname = "⚡" + bname;
+    var why = (typeof cat.why === "function") ? cat.why() : cat.why;
+    var altsHtml;
+    if (cat.alts != null) altsHtml = cat.alts;
+    else altsHtml = rest.slice(0, 4).map(function(x, xi) {
+      var s = x.c.s || x.c.n;
+      if (xi === 0 && recRotMult(best.c) != null) s += "(额度用完后)";
+      return s;
+    }).join(" | ");
+    var row = '<div class="rec-row" onclick="this.classList.toggle(\'open\')"><span class="cat-icon">' + cat.icon + '</span><span class="cat-name">' + cat.name + '</span><span class="best-name">' + bname + '</span><span class="best-rate">' + recRate(best.c) + '</span><span class="arrow">›</span></div>'
+      + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="why">' + why + '</div><div class="alts"><b>备选：</b>' + altsHtml + '</div></div>';
+    groups[cat.g].push(row);
+  });
+  for (var g = 1; g <= 3; g++) {
+    var el = document.getElementById("recG" + g);
+    if (el) el.innerHTML = groups[g].join("\n");
+  }
+}
+renderRecs();
+</script>
 
 <div class="tab-page" id="tp-cards">
 <!-- Cards with Pro Tips -->
@@ -310,7 +455,7 @@
 <div class="credit-item"><div><b>Free Night</b><br><span style="color:#888;font-size:0.8em">Marriott</span></div><span style="color:#4ecdc4;font-weight:bold">85K pts</span><span style="color:#ffd93d">每年</span></div>
 <div class="credit-item"><div><b>Property Credit</b><br><span style="color:#888;font-size:0.8em">Marriott</span></div><span style="color:#4ecdc4;font-weight:bold">$100</span><span style="color:#ffd93d">每年</span></div>
 <div id="extraCredits"></div>
-<div id="myAccounts" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💳 我的账户</h3><div id="acctSummary"></div><div class="acct-grid" id="acctGrid" style="display:none"></div><p id="acctMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
+<div id="myAccounts" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💳 我的账户</h3><div id="acctSummary"></div><div id="acctCover"></div><div class="acct-toggle" id="acctToggle" style="display:none">展开每张卡明细 ▾</div><div class="acct-grid" id="acctGrid" style="display:none"></div><p id="acctMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 </div>
 
 <!-- Perks & Status Map -->
@@ -1077,6 +1222,35 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
   window.signOutCard = function(){ sb.auth.signOut().then(function(){ window.location.hash = ""; window.location.reload(); }); };
   function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
   function money(v){ if (v == null) return "—"; return "$" + Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  var ACCT = null, CASH = null;
+  function daysFromToday(ds){ if (!ds) return null; var t = new Date(); t.setHours(0, 0, 0, 0); var d = new Date(ds + "T00:00:00"); return Math.round((d - t) / 864e5); }
+  function localTodayStr(){ var t = new Date(); function p(n){ return (n < 10 ? "0" : "") + n; } return t.getFullYear() + "-" + p(t.getMonth() + 1) + "-" + p(t.getDate()); }
+  function dueInWindow(rows, n){ var s = 0; rows.forEach(function(a){ if (!a.due_date) return; var stmt = a.statement_balance == null ? 0 : Number(a.statement_balance); if (stmt <= 0) return; var dd = daysFromToday(a.due_date); if (dd !== null && dd >= -3 && dd < n) s += stmt; }); return s; }
+  function cashPrimary(){ if (!CASH) return null; var chk = null, sav = 0; CASH.forEach(function(a){ var av = a.available == null ? (a.balance == null ? 0 : Number(a.balance)) : Number(a.available); if (a.kind === "checking") { if (!chk || av > chk.av) chk = { a: a, av: av }; } else if (a.kind === "savings") { sav += av; } }); return chk ? { chk: chk, sav: sav } : null; }
+  function renderCover(){
+    var el = $("acctCover"); if (!el || !ACCT || !CASH) return;
+    var cp = cashPrimary(); if (!cp) { el.innerHTML = ""; return; }
+    var d14 = dueInWindow(ACCT, 14), d30 = dueInWindow(ACCT, 30);
+    function cov(due){ if (due <= 0) return "无到期压力"; var r = cp.chk.av / due; var col = r >= 2 ? "#4ecdc4" : r >= 1 ? "#ffd93d" : "#ff6b6b"; return "覆盖 <b style='color:" + col + "'>" + r.toFixed(1) + "×</b>"; }
+    el.innerHTML = "<div class='acct-sum-line acct-cover'>💰 还款覆盖：Checking" + (cp.chk.a.mask ? " ··" + esc(cp.chk.a.mask) : "") + " 可用 <b>" + money(cp.chk.av) + "</b>"
+      + (cp.sav > 0 ? "（+Savings " + money(cp.sav) + " 缓冲）" : "")
+      + " ｜ 14 天内到期账单 <b>" + money(d14) + "</b>（" + cov(d14) + "） ｜ 30 天内 <b>" + money(d30) + "</b>（" + cov(d30) + "）</div>";
+  }
+  function renderAlerts(){
+    var b = $("alertBanner"); if (!b || !ACCT) return;
+    var alerts = [];
+    ACCT.forEach(function(a){ var stmt = a.statement_balance == null ? 0 : Number(a.statement_balance); var dd = daysFromToday(a.due_date); if (a.due_date && stmt > 0 && dd !== null && dd < 0) alerts.push({ lv: "red", txt: "🔴 <b>账单已逾期</b>：" + esc(a.card_name) + (a.mask ? " ··" + esc(a.mask) : "") + " 账单余额 " + money(stmt) + " 已于 " + esc(a.due_date) + " 到期，请尽快还款" }); });
+    if (CASH) { var cp = cashPrimary(); if (cp) { var d14 = dueInWindow(ACCT, 14); if (d14 > cp.chk.av) alerts.push({ lv: "red", txt: "🔴 <b>还款资金缺口</b>：14 天内到期账单 " + money(d14) + "，Checking 可用 " + money(cp.chk.av) + "，差额 " + money(d14 - cp.chk.av) + "——记得从 Savings 挪钱或提前安排" }); } }
+    ACCT.forEach(function(a){ if (a.credit_limit != null && Number(a.credit_limit) > 0) { var u = Number(a.balance || 0) / Number(a.credit_limit); if (u >= 0.5) alerts.push({ lv: "orange", txt: "🟠 <b>额度吃紧</b>：" + esc(a.card_name) + (a.mask ? " ··" + esc(a.mask) : "") + " 利用率 " + Math.round(u * 100) + "%（余额 " + money(a.balance) + " / 额度 " + money(a.credit_limit) + "）" }); } });
+    if (!alerts.length) { b.style.display = "none"; b.innerHTML = ""; b.className = ""; return; }
+    var ts = localTodayStr();
+    try { if (window.sessionStorage && sessionStorage.getItem("alertBannerDismissed") === ts) { b.style.display = "none"; return; } } catch (e) {}
+    var hasRed = alerts.some(function(x){ return x.lv === "red"; });
+    b.className = hasRed ? "red" : "orange";
+    b.innerHTML = "<button class='ab-close' id='alertBannerClose' aria-label='关闭'>✕</button>" + alerts.map(function(x){ return "<div>" + x.txt + "</div>"; }).join("");
+    b.style.display = "block";
+    var cb = $("alertBannerClose"); if (cb) cb.addEventListener("click", function(){ b.style.display = "none"; try { sessionStorage.setItem("alertBannerDismissed", ts); } catch (e) {} });
+  }
   function renderUser(user){
     if (user) {
       $("authStatus").innerHTML = "✅ " + esc(user.email);
@@ -1093,12 +1267,20 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         if (res.error) { console.warn("credit_status", res.error.message); return; }
         renderCreditSystems(res.data);
       });
+    sb.from("cash_accounts").select("name,mask,kind,balance,available,updated_at").order("id")
+      .then(function(res){
+        if (res.error) { console.warn("cash_accounts", res.error.message); return; }
+        CASH = res.data;
+        renderCover();
+        renderAlerts();
+      });
     sb.from("card_accounts").select("card_name,mask,balance,statement_balance,min_payment,due_date,apr,credit_limit,updated_at").order("id")
       .then(function(res){
         if (res.error) { console.warn("accounts", res.error.message); return; }
         if (!res.data.length) return;
         $("myAccounts").style.display = "block";
         var rows = res.data.slice();
+        ACCT = rows;
         var latest = "";
         rows.forEach(function(a){ if (a.updated_at && a.updated_at > latest) latest = a.updated_at; });
         var num = function(v){ return v == null ? 0 : Number(v); };
@@ -1128,8 +1310,8 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
           + " ｜ 固定额度利用率 <b style='color:" + (util >= 30 ? "#ff6b6b" : util >= 10 ? "#ffd93d" : "#4ecdc4") + "'>" + util.toFixed(1) + "%</b></div>";
         if (nd) html += "<div class='acct-sum-line'>最近还款：<b>" + esc(nd.a.card_name) + (nd.a.mask ? " ··" + esc(nd.a.mask) : "") + "</b> " + money(nd.a.statement_balance) + " · " + esc(nd.a.due_date) + (nd.days >= 0 ? "（<span class='" + (nd.days <= 7 ? "due-soon" : "") + "'>" + (nd.days === 0 ? "今天到期" : "还有" + nd.days + "天") + "</span>）" : "") + "</div>";
         if (topShare >= 50 && num(top.balance) > 0) html += "<div class='acct-sum-line' style='color:#ffb26b'>⚠️ " + esc(top.card_name) + " 一张就占了总欠款的 " + Math.round(topShare) + "%（" + money(top.balance) + "），已在明细里排第一。</div>";
-        html += "<div class='acct-toggle' id='acctToggle'>展开每张卡明细 ▾</div>";
         $("acctSummary").innerHTML = html;
+        $("acctToggle").style.display = "block";
         var grid = $("acctGrid");
         sorted.forEach(function(a){
           var bal = num(a.balance), stmt = num(a.statement_balance);
@@ -1153,6 +1335,8 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
           this.textContent = open ? "展开每张卡明细 ▾" : "收起明细 ▴";
         });
         if (latest) $("acctMeta").textContent = "数据更新于 " + latest.slice(0, 10) + "（Plaid 同步，登录可见）";
+        renderCover();
+        renderAlerts();
       });
   }
 
