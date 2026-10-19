@@ -1247,4 +1247,1233 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
   sb.auth.onAuthStateChange(function(event, session){ renderUser(session ? session.user : null); });
 })();
 </script>
+<style>
+.mf-tb{border-collapse:collapse;width:100%;font-size:.82em;margin:6px 0}
+.mf-tb th,.mf-tb td{border:1px solid #2c3e55;padding:4px 6px;text-align:right;white-space:nowrap}
+.mf-tb th{background:#16213e;color:#cfe3ff;text-align:right}
+.mf-tb td:first-child,.mf-tb th:first-child{text-align:left}
+#myfire-root input,#myfire-root select{background:#0f1830;color:#e8eefc;border:1px solid #345;border-radius:5px;padding:3px 6px}
+#myfire-root button{background:#1d2f4d;color:#e8eefc;border:1px solid #3a5a8a;border-radius:6px;padding:4px 10px;cursor:pointer;margin:2px}
+#myfire-root button:hover{background:#274a7a}
+#myfire-root h4{margin:14px 0 4px}
+</style>
+<script>
+(function(){
+'use strict';
+/* Private FIRE engine reconstruction (parameterized semantics for calibration).
+   All money in DOLLARS (floats) inside the engine; state JSON uses cents. */
+const C = 100; // cents per dollar
+
+function ssFactor(claimAge) {
+  const fra = 67;
+  claimAge = Math.max(62, Math.min(70, claimAge));
+  if (claimAge >= fra) return 1 + (claimAge - fra) * 12 * (2 / 3) / 100;
+  const m = (fra - claimAge) * 12;
+  return 1 - (Math.min(m, 36) * (5 / 9) + Math.max(0, m - 36) * (5 / 12)) / 100;
+}
+function fisher(nom, infl) { return (1 + nom) / (1 + infl) - 1; }
+function loanPmt(principal, annualRate, months) {
+  const r = annualRate / 12;
+  if (months <= 0 || principal <= 0) return 0;
+  if (Math.abs(r) < 1e-12) return principal / months;
+  return principal * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1);
+}
+function loanBalanceAfter(principal, annualRate, monthsTotal, paymentsMade) {
+  const r = annualRate / 12, p = loanPmt(principal, annualRate, monthsTotal);
+  let bal = principal;
+  for (let i = 0; i < Math.min(paymentsMade, monthsTotal); i++) bal = bal + bal * r - p;
+  return Math.max(0, bal);
+}
+function mulberry32(seed) {
+  let s = seed >>> 0;
+  return function () {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gauss(rng) {
+  let u = 0, v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+const CATS = ['cash', 'taxable', 'traditional', 'roth', 'hsa'];
+const WD_ORDER = ['cash', 'taxable', 'traditional', 'roth', 'hsa'];
+
+/* Build effective inputs from state + scenario override (or null for active). */
+function effectiveInputs(state, scenario) {
+  const hh = state.household, A = state.assumptions;
+  const sc = scenario || state.scenarios.find(s => s.isActive) || state.scenarios[0] || null;
+  const ov = sc || {};
+  const persons = state.persons.map(p => ({ ...p }));
+  const adults = persons.filter(p => p.role === 'adult');
+  if (ov.retireAgeP1 != null && adults[0]) adults[0].retirementAge = ov.retireAgeP1;
+  if (ov.retireAgeP2 != null && adults[1]) adults[1].retirementAge = ov.retireAgeP2;
+  if (ov.plannedRetirementAge != null) {
+    if (ov.retireAgeP1 == null && adults[0]) adults[0].retirementAge = ov.plannedRetirementAge;
+    if (ov.retireAgeP2 == null && adults[1]) adults[1].retirementAge = ov.plannedRetirementAge;
+  }
+  let spendMust = hh.spendingMustCents / C, spendLike = hh.spendingLikeCents / C;
+  if (ov.annualSpendingCents != null) {
+    const total = ov.annualSpendingCents / C, base = spendMust + spendLike;
+    if (base > 0) { spendMust = total * spendMust / base; spendLike = total * spendLike / base; }
+    else { spendMust = total; spendLike = 0; }
+  }
+  if (ov.spendingScaleBps != null) {
+    spendMust *= ov.spendingScaleBps / 10000; spendLike *= ov.spendingScaleBps / 10000;
+  }
+  const eff = {
+    baseYear: hh.baseYear,
+    persons, adults,
+    children: persons.filter(p => p.role === 'child'),
+    spendMust, spendLike,
+    annualSavings: (ov.annualSavingsCents != null ? ov.annualSavingsCents : hh.annualSavingsCents) / C,
+    savingsOverridden: ov.annualSavingsCents != null,
+    nominal: (ov.nominalReturnBps != null ? ov.nominalReturnBps : A.nominalReturnBps) / 10000,
+    inflation: (ov.inflationBps != null ? ov.inflationBps : A.inflationBps) / 10000,
+    swr: [A.swr1Bps, A.swr2Bps, A.swr3Bps].map(x => x / 10000),
+    partTime: A.partTimeIncomeCents / C,
+    retTaxRate: A.retirementAvgTaxBps / 10000,
+    rothCap: A.rothBracketCapCents / C,
+    acaPerPerson: A.acaAnnualPerPersonCents / C,
+    medSupp: A.medicareSupplementAnnualCents / C,
+    partB: 2434.80,
+    employerHealth: A.employerHealthcareAnnualCents / C,
+    accounts: state.accounts,
+    loans: state.loans,
+    properties: state.properties,
+    hh, A,
+    secondChildEnabled: ov.secondChildEnabledOverride != null ? ov.secondChildEnabledOverride : hh.secondChildEnabled,
+    sellRentalYear: ov.sellRentalYearOverride != null ? ov.sellRentalYearOverride : null,
+  };
+  eff.real = fisher(eff.nominal, eff.inflation);
+  return eff;
+}
+
+function startBalances(eff) {
+  const bal = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 };
+  for (const a of eff.accounts) {
+    if (!a.includeInInvestable) continue;
+    if (CATS.includes(a.type)) bal[a.type] += a.balanceCents / C;
+  }
+  return bal;
+}
+function totalBal(bal) { return CATS.reduce((s, k) => s + bal[k], 0); }
+
+/* Loan annual payment & active check for calendar year y (loans start at baseYear). */
+function loanYearInfo(eff, y, soldKeys) {
+  let pay = 0;
+  const details = [];
+  for (const L of eff.loans) {
+    if (soldKeys && L.propertyClientKey && soldKeys.has(L.propertyClientKey)) { details.push({ id: L.id, pmt: 0, annual: 0, balanceStart: 0 }); continue; }
+    const P = L.balanceCents / C, rate = L.annualRateBps / 10000, n = L.termMonths;
+    const pmt = loanPmt(P, rate, n);
+    const monthsElapsed = (y - eff.baseYear) * 12;
+    const remaining = n - monthsElapsed;
+    let thisYear = 0;
+    if (remaining > 0) thisYear = pmt * Math.min(12, remaining);
+    pay += thisYear;
+    details.push({ id: L.id, pmt, annual: thisYear, balanceStart: loanBalanceAfter(P, rate, n, Math.max(0, monthsElapsed)) });
+  }
+  return { pay, details };
+}
+
+function childCostFor(eff, birthYear, y, scale) {
+  const age = y - birthYear, hh = eff.hh;
+  let c = 0;
+  if (age >= 0 && age <= 2) c = hh.childCost0To2Cents / C;
+  else if (age >= 3 && age <= 5) c = hh.childCost3To5Cents / C;
+  else if (age >= 6 && age <= 12) c = hh.childCost6To12Cents / C;
+  else if (age >= 13 && age <= 17) c = hh.childCost13To17Cents / C;
+  else if (eff.flags.childEdu === 'annual' && age >= 18 && age <= 21) c = hh.childEducationCents / C;
+  else if (eff.flags.childEdu === 'annual3' && age >= 18 && age <= 20) c = hh.childEducationCents / C;
+  else if (eff.flags.childEdu === 'lump18' && age === 18) c = hh.childEducationCents / C;
+  else if (eff.flags.childEdu === 'spread' && age >= 18 && age <= 21) c = hh.childEducationCents / C / 4;
+  return c * (scale || 1);
+}
+
+/* Person work status in year y: 'full' | 'down' | 'ret' */
+function workStatus(eff, p, y) {
+  const age = y - p.birthYear;
+  const retireAge = p.retirementAge;
+  const ds = p.downshiftStartAge, dr = p.downshiftRetireAge;
+  if (ds != null) {
+    const downEnd = dr != null ? dr : retireAge;
+    if (age >= downEnd) return 'ret';
+    if (age >= ds) return 'down';
+    return 'full';
+  }
+  if (age >= retireAge) return 'ret';
+  return 'full';
+}
+function personIncome(eff, p, y) {
+  const st = workStatus(eff, p, y);
+  if (st === 'ret') return 0;
+  const g = Math.pow(1 + p.incomeGrowthBps / 10000, y - eff.baseYear);
+  let inc = p.annualIncomeCents / C * g;
+  if (st === 'down') inc *= p.downshiftPctBps / 10000;
+  return inc;
+}
+function personSS(eff, p, y) {
+  const age = y - p.birthYear;
+  if (age < p.ssClaimAge) return 0;
+  return p.ssMonthlyAtFraCents / C * 12 * ssFactor(p.ssClaimAge);
+}
+
+/* Simulate. opts: { retFn(year)->realReturn|null (null = deterministic eff.real),
+   guardrail:bool, startYear, startBal, stopYear, subSim:false }
+   Returns { rows, failed, failYear, endBalance, endBal, retireYear, balAtYearStart{} } */
+function simulate(eff, opts) {
+  opts = opts || {};
+  const F = eff.flags;
+  const startYear = opts.startYear || eff.baseYear;
+  const endRef = F.endBy === 'p2' ? eff.adults[1] : eff.adults[0];
+  const endYear = opts.stopYear || (endRef.birthYear + 95 - 1); // last year: age 94
+  let bal = opts.startBal ? { ...opts.startBal } : startBalances(eff);
+  const rows = [];
+  let failed = false, failYear = null;
+  let prevEndTotal = totalBal(bal);
+  let guardCutActive = false;
+  const balAtYearStart = {};
+  let firstRetYear = null;
+
+  for (let y = startYear; y <= endYear; y++) {
+    balAtYearStart[y] = { ...bal };
+    const r = opts.retFn ? opts.retFn(y) : (F.growthNominal ? eff.nominal : eff.real);
+    // growth first (demo convention); flowFirst variant grows post-flow balances instead
+    const grown = {};
+    if (F.flowFirst) { for (const k of CATS) grown[k] = bal[k]; }
+    else for (const k of CATS) grown[k] = bal[k] * (1 + r);
+    const startTotal = totalBal(bal), grownTotal = totalBal(grown);
+
+    const statuses = eff.adults.map(p => workStatus(eff, p, y));
+    const anyFull = statuses.includes('full');
+    const anyDown = statuses.includes('down');
+    const anyRet = statuses.includes('ret');
+    const downHealth = eff.adults.some((p, i) => statuses[i] === 'down' && p.downshiftHasHealthcare);
+    const covered = anyFull || (anyDown && downHealth);
+    const allRet = statuses.every(s => s === 'ret');
+    if (allRet && firstRetYear === null) firstRetYear = y;
+
+    let income = 0, k401 = 0;
+    eff.adults.forEach((p, i) => {
+      income += personIncome(eff, p, y);
+      if (statuses[i] !== 'ret') k401 += (p.annual401kCents + p.annualMatchCents) / C;
+    });
+    if (opts.noIncome) income = 0;
+    let ss = 0; eff.adults.forEach(p => { ss += personSS(eff, p, y); });
+    if (opts.noSS) ss = 0;
+    const bothClaiming = eff.adults.every(p => (y - p.birthYear) >= p.ssClaimAge);
+
+    // rental / properties
+    let rentNet = 0, primaryCosts = 0, sellProceeds = 0;
+    for (const prop of eff.properties) {
+      const k = y - eff.baseYear;
+      const gRate = F.rentGrowthReal ? prop.rentGrowthBps / 10000 : fisher(prop.rentGrowthBps / 10000, eff.inflation);
+      if (prop.kind === 'rental') {
+        const sellY = eff.sellRentalYear != null ? eff.sellRentalYear : prop.sellYear;
+        if (sellY != null && y === sellY) {
+          const vG = F.rentGrowthReal ? prop.valueGrowthBps / 10000 : fisher(prop.valueGrowthBps / 10000, eff.inflation);
+          const value = prop.valueCents / C * Math.pow(1 + vG, k);
+          const loan = eff.loans.find(L => L.propertyClientKey === prop.clientKey);
+          const lb = loan ? loanBalanceAfter(loan.balanceCents / C, loan.annualRateBps / 10000, loan.termMonths, k * 12) : 0;
+          sellProceeds = value - lb - value * 0.05;
+        } else if (sellY == null || y < sellY) {
+          const gross = prop.monthlyRentCents / C * 12 * Math.pow(1 + gRate, k);
+          rentNet += gross * (1 - prop.vacancyBps / 10000) - (F.rentCosts ? prop.monthlyCostsCents / C * 12 : 0);
+        }
+      } else {
+        if (F.primaryCosts) primaryCosts += prop.monthlyCostsCents / C * 12;
+      }
+    }
+    if (opts.noRent) rentNet = 0;
+    // loans stop once their rental property is sold
+    const soldKeys = new Set();
+    for (const prop of eff.properties) {
+      if (prop.kind !== 'rental') continue;
+      const sellY = eff.sellRentalYear != null ? eff.sellRentalYear : prop.sellYear;
+      if (sellY != null && y >= sellY) soldKeys.add(prop.clientKey);
+    }
+    const loans = loanYearInfo(eff, y, soldKeys);
+    const allRetNow = eff.adults.every(p => workStatus(eff, p, y) === 'ret');
+    let loanPay = 0;
+    if (F.loansInFlow === true) loanPay = loans.pay;
+    else if (F.loansInFlow === 'ret') loanPay = allRetNow ? loans.pay : 0;
+    else if (F.loansInFlow === 'accum') loanPay = allRetNow ? 0 : loans.pay;
+    let child = 0;
+    for (const ch of eff.children) child += childCostFor(eff, ch.birthYear, y, 1);
+    if (eff.secondChildEnabled && eff.hh.secondChildBirthYear != null) {
+      child += childCostFor(eff, eff.hh.secondChildBirthYear, y, eff.hh.secondChildScaleBps / 10000);
+    }
+    // part-time income
+    let partTime = 0;
+    if (!opts.noPartTime) {
+      if (F.partTime === 'all_ret' && anyRet) partTime = eff.partTime;
+      else if (F.partTime === 'bridge' && anyRet && !bothClaiming) partTime = eff.partTime;
+      else if (F.partTime === 'bridge_first' && anyRet && eff.adults.every(p => (y - p.birthYear) < p.ssClaimAge)) partTime = eff.partTime;
+      else if (F.partTime === 'until67' && anyRet && eff.adults.some(p => (y - p.birthYear) < 67)) partTime = eff.partTime;
+    }
+
+    // spending (guardrail may cut Like)
+    let spendLike = eff.spendLike;
+    if (opts.guardrail && guardCutActive) spendLike = eff.spendLike * (1 - eff.A.guardrailCutBps / 10000);
+    const spend = eff.spendMust + spendLike;
+
+    const edu529 = F.edu529Out ? eff.accounts.filter(a => a.type === '529').reduce((s, a) => s + a.annualContributionCents / C, 0) : 0;
+
+    // health: employer-covered path is flat; otherwise per-person ACA/Medicare (needs magi -> iterate with tax)
+    const healthEmployer = (covered && (F.healthAccum || !anyFull)) ? eff.employerHealth : 0;
+    function healthPerPerson(magi) {
+      let h = 0;
+      for (const p of eff.adults) {
+        const age = y - p.birthYear;
+        if (age < 65) {
+          const share = magi <= 85000 ? 0.30 : (magi <= 150000 ? 0.65 : 1.0);
+          h += eff.acaPerPerson * share;
+        } else h += eff.partB + eff.medSupp;
+      }
+      return h;
+    }
+
+    // Iterative solve for health + tax + withdrawals when withdrawal needed.
+    // Fixed outflows/inflows excluding health & tax:
+    const baseIn = income + ss + rentNet + partTime + sellProceeds;
+    const baseOut = spend + child + primaryCosts + loanPay + edu529;
+    let health = covered ? healthEmployer : 0;
+    let tax = 0, wd = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 }, wdTotal = 0, deposit = 0;
+    const need0 = baseOut - baseIn;
+    if (!covered && (need0 + health > 0 || allRet || !anyFull)) {
+      // iterate health/tax twice (build-state: gross-up 2 iterations)
+      let wdTradEst = 0;
+      for (let it = 0; it < 2; it++) {
+        const magi = ss + Math.max(0, rentNet) + wdTradEst;
+        health = healthPerPerson(magi);
+        const need = baseOut + health + tax - baseIn;
+        // withdrawal plan against grown balances
+        wd = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 };
+        let rem = need;
+        if (rem > 0) {
+          for (const k of WD_ORDER) { const take = Math.min(grown[k], rem); wd[k] = take; rem -= take; }
+        }
+        wdTradEst = wd.traditional;
+        tax = (wd.traditional + 0.85 * ss + Math.max(0, rentNet)) * eff.retTaxRate;
+      }
+      const need = baseOut + health + tax - baseIn;
+      wd = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 };
+      let rem = need;
+      if (rem > 0) { for (const k of WD_ORDER) { const take = Math.min(grown[k], rem); wd[k] = take; rem -= take; } }
+      wdTotal = WD_ORDER.reduce((s, k) => s + wd[k], 0);
+      if (rem > 0) { failed = true; failYear = y; }
+      deposit = rem < 0 ? -rem : 0;
+    } else {
+      // covered (employer) health or pure surplus: single pass, tax only if flag
+      health = covered ? healthEmployer : health;
+      const need = baseOut + health - baseIn;
+      if (need > 0) {
+        let rem = need;
+        for (const k of WD_ORDER) { const take = Math.min(grown[k], rem); wd[k] = take; rem -= take; }
+        wdTotal = WD_ORDER.reduce((s, k) => s + wd[k], 0);
+        if (rem > 0) { failed = true; failYear = y; }
+      } else deposit = -need;
+      if (F.taxWorking && (wd.traditional > 0 || ss > 0)) {
+        tax = (wd.traditional + 0.85 * ss + Math.max(0, rentNet)) * eff.retTaxRate;
+        // tax paid from cash then order
+        let rem = tax;
+        for (const k of WD_ORDER) { const avail = grown[k] - wd[k]; const take = Math.min(Math.max(0, avail), rem); wd[k] += take; rem -= take; }
+        wdTotal += tax - rem;
+        if (rem > 0) { failed = true; failYear = y; }
+        deposit = Math.max(0, deposit - tax);
+      }
+    }
+
+    // apply flows
+    if (opts.coast) deposit = 0;
+    if (eff.savingsOverridden && deposit > 0) deposit = Math.max(0, deposit + (eff.annualSavings - eff.hh.annualSavingsCents / C));
+    if (deposit > 0 && F.savingsPlus !== 'none') {
+      let plus = 0;
+      if (F.savingsPlus === 'contrib' || F.savingsPlus === 'annualPlusContrib') plus += eff.accounts.filter(a => a.includeInInvestable && CATS.includes(a.type)).reduce((s, a) => s + a.annualContributionCents / C, 0);
+      if (F.savingsPlus === 'annual' || F.savingsPlus === 'annualPlusContrib') plus += eff.annualSavings;
+      deposit += plus;
+    }
+    const end = {};
+    for (const k of CATS) end[k] = grown[k] - wd[k];
+    if (deposit > 0) {
+      distribute(eff, end, deposit);
+    }
+    if (F.flowFirst && !failed) {
+      for (const k of CATS) end[k] = end[k] * (1 + r);
+    }
+    if (failed) {
+      for (const k of CATS) end[k] = 0;
+    }
+    const endTotal = totalBal(end);
+    rows.push({
+      year: y, ages: eff.adults.map(p => y - p.birthYear), phase: allRet ? '退休' : (anyRet || anyDown ? '过渡' : '积累'),
+      start: startTotal, growth: grownTotal - startTotal, income, ss, rentNet, partTime, sellProceeds,
+      spend, child, primaryCosts, loanPay, health, tax,
+      wd: { ...wd }, wdTotal, deposit, end: endTotal, bal: { ...end }, failed,
+    });
+    // guardrail state for next year: trigger if end total fell > trigger% vs start of this year
+    if (opts.guardrail) {
+      const trig = eff.A.guardrailTriggerBps / 10000, rest = eff.A.guardrailRestoreBps / 10000;
+      if (!guardCutActive && startTotal > 0 && endTotal < startTotal * (1 - trig)) guardCutActive = true;
+      else if (guardCutActive && prevEndTotal > 0 && endTotal >= prevEndTotal * (1 + 0)) guardCutActive = false; // simplified restore
+    }
+    prevEndTotal = endTotal;
+    bal = end;
+    if (failed) break;
+  }
+  return { rows, failed, failYear, endBalance: totalBal(bal), endBal: bal, firstRetYear, balAtYearStart };
+}
+
+/* Distribute a surplus into categories per flags.saveSplit. Mutates bal. */
+function distribute(eff, bal, amount) {
+  const F = eff.flags;
+  const accts = eff.accounts.filter(a => a.includeInInvestable && CATS.includes(a.type));
+  const contrib = accts.map(a => ({ type: a.type, amt: a.annualContributionCents / C }));
+  const totContrib = contrib.reduce((s, c) => s + c.amt, 0);
+  if (F.saveSplit === 'all_taxable') { bal.taxable += amount; return; }
+  if (F.saveSplit === 'all_cash') { bal.cash += amount; return; }
+  if (F.saveSplit === 'proportional_balance') {
+    const t = totalBal(bal);
+    if (t <= 0) { bal.taxable += amount; return; }
+    for (const k of CATS) bal[k] += amount * bal[k] / t;
+    return;
+  }
+  if (F.saveSplit === 'contrib_proportional') {
+    if (totContrib <= 0) { bal.taxable += amount; return; }
+    for (const c of contrib) bal[c.type] += amount * c.amt / totContrib;
+    return;
+  }
+  // contrib_then_X
+  let rem = amount;
+  for (const c of contrib) { const give = Math.min(c.amt, rem); bal[c.type] += give; rem -= give; if (rem <= 0) break; }
+  if (rem > 0) bal[F.saveSplit === 'contrib_then_cash' ? 'cash' : 'taxable'] += rem;
+}
+
+/* FI via binary search on retirement sub-model starting at firstRetYear of main run.
+   Calibrated semantics (see port/CALIBRATION.md): the sub-model credits SS and
+   part-time income but NOT rental income. */
+function solveFI(eff, mainRun) {
+  const F = eff.flags;
+  if (F.fiMode === 'annuity_gross' || F.fiMode === 'annuity_net') {
+    // find first both-retired year
+    const row = mainRun.rows.find(r => r.phase === '退休');
+    if (!row) return null;
+    const y0 = row.year;
+    const endRef = F.endBy === 'p2' ? eff.adults[1] : eff.adults[0];
+    const years = (endRef.birthYear + 95) - y0;
+    let W;
+    if (F.fiMode === 'annuity_gross') W = eff.spendMust + eff.spendLike;
+    else W = row.wdTotal + row.deposit; // net portfolio withdrawal in first retired year (approx: need met by portfolio)
+    if (Math.abs(eff.real) < 1e-9) return W * years;
+    return W * (1 - Math.pow(1 + eff.real, -years)) / eff.real;
+  }
+  // binary on retirement sub-sim (rent not credited — calibrated)
+  const y0 = mainRun.firstRetYear;
+  if (y0 == null) return null;
+  const startCats = mainRun.balAtYearStart[y0];
+  const tot = totalBal(startCats);
+  if (tot <= 0) return null;
+  const props = {}; for (const k of CATS) props[k] = startCats[k] / tot;
+  function survives(X) {
+    const sb = {}; for (const k of CATS) sb[k] = X * props[k];
+    const sub = simulate(eff, { startYear: y0, startBal: sb, noRent: true });
+    return !sub.failed;
+  }
+  let lo = 0, hi = Math.max(tot, 1);
+  while (survives(hi) && hi < 1e12) hi *= 2;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (survives(mid)) hi = mid; else lo = mid;
+  }
+  return hi;
+}
+
+function defaultFlags() {
+  return {
+    saveSplit: 'contrib_proportional',
+    edu529Out: false,
+    childEdu: 'annual',
+    rentGrowthReal: true,
+    partTime: 'bridge',
+    endBy: 'p1',
+    fiMode: 'binary',
+    taxWorking: false,
+    healthAccum: true,
+    loansInFlow: 'ret',
+    growthNominal: false,
+    flowFirst: false,
+    rentCosts: true,
+    primaryCosts: true,
+    savingsPlus: 'none', // 'contrib' | 'annual' | 'annualPlusContrib'
+  };
+}
+
+function runAll(state, flags, scenario) {
+  const eff = effectiveInputs(state, scenario || null);
+  eff.flags = { ...defaultFlags(), ...(flags || {}) };
+  if (!eff.flags.healthAccum) { /* handled inside simulate via flag check below */ }
+  const main = simulate(eff, {});
+  const fi = solveFI(eff, main);
+  let achieveYear = null, achieveAge = null;
+  if (fi != null) {
+    /* Calibrated: achievement year = first year whose START balance >= FI. */
+    for (const r of main.rows) { if (r.start >= fi) { achieveYear = r.year; achieveAge = r.ages[0]; break; } }
+  }
+  return { eff, main, fi, achieveYear, achieveAge, endBalance: main.endBalance };
+}
+
+/* Monte Carlo. opts: { seed, runs, sigma, dist:'lognormal'|'normal', guardrail, streamMode:'shared'|'perRun' } */
+function mcRun(eff, opts) {
+  const A = eff.A;
+  const seed = opts.seed != null ? opts.seed : A.mcSeed;
+  const runs = opts.runs != null ? opts.runs : A.mcRuns;
+  const sigma = (opts.sigmaBps != null ? opts.sigmaBps : A.mcSigmaBps) / 10000;
+  const dist = opts.dist || A.mcDistribution;
+  const shared = mulberry32(seed);
+  const ends = [];
+  let pass = 0;
+  const mu = Math.log(1 + eff.real) - sigma * sigma / 2;
+  for (let i = 0; i < runs; i++) {
+    const rng = opts.streamMode === 'perRun' ? mulberry32(seed + i) : shared;
+    const retFn = (y) => {
+      const z = gauss(rng);
+      if (dist === 'lognormal') return Math.exp(mu + sigma * z) - 1;
+      return Math.max(-0.95, eff.real + sigma * z);
+    };
+    const res = simulate(eff, { retFn, guardrail: !!opts.guardrail });
+    ends.push(res.endBalance);
+    if (!res.failed) pass++;
+  }
+  ends.sort((a, b) => a - b);
+  const pct = (p) => ends[Math.min(runs - 1, Math.floor(p * runs))];
+  return { passRate: pass / runs, p10: pct(0.10), p50: pct(0.50), p90: pct(0.90), ends };
+}
+
+
+
+/* ================= 我的 FIRE（登录后真实模式，数据存 Supabase fire_profile） ================= */
+var MF = { state: null, updatedAt: null, dirty: false, root: null, demo: null, mc: null, stress: null, paths: null, solving: false };
+function mfEsc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+function mf$(v){ if (v == null || !isFinite(v)) return "—"; var neg = v < 0; return (neg ? "-$" : "$") + Math.abs(Math.round(v)).toLocaleString("en-US"); }
+function mf$2(v){ if (v == null || !isFinite(v)) return "—"; return "$" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function mfPct(v, dp){ if (v == null || !isFinite(v)) return "—"; return (v * 100).toFixed(dp == null ? 1 : dp) + "%"; }
+function mfClone(o){ return JSON.parse(JSON.stringify(o)); }
+function mfGet(obj, path){ var ks = path.split("."); var cur = obj; for (var i = 0; i < ks.length; i++){ if (cur == null) return null; cur = cur[ks[i]]; } return cur; }
+function mfSet(obj, path, val){ var ks = path.split("."); var cur = obj; for (var i = 0; i < ks.length - 1; i++){ cur = cur[ks[i]]; } cur[ks[ks.length - 1]] = val; }
+function mfAdults(st){ return st.persons.filter(function(p){ return p.role === "adult"; }); }
+function mfInvestable(st){ var t = 0; st.accounts.forEach(function(a){ if (a.includeInInvestable) t += a.balanceCents / 100; }); return t; }
+
+function mfValidate(st){
+  var errs = [];
+  function num(v){ return typeof v === "number" && isFinite(v); }
+  function req(cond, msg){ if (!cond) errs.push(msg); }
+  var hh = st.household || {}, A = st.assumptions || {};
+  req(num(hh.baseYear) && hh.baseYear >= 2020 && hh.baseYear <= 2040, "基准年须在 2020–2040");
+  req(num(hh.spendingMustCents) && hh.spendingMustCents >= 0, "必要支出不能为负");
+  req(num(hh.spendingLikeCents) && hh.spendingLikeCents >= 0, "享受支出不能为负");
+  req(num(hh.annualSavingsCents) && hh.annualSavingsCents >= 0, "年储蓄额不能为负");
+  req(num(hh.plannedRetirementAge) && hh.plannedRetirementAge >= 40 && hh.plannedRetirementAge <= 80, "计划退休年龄须在 40–80");
+  if (hh.secondChildEnabled){ req(num(hh.secondChildBirthYear) && hh.secondChildBirthYear >= hh.baseYear && hh.secondChildBirthYear <= hh.baseYear + 20, "二孩出生年须在基准年起 20 年内"); req(num(hh.secondChildScaleBps) && hh.secondChildScaleBps >= 0 && hh.secondChildScaleBps <= 20000, "二孩成本比例须在 0–200%"); }
+  (st.persons || []).forEach(function(p, i){
+    var nm = p.name || ("成员" + (i + 1));
+    req(num(p.birthYear) && p.birthYear >= 1930 && p.birthYear <= 2026, nm + "：出生年须在 1930–2026");
+    if (p.role === "adult"){
+      req(num(p.retirementAge) && p.retirementAge >= 40 && p.retirementAge <= 80, nm + "：退休年龄须在 40–80");
+      req(num(p.ssClaimAge) && p.ssClaimAge >= 62 && p.ssClaimAge <= 70, nm + "：社保领取年龄须在 62–70");
+      req(num(p.annualIncomeCents) && p.annualIncomeCents >= 0, nm + "：年收入不能为负");
+      req(num(p.annual401kCents) && p.annual401kCents >= 0, nm + "：401(k) 供款不能为负");
+      req(num(p.annualMatchCents) && p.annualMatchCents >= 0, nm + "：雇主 match 不能为负");
+      if (p.downshiftStartAge != null){
+        req(p.downshiftStartAge >= 40 && p.downshiftStartAge < p.retirementAge, nm + "：降档开始年龄须 ≥40 且小于退休年龄");
+        req(num(p.downshiftPctBps) && p.downshiftPctBps >= 1000 && p.downshiftPctBps <= 9000, nm + "：降档收入比例须在 10%–90%");
+      }
+    }
+  });
+  (st.accounts || []).forEach(function(a){
+    req(num(a.balanceCents) && a.balanceCents >= 0, "账户「" + (a.name || "") + "」余额不能为负");
+    req(num(a.annualContributionCents) && a.annualContributionCents >= 0, "账户「" + (a.name || "") + "」年供款不能为负");
+  });
+  (st.loans || []).forEach(function(L){
+    req(num(L.balanceCents) && L.balanceCents >= 0, "贷款「" + (L.name || "") + "」余额不能为负");
+    req(num(L.annualRateBps) && L.annualRateBps >= 0 && L.annualRateBps <= 3000, "贷款「" + (L.name || "") + "」利率须在 0–30%");
+    req(num(L.termMonths) && L.termMonths >= 12 && L.termMonths <= 480, "贷款「" + (L.name || "") + "」期限须在 12–480 个月");
+  });
+  (st.properties || []).forEach(function(pr){
+    req(num(pr.valueCents) && pr.valueCents >= 0, "房产「" + (pr.name || "") + "」估值不能为负");
+    req(num(pr.vacancyBps) && pr.vacancyBps >= 0 && pr.vacancyBps <= 5000, "房产「" + (pr.name || "") + "」空置率须在 0–50%");
+    if (pr.sellYear != null) req(pr.sellYear >= hh.baseYear && pr.sellYear <= hh.baseYear + 60, "房产「" + (pr.name || "") + "」卖出年份超出范围");
+  });
+  req(num(A.nominalReturnBps) && A.nominalReturnBps > 0 && A.nominalReturnBps <= 2000, "名义回报须在 0–20%");
+  req(num(A.inflationBps) && A.inflationBps >= 0 && A.inflationBps <= 1500, "通胀须在 0–15%");
+  req(num(A.mcRuns) && A.mcRuns >= 100 && A.mcRuns <= 5000, "MC 次数须在 100–5000");
+  req(num(A.mcSigmaBps) && A.mcSigmaBps >= 100 && A.mcSigmaBps <= 4000, "MC σ 须在 1%–40%");
+  (st.scenarios || []).forEach(function(sc){
+    if (sc.spendingScaleBps != null) req(sc.spendingScaleBps >= 5000 && sc.spendingScaleBps <= 20000, "场景「" + (sc.name || "") + "」支出比例须在 50%–200%");
+    if (sc.sellRentalYearOverride != null) req(sc.sellRentalYearOverride >= hh.baseYear && sc.sellRentalYearOverride <= hh.baseYear + 40, "场景「" + (sc.name || "") + "」卖房年份须在基准年起 40 年内");
+    if (sc.plannedRetirementAge != null) req(sc.plannedRetirementAge >= 40 && sc.plannedRetirementAge <= 80, "场景「" + (sc.name || "") + "」退休年龄须在 40–80");
+  });
+  return errs;
+}
+
+function mfCompute(st, scenario){
+  return runAll(st, {}, scenario || null);
+}
+function mfActiveScenario(st){ for (var i = 0; i < st.scenarios.length; i++) if (st.scenarios[i].isActive) return st.scenarios[i]; return st.scenarios[0] || null; }
+
+function mfSave(){
+  var errs = mfValidate(MF.state);
+  var msg = document.getElementById("mf-savemsg");
+  if (errs.length){ if (msg) msg.innerHTML = "❌ 校验未通过，已拦截保存：<br>" + errs.map(mfEsc).join("<br>"); return; }
+  if (!window.__sb) { if (msg) msg.textContent = "❌ 未连接 Supabase"; return; }
+  if (msg) msg.textContent = "保存中…";
+  var payload = { state: MF.state, updated_at: new Date().toISOString() };
+  window.__sb.from("fire_profile").update(payload).eq("id", 1).then(function(res){
+    if (res.error){ if (msg) msg.textContent = "❌ 保存失败：" + res.error.message; return; }
+    MF.dirty = false; MF.updatedAt = payload.updated_at;
+    if (msg) msg.textContent = "✅ 已保存到云端（" + new Date(payload.updated_at).toLocaleString("zh-CN") + "）";
+    var um = document.getElementById("mf-updated"); if (um) um.textContent = "数据更新于 " + new Date(payload.updated_at).toLocaleString("zh-CN");
+  });
+}
+function mfLoad(user){
+  if (!user){ MF.root.style.display = "none"; mfShowDemo(true); return; }
+  window.__sb.from("fire_profile").select("state,updated_at").eq("id", 1).single().then(function(res){
+    if (res.error || !res.data){
+      MF.root.innerHTML = "<div class='section'><h2>🔥 我的 FIRE</h2><p style='color:#f88'>读取 FIRE 数据失败：" + mfEsc(res.error ? res.error.message : "无数据") + "（可能当前登录邮箱不在白名单内）</p></div>";
+      MF.root.style.display = ""; mfShowDemo(false); return;
+    }
+    MF.state = mfClone(res.data.state); MF.updatedAt = res.data.updated_at; MF.dirty = false; MF.mc = null; MF.paths = null; MF.stress = null;
+    MF.root.style.display = ""; mfShowDemo(false);
+    mfRenderAll();
+  });
+}
+
+
+/* ================= 渲染：结论 / 逐年表 / 工资单 / 桥接 ================= */
+function mfInput(path, label, unit, step){
+  var v = mfGet(MF.state, path);
+  var disp = "";
+  if (v != null){ disp = unit === "cents" ? (v / 100) : unit === "bps" ? (v / 100) : v; }
+  return "<label style='display:block;margin:4px 0'>" + mfEsc(label) + " <input type='" + (unit === "text" ? "text" : "number") + "' data-mf='" + path + "' data-unit='" + unit + "' value='" + mfEsc(disp) + "'" + (step ? " step='" + step + "'" : "") + " style='width:130px'></label>";
+}
+function mfNum(path, label, unit){ return mfInput(path, label, unit); }
+
+function mfTopRisk(st, main, eff, mc){
+  if (main.failed) return "🔴 确定性推演在 " + main.failYear + " 年断粮——头号风险是支出/储蓄结构本身，先调支出或延后退休。";
+  var adults = mfAdults(st);
+  var bridgeYears = 0; main.rows.forEach(function(r){ var anyRet = adults.some(function(p){ return (r.year - p.birthYear) >= p.retirementAge; }); var bothClaim = adults.every(function(p){ return (r.year - p.birthYear) >= p.ssClaimAge; }); if (anyRet && !bothClaim) bridgeYears++; });
+  if (mc && mc.passRate < 0.6) return "🔴 市场序列风险：Monte Carlo 通过率仅 " + (mc.passRate * 100).toFixed(1) + "%，坏开局会打穿组合。";
+  if (bridgeYears >= 8) return "🟠 桥接期长达 " + bridgeYears + " 年（有人退休到双人领社保之间全靠组合输血），这段的现金流最脆弱。";
+  var healthPre = 0; main.rows.forEach(function(r){ if (main.firstRetYear == null || r.year < main.firstRetYear) healthPre += r.health; });
+  if (healthPre > 150000) return "🟠 退休前医疗累计 " + mf$(healthPre) + "，ACA/Medicare 衔接成本不可忽视。";
+  var inv = mfInvestable(st); var conc = st.assumptions.allocEmployerStockCents / 100; var cap = st.assumptions.allocConcentrationCapBps / 10000;
+  if (inv > 0 && conc / inv > cap) return "🟠 雇主股占可投资资产 " + mfPct(conc / inv) + "，超过自设上限 " + mfPct(cap) + "。";
+  if (mc && mc.passRate < 0.8) return "🟡 计划大体成立，但 Monte Carlo 通过率 " + (mc.passRate * 100).toFixed(1) + "% 仍有约两成失败路径，留意开局回报。";
+  return "🟢 未发现突出风险：确定性推演全程不断粮，桥接期 " + bridgeYears + " 年可控。";
+}
+
+function mfRenderResults(){
+  var box = document.getElementById("mf-results"); if (!box || !MF.state) return;
+  var st = MF.state;
+  var res, err = null;
+  try { res = mfCompute(st); } catch (e){ err = e; }
+  if (err){ box.innerHTML = "<p style='color:#f88'>计算出错：" + mfEsc(err.message) + "</p>"; return; }
+  var eff = res.eff, main = res.main, fi = res.fi;
+  var spend = eff.spendMust + eff.spendLike;
+  var inv = mfInvestable(st);
+  var tiers = eff.swr.map(function(s){ return spend / s; });
+  var rangeLo = Math.min.apply(null, [fi].concat(tiers)), rangeHi = Math.max.apply(null, [fi].concat(tiers));
+  var adults = mfAdults(st);
+  var bridgeRows = [], healthPre = 0;
+  main.rows.forEach(function(r){
+    var anyRet = adults.some(function(p){ return (r.year - p.birthYear) >= p.retirementAge; });
+    var bothClaim = adults.every(function(p){ return (r.year - p.birthYear) >= p.ssClaimAge; });
+    if (anyRet && !bothClaim) bridgeRows.push(r);
+    if (main.firstRetYear == null || r.year < main.firstRetYear) healthPre += r.health;
+  });
+  var h = "";
+  h += "<div class='fire-stats'>"
+    + "<div class='fire-stat'><div class='num'>" + mf$2(fi) + "</div><div class='label'>模拟求解 FI（退休子模型二分求解）</div></div>"
+    + "<div class='fire-stat'><div class='num'>" + mf$(rangeLo) + " – " + mf$(rangeHi) + "</div><div class='label'>FI 目标区间（模拟 FI 与 SWR 三档公式）</div></div>"
+    + "<div class='fire-stat'><div class='num'>" + (res.achieveYear ? res.achieveYear + " 年" : "—") + "</div><div class='label'>预计达标年份" + (res.achieveYear ? "（" + adults[0].name + " " + res.achieveAge + " 岁，年初余额过线）" : "") + "</div></div>"
+    + "<div class='fire-stat'><div class='num'>" + (fi ? mfPct(inv / fi) : "—") + "</div><div class='label'>当前完成度（可投资 " + mf$(inv) + " ÷ 模拟 FI）</div></div>"
+    + "<div class='fire-stat'><div class='num'>" + (main.failed ? "❌ " + main.failYear + " 年断粮" : mf$(res.endBalance)) + "</div><div class='label'>确定性推演期末余额（模拟到 " + adults[0].name + " 95 岁）</div></div>"
+    + "<div class='fire-stat'><div class='num'>" + mfPct(eff.real, 2) + "</div><div class='label'>实际回报（名义 " + mfPct(eff.nominal) + " / 通胀 " + mfPct(eff.inflation) + "，Fisher）</div></div>"
+    + "</div>";
+  h += "<p style='background:#2a2410;border:1px solid #8a6d1a;border-radius:8px;padding:10px 12px;line-height:1.7'><b>头号风险：</b>" + mfTopRisk(st, main, eff, MF.mc) + "</p>";
+  h += "<p style='color:#aaa;font-size:.85em;line-height:1.7'>SWR 公式 FI 三档：3.25% → " + mf$(tiers[0]) + " · 3.50% → " + mf$(tiers[1]) + " · 4.00% → " + mf$(tiers[2]) + "（年支出 " + mf$(spend) + " = 必要 " + mf$(eff.spendMust) + " + 享受 " + mf$(eff.spendLike) + "）。模拟 FI 用退休子模型二分求解：自双人皆退休年起、按该年分类占比缩放，计社保与兼职收入、不计租金抵扣。当前场景：" + mfEsc((mfActiveScenario(st) || {}).name || "基准") + "。</p>";
+
+  /* 退休工资单（双人皆退休第一年） */
+  var pr = null; for (var i = 0; i < main.rows.length; i++){ if (main.rows[i].phase === "退休"){ pr = main.rows[i]; break; } }
+  if (pr){
+    h += "<details style='margin-top:10px'><summary style='cursor:pointer;color:#ffd93d'>💵 退休工资单（" + pr.year + " 年，双人皆退休第一年）</summary>"
+      + "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>项目</th><th>金额/年</th></tr>"
+      + "<tr><td>社保收入</td><td>" + mf$(pr.ss) + "</td></tr>"
+      + "<tr><td>租金净收入</td><td>" + mf$(pr.rentNet) + "</td></tr>"
+      + "<tr><td>兼职收入（桥接）</td><td>" + mf$(pr.partTime) + "</td></tr>"
+      + "<tr><td>生活支出</td><td>-" + mf$(pr.spend) + "</td></tr>"
+      + "<tr><td>医疗</td><td>-" + mf$(pr.health) + "</td></tr>"
+      + "<tr><td>退休税（gross-up 迭代）</td><td>-" + mf$(pr.tax) + "</td></tr>"
+      + "<tr><td>贷款还款</td><td>-" + mf$(pr.loanPay) + "</td></tr>"
+      + "<tr><td><b>投资组合取款</b>（现金 " + mf$(pr.wd.cash) + " / 应税 " + mf$(pr.wd.taxable) + " / 传统 " + mf$(pr.wd.traditional) + " / Roth " + mf$(pr.wd.roth) + " / HSA " + mf$(pr.wd.hsa) + "）</td><td><b>" + mf$(pr.wdTotal) + "</b></td></tr>"
+      + "</table></div><p style='color:#888;font-size:.8em'>取款严格按 现金→应税→传统→Roth→HSA 顺序；传统账户取款按退休平均税率 gross-up，社保按 85% 计入应税代理。</p></details>";
+  }
+  /* 桥接期 */
+  if (bridgeRows.length){
+    var gapSum = 0; bridgeRows.forEach(function(r){ gapSum += r.wdTotal; });
+    h += "<details style='margin-top:10px'><summary style='cursor:pointer;color:#ffd93d'>🌉 桥接期（" + bridgeRows.length + " 年，组合总输血 " + mf$(gapSum) + "）</summary>"
+      + "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>年份</th><th>社保</th><th>租金</th><th>兼职</th><th>组合取款（缺口）</th></tr>"
+      + bridgeRows.map(function(r){ return "<tr><td>" + r.year + "</td><td>" + mf$(r.ss) + "</td><td>" + mf$(r.rentNet) + "</td><td>" + mf$(r.partTime) + "</td><td>" + mf$(r.wdTotal) + "</td></tr>"; }).join("")
+      + "</table></div><p style='color:#888;font-size:.8em'>桥接期 = 有人已退休、双人尚未都领社保的年份；缺口由投资组合按取款顺序补。退休前医疗累计 " + mf$(healthPre) + "。</p></details>";
+  }
+  /* 逐年表 */
+  h += "<details style='margin-top:10px'><summary style='cursor:pointer;color:#ffd93d'>📅 逐年现金流（" + main.rows.length + " 年，含分类取款与断粮标记）</summary>"
+    + "<div style='overflow-x:auto;max-height:70vh;overflow-y:auto'><table class='mf-tb'><thead><tr><th>年</th><th>年龄</th><th>阶段</th><th>年初</th><th>增长</th><th>工资</th><th>社保</th><th>租金</th><th>兼职</th><th>支出</th><th>孩子</th><th>贷款</th><th>医疗</th><th>税</th><th>取:现金</th><th>取:应税</th><th>取:传统</th><th>取:Roth</th><th>取:HSA</th><th>存入</th><th>年末</th></tr></thead><tbody>"
+    + main.rows.map(function(r){
+        return "<tr" + (r.failed ? " style='background:#4a1420'" : "") + "><td>" + r.year + (r.failed ? " 💀" : "") + "</td><td>" + r.ages.join("/") + "</td><td>" + r.phase + "</td><td>" + mf$(r.start) + "</td><td>" + mf$(r.growth) + "</td><td>" + mf$(r.income) + "</td><td>" + mf$(r.ss) + "</td><td>" + mf$(r.rentNet) + "</td><td>" + mf$(r.partTime) + "</td><td>" + mf$(r.spend) + "</td><td>" + mf$(r.child) + "</td><td>" + mf$(r.loanPay) + "</td><td>" + mf$(r.health) + "</td><td>" + mf$(r.tax) + "</td><td>" + mf$(r.wd.cash) + "</td><td>" + mf$(r.wd.taxable) + "</td><td>" + mf$(r.wd.traditional) + "</td><td>" + mf$(r.wd.roth) + "</td><td>" + mf$(r.wd.hsa) + "</td><td>" + mf$(r.deposit) + "</td><td>" + mf$(r.end) + "</td></tr>";
+      }).join("")
+    + "</tbody></table></div><p style='color:#888;font-size:.8em'>💀 = 该年取款需求超过组合余额（断粮），推演在此终止。金额均为今天美元（实际购买力）。</p></details>";
+
+  /* 场景对比 */
+  if (st.scenarios.length > 1){
+    h += "<h3 style='color:#ffd93d;margin:16px 0 6px'>🗂️ 场景对比（确定性）</h3><div style='overflow-x:auto'><table class='mf-tb'><tr><th>场景</th><th>模拟 FI</th><th>达标年</th><th>期末余额</th></tr>"
+      + st.scenarios.map(function(sc){
+          var rr = null; try { rr = mfCompute(st, sc); } catch (e){}
+          if (!rr) return "<tr><td>" + mfEsc(sc.name) + "</td><td colspan='3'>计算失败</td></tr>";
+          return "<tr" + (sc.isActive ? " style='background:#1d2b1d'" : "") + "><td>" + mfEsc(sc.name) + (sc.isActive ? "（当前）" : "") + "</td><td>" + mf$(rr.fi) + "</td><td>" + (rr.achieveYear || "—") + "</td><td>" + (rr.main.failed ? "❌ " + rr.main.failYear + " 年断粮" : mf$(rr.endBalance)) + "</td></tr>";
+        }).join("") + "</table></div>";
+  }
+  box.innerHTML = h;
+}
+
+
+/* ================= Monte Carlo / 压力测试 / 反向求解 ================= */
+function mfMcParams(){
+  var A = MF.state.assumptions;
+  var g = function(id, dflt){ var el = document.getElementById(id); return el ? el.value : dflt; };
+  return {
+    dist: g("mf-mc-dist", A.mcDistribution),
+    sigmaBps: Math.round(parseFloat(g("mf-mc-sigma", A.mcSigmaBps / 100)) * 100) || A.mcSigmaBps,
+    runs: parseInt(g("mf-mc-runs", A.mcRuns), 10) || A.mcRuns,
+    seed: parseInt(g("mf-mc-seed", A.mcSeed), 10) || A.mcSeed,
+    guard: !!document.getElementById("mf-mc-guard") && document.getElementById("mf-mc-guard").checked
+  };
+}
+function mfRunMC(){
+  var out = document.getElementById("mf-mc-out"); if (!out) return;
+  var p = mfMcParams();
+  out.innerHTML = "计算中…（" + p.runs + " 次模拟）";
+  setTimeout(function(){
+    try {
+      var eff = effectiveInputs(MF.state, null); eff.flags = defaultFlags();
+      var mc = mcRun(eff, { seed: p.seed, runs: p.runs, sigmaBps: p.sigmaBps, dist: p.dist, streamMode: "shared" });
+      MF.mc = mc;
+      var h = "<table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(mc.p10) + "</td><td>" + mf$(mc.p50) + "</td><td>" + mf$(mc.p90) + "</td></tr></table>";
+      if (p.guard){
+        var mcg = mcRun(eff, { seed: p.seed, runs: p.runs, sigmaBps: p.sigmaBps, dist: p.dist, streamMode: "shared", guardrail: true });
+        h += "<p style='line-height:1.7'>🛡️ 护栏开启（回撤超 " + mfPct(MF.state.assumptions.guardrailTriggerBps / 10000) + " 砍享受支出 " + mfPct(MF.state.assumptions.guardrailCutBps / 10000) + "）：通过率 <b>" + (mcg.passRate * 100).toFixed(1) + "%</b>（" + ((mcg.passRate - mc.passRate) * 100 >= 0 ? "+" : "") + ((mcg.passRate - mc.passRate) * 100).toFixed(1) + " pp），P50 " + mf$(mcg.p50) + "。</p>";
+      }
+      h += "<p style='color:#888;font-size:.8em'>分布：" + (p.dist === "lognormal" ? "对数正态" : "正态") + "，σ=" + (p.sigmaBps / 100).toFixed(1) + "%，种子 " + p.seed + "（同种子可复现）。断粮 = 失败，不看期末。</p>";
+      out.innerHTML = h;
+      mfRenderResults();
+    } catch (e){ out.innerHTML = "<span style='color:#f88'>MC 出错：" + mfEsc(e.message) + "</span>"; }
+  }, 30);
+}
+var MF_STRESS = {
+  ret: { label: "回报 −1.5pp", apply: function(st){ st.assumptions.nominalReturnBps -= 150; } },
+  inf: { label: "通胀 +0.7pp", apply: function(st){ st.assumptions.inflationBps += 70; } },
+  spend: { label: "支出 +10%", apply: function(st){ st.household.spendingMustCents = Math.round(st.household.spendingMustCents * 1.1); st.household.spendingLikeCents = Math.round(st.household.spendingLikeCents * 1.1); } },
+  early: { label: "提前退休 3 年", apply: function(st){ st.persons.forEach(function(p){ if (p.role === "adult") p.retirementAge = Math.max(40, p.retirementAge - 3); }); st.household.plannedRetirementAge = Math.max(40, st.household.plannedRetirementAge - 3); } }
+};
+function mfRunStress(kind){
+  var out = document.getElementById("mf-stress-out"); if (!out) return;
+  out.textContent = "计算中…";
+  setTimeout(function(){
+    try {
+      var p = mfMcParams();
+      function evalState(st){
+        var eff = effectiveInputs(st, null); eff.flags = defaultFlags();
+        var det = simulate(eff, {});
+        var mc = mcRun(eff, { seed: p.seed, runs: 200, sigmaBps: p.sigmaBps, dist: p.dist, streamMode: "shared" });
+        return { det: det, mc: mc };
+      }
+      var base = evalState(MF.state);
+      var st2 = mfClone(MF.state); MF_STRESS[kind].apply(st2);
+      var alt = evalState(st2);
+      out.innerHTML = "<table class='mf-tb'><tr><th>情景</th><th>确定性期末</th><th>MC 通过率</th><th>MC P50</th></tr>"
+        + "<tr><td>基准</td><td>" + (base.det.failed ? "❌ " + base.det.failYear + " 年断粮" : mf$(base.det.endBalance)) + "</td><td>" + (base.mc.passRate * 100).toFixed(1) + "%</td><td>" + mf$(base.mc.p50) + "</td></tr>"
+        + "<tr><td>" + mfEsc(MF_STRESS[kind].label) + "</td><td>" + (alt.det.failed ? "❌ " + alt.det.failYear + " 年断粮" : mf$(alt.det.endBalance)) + "</td><td>" + (alt.mc.passRate * 100).toFixed(1) + "%</td><td>" + mf$(alt.mc.p50) + "</td></tr></table>";
+    } catch (e){ out.innerHTML = "<span style='color:#f88'>压力测试出错：" + mfEsc(e.message) + "</span>"; }
+  }, 30);
+}
+function mfSolve(){
+  var out = document.getElementById("mf-solve-out"); if (!out || MF.solving) return;
+  var target = parseFloat((document.getElementById("mf-solve-target") || {}).value) || 90;
+  target = target / 100;
+  var p = mfMcParams();
+  MF.solving = true; out.textContent = "反向求解中…（每个候选跑 200 次 MC）";
+  setTimeout(function(){
+    try {
+      function passFor(st, sigmaBps){
+        var eff = effectiveInputs(st, null); eff.flags = defaultFlags();
+        return mcRun(eff, { seed: p.seed, runs: 200, sigmaBps: sigmaBps, dist: p.dist, streamMode: "shared" }).passRate;
+      }
+      var basePass = passFor(MF.state, p.sigmaBps);
+      var lines = [];
+      if (basePass >= target) lines.push("当前 σ=" + (p.sigmaBps / 100).toFixed(1) + "% 下通过率已达 " + (basePass * 100).toFixed(1) + "% ≥ 目标。");
+      // sigma cap
+      var lo = 100, hi = 4000, cap = null;
+      if (passFor(MF.state, lo) >= target){
+        for (var i = 0; i < 9; i++){ var mid = (lo + hi) / 2; if (passFor(MF.state, Math.round(mid)) >= target) lo = mid; else hi = mid; }
+        cap = lo / 100;
+      }
+      lines.push(cap != null ? "可承受 σ 上限 ≈ <b>" + cap.toFixed(1) + "%</b>（σ 不超过此值时通过率 ≥ " + (target * 100) + "%）" : "即使 σ 降到 1%，通过率也不达目标——需要延后退休或降支出。");
+      // retirement delay
+      var delay = null;
+      for (var k = 0; k <= 12; k++){
+        var st2 = mfClone(MF.state);
+        st2.persons.forEach(function(pp){ if (pp.role === "adult") pp.retirementAge = Math.min(80, pp.retirementAge + k); });
+        if (passFor(st2, p.sigmaBps) >= target){ delay = k; break; }
+      }
+      lines.push(delay != null ? ("在当前 σ 下，双人各延后退休 <b>" + delay + " 年</b>即可达到目标通过率。") : "双人各延后 12 年仍达不到目标通过率。");
+      out.innerHTML = lines.join("<br>");
+    } catch (e){ out.innerHTML = "<span style='color:#f88'>求解出错：" + mfEsc(e.message) + "</span>"; }
+    MF.solving = false;
+  }, 30);
+}
+
+/* ================= 资产配置 ================= */
+function mfRenderAlloc(){
+  var box = document.getElementById("mf-alloc"); if (!box || !MF.state) return;
+  var st = MF.state, A = st.assumptions;
+  var bal = { cash: 0, taxable: 0, traditional: 0, roth: 0, hsa: 0 };
+  st.accounts.forEach(function(a){ if (a.includeInInvestable && bal.hasOwnProperty(a.type)) bal[a.type] += a.balanceCents / 100; });
+  var inv = bal.cash + bal.taxable + bal.traditional + bal.roth + bal.hsa;
+  var res = mfCompute(st); var retYear = res.main.firstRetYear || st.household.baseYear + 25;
+  function glide(y){
+    var t = (y - st.household.baseYear) / Math.max(1, retYear - st.household.baseYear); t = Math.max(0, Math.min(1, t));
+    function mix(k1, k2){ return (A[k1] + (A[k2] - A[k1]) * t) / 10000; }
+    return { stock: mix("allocStockBps", "allocRetStockBps"), bond: mix("allocBondBps", "allocRetBondBps"), cash: mix("allocCashBps", "allocRetCashBps") };
+  }
+  var years = [st.household.baseYear, st.household.baseYear + 5, retYear, retYear + 10];
+  var h = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>年份</th><th>股票</th><th>债券</th><th>现金</th><th>说明</th></tr>"
+    + years.map(function(y){ var g = glide(y); return "<tr><td>" + y + "</td><td>" + mfPct(g.stock) + "</td><td>" + mfPct(g.bond) + "</td><td>" + mfPct(g.cash) + "</td><td>" + (y === retYear ? "退休年目标配置" : y === st.household.baseYear ? "当前目标配置" : "") + "</td></tr>"; }).join("") + "</table></div>";
+  h += "<p style='line-height:1.7'>当前分类余额：现金 " + mf$(bal.cash) + " · 应税 " + mf$(bal.taxable) + " · 传统 " + mf$(bal.traditional) + " · Roth " + mf$(bal.roth) + " · HSA " + mf$(bal.hsa) + "（可投资合计 " + mf$(inv) + "）。再平衡带 ±" + mfPct(A.allocRebalanceBandBps / 10000) + "：任一类资产偏离 glide path 目标超过带宽才需要再平衡。</p>";
+  var conc = A.allocEmployerStockCents / 100, cap = A.allocConcentrationCapBps / 10000;
+  if (inv > 0){
+    var share = conc / inv;
+    h += "<p style='line-height:1.7'>雇主股集中度：" + mf$(conc) + " / 可投资 " + mf$(inv) + " = <b>" + mfPct(share) + "</b>（自设上限 " + mfPct(cap) + "）。"
+      + (share > cap ? "⚠️ 超出上限约 " + mf$(conc - cap * inv) + "，建议逐步转出到宽基指数。" : "✅ 在上限内。") + "</p>";
+  }
+  h += "<div style='color:#aaa;font-size:.85em;line-height:1.8'><b style='color:#ddd'>账户定位（哪类资产放哪个账户）</b><br>"
+    + "· 债券优先放传统账户（利息按普通收入计税，放应税账户最吃亏）；<br>· REIT 放 Roth / HSA（分红税率高、免税账户最划算）；<br>· 高股息股放传统账户；低周转宽基指数放应税账户（长期资本利得税率低，还能做 tax-loss harvesting）；<br>· 高增长股放 Roth（涨幅全部免税）；现金类放应税 / HYSA（流动性优先）。</div>";
+  box.innerHTML = h;
+}
+
+/* ================= 退休路径 A–F ================= */
+var MF_PATH_DEFS = [
+  { key: "A", name: "A · 双人同年全退", desc: "长者到退休年龄那年，双人一起退休" },
+  { key: "B", name: "B · 各自到龄退休（基准）", desc: "每人到自己的退休年龄各自退休" },
+  { key: "C", name: "C · 一人先退 + 一人降档 5 年", desc: "长者先退，另一人降档半职 5 年再退" },
+  { key: "D", name: "D · 长者先降档 5 年", desc: "长者退休前先降档 5 年，双人按原年龄退休" },
+  { key: "E", name: "E · Coast（停存不停工）", desc: "从现在起不再新增储蓄，靠已有资产复利，工作到原退休年龄" },
+  { key: "F", name: "F · Barista（退后兼职到 67）", desc: "按原年龄退休，之后兼职收入补到 67 岁" }
+];
+function mfPathVariant(key){
+  var st = mfClone(MF.state);
+  var ads = mfAdults(st).slice().sort(function(a, b){ return a.birthYear - b.birthYear; });
+  var elder = ads[0], other = ads[1], flags = {}, coast = false;
+  var elderRetYear = elder.birthYear + elder.retirementAge;
+  if (key === "A" && other) other.retirementAge = elderRetYear - other.birthYear;
+  if (key === "C" && other){ other.downshiftStartAge = elderRetYear - other.birthYear; other.downshiftRetireAge = other.downshiftStartAge + 5; other.retirementAge = other.downshiftRetireAge; other.downshiftPctBps = 5000; }
+  if (key === "D"){ elder.downshiftStartAge = elder.retirementAge - 5; elder.downshiftRetireAge = elder.retirementAge; elder.downshiftPctBps = 5000; }
+  if (key === "E") coast = true;
+  if (key === "F") flags.partTime = "until67";
+  return { st: st, flags: flags, coast: coast };
+}
+function mfRunPaths(){
+  var out = document.getElementById("mf-paths-out"); if (!out) return;
+  out.textContent = "计算中…（6 条路径 × 确定性 + FI 求解 + 100 次 MC）";
+  setTimeout(function(){
+    try {
+      var rows = MF_PATH_DEFS.map(function(def){
+        var v = mfPathVariant(def.key);
+        var eff = effectiveInputs(v.st, null); eff.flags = Object.assign({}, defaultFlags(), v.flags);
+        var main = simulate(eff, { coast: v.coast });
+        var fi = solveFI(eff, main);
+        var p = mfMcParams();
+        var mc = mcRun(eff, { seed: p.seed, runs: 100, sigmaBps: p.sigmaBps, dist: p.dist, streamMode: "shared" });
+        var cost = 0, bridge = 0, healthPre = 0;
+        main.rows.forEach(function(r){
+          eff.adults.forEach(function(pp){ var s = workStatus(eff, pp, r.year); if (s === "full") cost += 1; else if (s === "down") cost += 0.5; });
+          var anyRet = eff.adults.some(function(pp){ return workStatus(eff, pp, r.year) === "ret"; });
+          var bothClaim = eff.adults.every(function(pp){ return (r.year - pp.birthYear) >= pp.ssClaimAge; });
+          if (anyRet && !bothClaim) bridge++;
+          if (main.firstRetYear == null || r.year < main.firstRetYear) healthPre += r.health;
+        });
+        var elder = eff.adults.slice().sort(function(a, b){ return a.birthYear - b.birthYear; })[0];
+        var tag = mc.passRate >= 0.8 ? "🟢 稳健" : mc.passRate >= 0.6 ? "🟡 可行但紧" : "🔴 高风险";
+        if (bridge >= 10) tag += " · 桥接长";
+        if (healthPre > 150000) tag += " · 医疗压力";
+        return { key: def.key, def: def, fi: fi, mc: mc, end: main.endBalance, failed: main.failed, failYear: main.failYear, cost: cost, bridge: bridge, healthPre: healthPre, fullRetAge: main.firstRetYear != null ? main.firstRetYear - elder.birthYear : null, tag: tag };
+      });
+      var prio = MF.state.assumptions.pathPriority || "safest_fewest";
+      var sorted = rows.slice().sort(function(a, b){
+        if (prio === "earliest") return (a.fullRetAge - b.fullRetAge) || (b.mc.passRate - a.mc.passRate);
+        if (prio === "cheapest") return (a.cost - b.cost) || (b.mc.passRate - a.mc.passRate);
+        return (b.mc.passRate - a.mc.passRate) || (a.cost - b.cost);
+      });
+      var bestKey = sorted[0].key;
+      MF.paths = rows;
+      out.innerHTML = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>路径</th><th>全退年龄（长者）</th><th>模拟 FI</th><th>MC 通过率（100 次）</th><th>期末余额</th><th>工作年成本</th><th>桥接期</th><th>退休前医疗</th><th>风险标签</th></tr>"
+        + rows.map(function(r){
+            return "<tr" + (r.key === bestKey ? " style='background:#1d2b1d'" : "") + "><td><b>" + mfEsc(r.def.name) + "</b>" + (r.key === bestKey ? " ⭐推荐" : "") + "<br><span style='color:#888;font-size:.85em'>" + mfEsc(r.def.desc) + "</span></td><td>" + (r.fullRetAge != null ? r.fullRetAge + " 岁" : "—") + "</td><td>" + mf$(r.fi) + "</td><td>" + (r.mc.passRate * 100).toFixed(1) + "%</td><td>" + (r.failed ? "❌ " + r.failYear + " 年断粮" : mf$(r.end)) + "</td><td>" + r.cost.toFixed(1) + " 年</td><td>" + r.bridge + " 年</td><td>" + mf$(r.healthPre) + "</td><td>" + r.tag + "</td></tr>";
+          }).join("") + "</table></div>"
+        + "<p style='color:#888;font-size:.8em'>推荐口径 = 假设里的路径优先级（当前：" + mfEsc(prio) + "）。边际读法：与基准 B 比，每多干 1 个全职年换多少通过率，直接看两行差值。</p>";
+    } catch (e){ out.innerHTML = "<span style='color:#f88'>路径计算出错：" + mfEsc(e.message) + "</span>"; }
+  }, 30);
+}
+
+
+/* ================= 页面骨架 ================= */
+function mfRenderAll(){
+  var st = MF.state; if (!st) return;
+  var A = st.assumptions;
+  var h = "<div class='section'><h2>🔥 我的 FIRE</h2>";
+  if (st.household.isExample){
+    h += "<div style='background:#3a2f10;border:1px solid #d4a017;border-radius:8px;padding:10px 12px;line-height:1.7'>⚠️ <b>当前是示例数据</b>（虚构 persona）。在下方「编辑我的数字」里填入真实数字，点「保存到云端」即替换；确认填好后点 <button data-act='markreal' style='margin-left:6px'>标记为真实数据</button> 去掉这个提示。</div>";
+  }
+  h += "<p style='color:#888;font-size:.85em'><span id='mf-updated'>" + (MF.updatedAt ? "数据更新于 " + new Date(MF.updatedAt).toLocaleString("zh-CN") : "") + "</span> · 数据存 Supabase（仅白名单邮箱可读） · 全程今天美元（实际购买力）</p>";
+  h += "<div style='margin:8px 0'><button data-act='save' style='padding:8px 18px;font-weight:bold'>💾 保存到云端</button> "
+    + "<button data-act='export'>⬇️ 导出 JSON</button> "
+    + "<button data-act='import'>⬆️ 导入 JSON</button>"
+    + "<input type='file' id='mf-import-file' accept='.json,application/json' style='display:none'>"
+    + "<span id='mf-savemsg' style='margin-left:10px;color:#9fd69f'></span></div>";
+  h += "<div id='mf-results'></div>";
+  /* MC */
+  h += "<details open style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🎲 Monte Carlo 与压力测试</summary>"
+    + "<div style='margin:8px 0;line-height:2'>分布 <select id='mf-mc-dist'><option value='lognormal'" + (A.mcDistribution === "lognormal" ? " selected" : "") + ">对数正态</option><option value='normal'" + (A.mcDistribution === "normal" ? " selected" : "") + ">正态</option></select>"
+    + " σ <input type='number' id='mf-mc-sigma' value='" + (A.mcSigmaBps / 100) + "' step='0.5' style='width:70px'> %"
+    + " 次数 <input type='number' id='mf-mc-runs' value='" + A.mcRuns + "' style='width:80px'>"
+    + " 种子 <input type='number' id='mf-mc-seed' value='" + A.mcSeed + "' style='width:110px'>"
+    + " <label><input type='checkbox' id='mf-mc-guard'> 同时对比护栏开/关</label>"
+    + " <button data-act='mc'>运行 Monte Carlo</button></div>"
+    + "<div id='mf-mc-out'>" + (MF.mc ? "" : "<span style='color:#888'>尚未运行（默认参数来自「假设」：σ 12%、500 次、对数正态）。</span>") + "</div>"
+    + "<div style='margin:10px 0'>压力预设："
+    + "<button data-stress='ret'>回报 −1.5pp</button> <button data-stress='inf'>通胀 +0.7pp</button> <button data-stress='spend'>支出 +10%</button> <button data-stress='early'>提前退休 3 年</button></div>"
+    + "<div id='mf-stress-out'></div>"
+    + "<div style='margin:10px 0'>反向求解：目标通过率 <input type='number' id='mf-solve-target' value='90' style='width:60px'> % <button data-act='solve'>求可承受 σ 上限 / 所需延退年数</button></div>"
+    + "<div id='mf-solve-out'></div></details>";
+  /* 资产配置 */
+  h += "<details style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🧭 资产配置（glide path / 集中度 / 账户定位）</summary><div id='mf-alloc'></div></details>";
+  /* 路径 */
+  h += "<details style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🛤️ 退休路径 A–F 对比</summary><div style='margin:8px 0'><button data-act='paths'>计算六条路径</button></div><div id='mf-paths-out'><span style='color:#888'>点按钮计算（每条路径含 FI 求解 + 100 次 MC，约数秒）。</span></div></details>";
+  /* 场景管理 */
+  h += "<details style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🗂️ 场景管理</summary><div id='mf-scenarios'></div></details>";
+  /* 编辑表单 */
+  h += "<details style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>✏️ 编辑我的数字（改完点上方「保存到云端」）</summary><div id='mf-forms'></div></details>";
+  /* 口径与免责 */
+  h += "<details style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>📐 口径与免责</summary><div style='color:#aaa;font-size:.85em;line-height:1.8'>"
+    + "· 全程实际美元：所有金额按今天购买力计，回报用 Fisher 精确式 (1+名义)/(1+通胀)−1。<br>"
+    + "· 逐年引擎：分类余额（现金/应税/传统/Roth/HSA）同一实际回报增长；积累期存款 = 年度残差按各账户供款比例分流；工作年份的支出预算视为已含住房贷款还款，双人退休后贷款还款单列流出。<br>"
+    + "· 退休取款严格按 现金→应税→传统→Roth→HSA；传统取款与医疗按退休平均税率 gross-up 迭代 2 次（应税代理 = 传统取款 + 社保×85% + 租金正数）。<br>"
+    + "· 社保按 FRA=67 的 ssFactor 表调整领取年龄；医疗：有雇主覆盖用雇主年额，否则 65 岁前 ACA 三档（MAGI ≤$85k 担 30%、≤$150k 担 65%、以上全额），65+ 为 Part B $2,434.80 + 补充保费。<br>"
+    + "· 模拟 FI 为退休子模型二分求解（计社保与兼职、不计租金抵扣）；达标年 = 年初余额首次 ≥ FI 的年份。<br>"
+    + "· Monte Carlo 种子可复现；断粮 = 失败。与私人版审计基准的已知差异见 goal 记录（FI 约 +1%、期末约 −1%、MC 分布更宽），口径细节以本页为准。<br>"
+    + "· 医疗三档阈值、Part B 等为 2026 年前后口径的估计，不是税务/社保官方结论；本工具只做规划演示，不构成财务建议。</div></details>";
+  h += "</div>";
+  MF.root.innerHTML = h;
+  mfRenderResults();
+  mfRenderAlloc();
+  mfRenderScenarios();
+  mfRenderForms();
+  if (MF.mc){ var out = document.getElementById("mf-mc-out"); if (out) out.innerHTML = "<table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (MF.mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(MF.mc.p10) + "</td><td>" + mf$(MF.mc.p50) + "</td><td>" + mf$(MF.mc.p90) + "</td></tr></table>"; }
+}
+
+/* ================= 场景管理 ================= */
+function mfScenarioSummary(sc){
+  var parts = [];
+  if (sc.annualSpendingCents != null) parts.push("年支出 " + mf$(sc.annualSpendingCents / 100));
+  if (sc.spendingScaleBps != null) parts.push("支出 ×" + (sc.spendingScaleBps / 10000));
+  if (sc.annualSavingsCents != null) parts.push("年储蓄 " + mf$(sc.annualSavingsCents / 100));
+  if (sc.nominalReturnBps != null) parts.push("回报 " + (sc.nominalReturnBps / 100) + "%");
+  if (sc.inflationBps != null) parts.push("通胀 " + (sc.inflationBps / 100) + "%");
+  if (sc.plannedRetirementAge != null) parts.push("退休 " + sc.plannedRetirementAge + " 岁");
+  if (sc.retireAgeP1 != null) parts.push("P1 退休 " + sc.retireAgeP1);
+  if (sc.retireAgeP2 != null) parts.push("P2 退休 " + sc.retireAgeP2);
+  if (sc.sellRentalYearOverride != null) parts.push(sc.sellRentalYearOverride + " 卖出租房");
+  if (sc.secondChildEnabledOverride != null) parts.push("二孩 " + (sc.secondChildEnabledOverride ? "开" : "关"));
+  return parts.length ? parts.join(" · ") : "无覆盖（= 基准）";
+}
+var MF_PRESETS = [
+  { name: "支出 +10%", ov: { spendingScaleBps: 11000 } },
+  { name: "支出 −10%", ov: { spendingScaleBps: 9000 } },
+  { name: "回报 5.5%", ov: { nominalReturnBps: 550 } },
+  { name: "通胀 3.2%", ov: { inflationBps: 320 } },
+  { name: "多存 $6,000/年", ov: { annualSavingsCents: "__plus6000" } },
+  { name: "55 岁退休", ov: { plannedRetirementAge: 55 } },
+  { name: "2045 年卖出租房", ov: { sellRentalYearOverride: 2045 } },
+  { name: "二孩情景", ov: { secondChildEnabledOverride: true } }
+];
+function mfRenderScenarios(){
+  var box = document.getElementById("mf-scenarios"); if (!box || !MF.state) return;
+  var st = MF.state;
+  var h = st.scenarios.map(function(sc, i){
+    return "<div style='border:1px solid #345;border-radius:8px;padding:8px 10px;margin:6px 0;line-height:1.7'><b>" + mfEsc(sc.name) + "</b>" + (sc.isActive ? " <span style='color:#9fd69f'>（当前生效）</span>" : "") + "<br><span style='color:#aaa;font-size:.85em'>" + mfEsc(mfScenarioSummary(sc)) + "</span><br>"
+      + (sc.isActive ? "" : "<button data-sc-apply='" + i + "'>应用此场景</button> ")
+      + (st.scenarios.length > 1 ? "<button data-sc-del='" + i + "'>删除</button>" : "") + "</div>";
+  }).join("");
+  h += "<div style='margin:10px 0'>一键预设：" + MF_PRESETS.map(function(p, i){ return "<button data-preset='" + i + "'>" + mfEsc(p.name) + "</button>"; }).join(" ") + "</div>";
+  h += "<div style='border-top:1px dashed #345;padding-top:8px;line-height:2'>新建场景：名称 <input type='text' id='mf-sc-name' style='width:130px'> "
+    + "年支出总额 $ <input type='number' id='mf-sc-spend' style='width:100px'> 支出比例 % <input type='number' id='mf-sc-scale' style='width:70px'> "
+    + "年储蓄 $ <input type='number' id='mf-sc-save' style='width:100px'> 回报 % <input type='number' id='mf-sc-nom' step='0.1' style='width:70px'> 通胀 % <input type='number' id='mf-sc-inf' step='0.1' style='width:70px'> "
+    + "计划退休年龄 <input type='number' id='mf-sc-ret' style='width:60px'> 卖出租房年份 <input type='number' id='mf-sc-sell' style='width:80px'> "
+    + "<button data-act='sc-add'>添加场景</button> <span style='color:#888;font-size:.8em'>（留空 = 不覆盖该项）</span></div>";
+  box.innerHTML = h;
+}
+
+
+/* ================= 编辑表单 ================= */
+function mfSel(path, options, unit){
+  var cur = mfGet(MF.state, path);
+  var h = "<select data-mf='" + path + "' data-unit='select'>";
+  options.forEach(function(o){ h += "<option value='" + mfEsc(o[0]) + "'" + (String(cur) === String(o[0]) ? " selected" : "") + ">" + mfEsc(o[1]) + "</option>"; });
+  return h + "</select>";
+}
+function mfCheck(path, label){
+  var cur = mfGet(MF.state, path);
+  return "<label style='display:block;margin:4px 0'><input type='checkbox' data-mf='" + path + "' data-unit='bool'" + (cur ? " checked" : "") + "> " + mfEsc(label) + "</label>";
+}
+function mfNullNum(path, label){
+  var v = mfGet(MF.state, path);
+  return "<label style='display:block;margin:4px 0'>" + mfEsc(label) + " <input type='number' data-mf='" + path + "' data-unit='int' data-nullable='1' value='" + (v == null ? "" : v) + "' style='width:130px' placeholder='（空=不用）'></label>";
+}
+function mfRenderForms(){
+  var box = document.getElementById("mf-forms"); if (!box || !MF.state) return;
+  var st = MF.state, A = st.assumptions;
+  var personOpts = st.persons.map(function(p){ return [p.clientKey, p.name]; });
+  var propOpts = [["", "（未关联）"]].concat(st.properties.map(function(p){ return [p.clientKey, p.name]; }));
+  var h = "";
+  h += "<h4 style='color:#ffd93d'>家庭与支出</h4>"
+    + mfInput("household.baseYear", "基准年", "int")
+    + mfInput("household.spendingMustCents", "必要年支出 Must ($)", "cents")
+    + mfInput("household.spendingLikeCents", "享受年支出 Like ($)", "cents")
+    + mfInput("household.annualSavingsCents", "基准年储蓄额 ($)（场景年储蓄额按差额调整每年存款）", "cents")
+    + mfInput("household.plannedRetirementAge", "计划退休年龄（场景缺省）", "int")
+    + mfInput("household.childCost0To2Cents", "孩子成本 0–2 岁 ($/年)", "cents")
+    + mfInput("household.childCost3To5Cents", "孩子成本 3–5 岁 ($/年)", "cents")
+    + mfInput("household.childCost6To12Cents", "孩子成本 6–12 岁 ($/年)", "cents")
+    + mfInput("household.childCost13To17Cents", "孩子成本 13–17 岁 ($/年)", "cents")
+    + mfInput("household.childEducationCents", "教育支出 18–21 岁 ($/年)", "cents")
+    + mfCheck("household.secondChildEnabled", "启用二孩情景")
+    + mfInput("household.secondChildBirthYear", "二孩出生年", "int")
+    + mfInput("household.secondChildScaleBps", "二孩成本比例 (%)", "bps");
+  h += "<h4 style='color:#ffd93d'>家庭成员</h4>";
+  st.persons.forEach(function(p, i){
+    var P = "persons." + i + ".";
+    h += "<div style='border:1px solid #345;border-radius:8px;padding:8px 10px;margin:6px 0'><b>" + mfEsc(p.name) + "</b> <span style='color:#888'>（" + (p.role === "adult" ? "成人" : "孩子") + "）</span>"
+      + mfInput(P + "name", "姓名", "text")
+      + mfInput(P + "birthYear", "出生年", "int");
+    if (p.role === "adult"){
+      h += mfInput(P + "annualIncomeCents", "年收入 ($)", "cents")
+        + mfInput(P + "incomeGrowthBps", "收入增长率 (%)", "bps")
+        + mfInput(P + "retirementAge", "退休年龄", "int")
+        + mfInput(P + "ssClaimAge", "社保领取年龄 (62–70)", "int")
+        + mfInput(P + "ssMonthlyAtFraCents", "社保 FRA 月额 ($)", "cents")
+        + mfInput(P + "annual401kCents", "401(k) 年供款 ($)", "cents")
+        + mfInput(P + "annualMatchCents", "雇主 match ($/年)", "cents")
+        + mfNullNum(P + "downshiftStartAge", "降档开始年龄")
+        + mfNullNum(P + "downshiftRetireAge", "降档结束（退休）年龄")
+        + mfInput(P + "downshiftPctBps", "降档收入比例 (%)", "bps")
+        + mfCheck(P + "downshiftHasHealthcare", "降档期带雇主医保");
+    }
+    h += "</div>";
+  });
+  h += "<h4 style='color:#ffd93d'>账户 <button data-add='accounts'>＋ 加账户</button></h4>";
+  st.accounts.forEach(function(a, i){
+    var P = "accounts." + i + ".";
+    h += "<div style='border:1px solid #345;border-radius:8px;padding:8px 10px;margin:6px 0'><b>" + mfEsc(a.name) + "</b> <button data-del-accounts='" + i + "'>删除</button>"
+      + mfInput(P + "name", "名称", "text")
+      + "<label style='display:block;margin:4px 0'>类型 " + mfSel(P + "type", [["cash", "现金"], ["taxable", "应税"], ["traditional", "传统（401k/IRA）"], ["roth", "Roth"], ["hsa", "HSA"], ["529", "529"]]) + "</label>"
+      + "<label style='display:block;margin:4px 0'>归属 " + mfSel(P + "ownerClientKey", personOpts) + "</label>"
+      + mfInput(P + "balanceCents", "余额 ($)", "cents")
+      + mfInput(P + "annualContributionCents", "年供款 ($)", "cents")
+      + mfCheck(P + "includeInInvestable", "计入可投资资产")
+      + "</div>";
+  });
+  h += "<h4 style='color:#ffd93d'>贷款 <button data-add='loans'>＋ 加贷款</button></h4>";
+  st.loans.forEach(function(L, i){
+    var P = "loans." + i + ".";
+    h += "<div style='border:1px solid #345;border-radius:8px;padding:8px 10px;margin:6px 0'><b>" + mfEsc(L.name) + "</b> <button data-del-loans='" + i + "'>删除</button>"
+      + mfInput(P + "name", "名称", "text")
+      + mfInput(P + "balanceCents", "余额 ($)", "cents")
+      + mfInput(P + "annualRateBps", "年利率 (%)", "bps")
+      + mfInput(P + "termMonths", "剩余期限（月）", "int")
+      + "<label style='display:block;margin:4px 0'>关联房产 " + mfSel(P + "propertyClientKey", propOpts) + "</label>"
+      + "<span style='color:#888;font-size:.85em'>月供由余额/利率/期限自动摊算。</span></div>";
+  });
+  h += "<h4 style='color:#ffd93d'>房产 <button data-add='properties'>＋ 加房产</button></h4>";
+  st.properties.forEach(function(pr, i){
+    var P = "properties." + i + ".";
+    h += "<div style='border:1px solid #345;border-radius:8px;padding:8px 10px;margin:6px 0'><b>" + mfEsc(pr.name) + "</b> <button data-del-properties='" + i + "'>删除</button>"
+      + mfInput(P + "name", "名称", "text")
+      + "<label style='display:block;margin:4px 0'>类型 " + mfSel(P + "kind", [["primary", "自住"], ["rental", "出租"]]) + "</label>"
+      + mfInput(P + "valueCents", "估值 ($)", "cents")
+      + mfInput(P + "monthlyRentCents", "月租 ($)", "cents")
+      + mfInput(P + "monthlyCostsCents", "月成本 ($)", "cents")
+      + mfInput(P + "rentGrowthBps", "租金增长率 %（实际口径）", "bps")
+      + mfInput(P + "valueGrowthBps", "房价增长率 %（实际口径）", "bps")
+      + mfInput(P + "vacancyBps", "空置率 (%)", "bps")
+      + mfNullNum(P + "sellYear", "卖出年份")
+      + "</div>";
+  });
+  h += "<h4 style='color:#ffd93d'>假设</h4>"
+    + mfInput("assumptions.nominalReturnBps", "名义回报 (%)", "bps")
+    + mfInput("assumptions.inflationBps", "通胀 (%)", "bps")
+    + mfInput("assumptions.swr1Bps", "SWR 保守档 (%)", "bps") + mfInput("assumptions.swr2Bps", "SWR 中档 (%)", "bps") + mfInput("assumptions.swr3Bps", "SWR 经典档 (%)", "bps")
+    + mfInput("assumptions.retirementAvgTaxBps", "退休平均税率 (%)", "bps")
+    + mfInput("assumptions.partTimeIncomeCents", "兼职年收入 ($)", "cents")
+    + mfInput("assumptions.rothBracketCapCents", "Roth 转换税档上限 ($)", "cents")
+    + mfInput("assumptions.acaAnnualPerPersonCents", "ACA 全额保费/人 ($)", "cents")
+    + mfInput("assumptions.medicareSupplementAnnualCents", "Medicare 补充/人 ($)", "cents")
+    + mfInput("assumptions.employerHealthcareAnnualCents", "雇主医保年额 ($)", "cents")
+    + mfInput("assumptions.mcSeed", "MC 种子", "int") + mfInput("assumptions.mcRuns", "MC 次数", "int") + mfInput("assumptions.mcSigmaBps", "MC σ (%)", "bps")
+    + "<label style='display:block;margin:4px 0'>MC 分布 " + mfSel("assumptions.mcDistribution", [["lognormal", "对数正态"], ["normal", "正态"]]) + "</label>"
+    + mfCheck("assumptions.guardrailEnabled", "启用支出护栏")
+    + mfInput("assumptions.guardrailTriggerBps", "护栏触发回撤 (%)", "bps") + mfInput("assumptions.guardrailCutBps", "护栏砍享受支出 (%)", "bps") + mfInput("assumptions.guardrailRestoreBps", "护栏恢复阈值 (%)", "bps")
+    + mfInput("assumptions.allocStockBps", "当前股票 (%)", "bps") + mfInput("assumptions.allocBondBps", "当前债券 (%)", "bps") + mfInput("assumptions.allocCashBps", "当前现金 (%)", "bps")
+    + mfInput("assumptions.allocRetStockBps", "退休股票 (%)", "bps") + mfInput("assumptions.allocRetBondBps", "退休债券 (%)", "bps") + mfInput("assumptions.allocRetCashBps", "退休现金 (%)", "bps")
+    + mfInput("assumptions.allocEmployerStockCents", "雇主股金额 ($)", "cents")
+    + mfInput("assumptions.allocConcentrationCapBps", "集中度上限 (%)", "bps")
+    + mfInput("assumptions.allocRebalanceBandBps", "再平衡带 (%)", "bps")
+    + "<label style='display:block;margin:4px 0'>路径优先级 " + mfSel("assumptions.pathPriority", [["safest_fewest", "最稳健·少干年"], ["earliest", "最早全退"], ["cheapest", "工作年最少"]]) + "</label>";
+  h += "<h4 style='color:#ffd93d'>一次性事件 <button data-add='events'>＋ 加事件</button></h4><p style='color:#888;font-size:.85em'>事件目前仅记录、未计入引擎推演（与私人版 Phase 0 口径一致）。</p>";
+  (st.events || []).forEach(function(ev, i){
+    var P = "events." + i + ".";
+    h += "<div style='border:1px solid #345;border-radius:8px;padding:8px 10px;margin:6px 0'><b>" + mfEsc(ev.name) + "</b> <button data-del-events='" + i + "'>删除</button>"
+      + mfInput(P + "name", "名称", "text") + mfInput(P + "year", "年份", "int") + mfInput(P + "amountCents", "金额 ($)", "cents") + "</div>";
+  });
+  box.innerHTML = h;
+}
+
+/* ================= 事件与动作 ================= */
+function mfShowDemo(show){ (MF.demoSections || []).forEach(function(s){ s.style.display = show ? "" : "none"; }); }
+function mfMarkDirty(){
+  MF.dirty = true;
+  var msg = document.getElementById("mf-savemsg"); if (msg) msg.textContent = "✏️ 有未保存修改，记得点「保存到云端」";
+}
+function mfOnChange(e){
+  var t = e.target; if (!t || !t.getAttribute) return;
+  if (t.id === "mf-import-file"){ if (t.files && t.files[0]) mfImportFile(t.files[0]); return; }
+  var path = t.getAttribute("data-mf"); if (!path) return;
+  var unit = t.getAttribute("data-unit"), val;
+  if (unit === "bool") val = !!t.checked;
+  else if (unit === "text" || unit === "select") val = t.value;
+  else {
+    if (t.value === "") val = t.getAttribute("data-nullable") ? null : 0;
+    else { var n = parseFloat(t.value); if (isNaN(n)) return; val = unit === "cents" ? Math.round(n * 100) : unit === "bps" ? Math.round(n * 100) : Math.round(n); }
+  }
+  mfSet(MF.state, path, val);
+  mfMarkDirty();
+  try { mfRenderResults(); } catch (err){}
+  try { mfRenderAlloc(); } catch (err){}
+}
+function mfExport(){
+  var blob = new Blob([JSON.stringify(MF.state, null, 2)], { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "fire-plan.json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function mfImportFile(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    var msg = document.getElementById("mf-savemsg");
+    try {
+      var st = JSON.parse(reader.result);
+      if (!st.household || !st.persons || !st.accounts || !st.assumptions || !st.scenarios) throw new Error("缺少 household/persons/accounts/assumptions/scenarios 段");
+      var errs = mfValidate(st);
+      if (errs.length){ if (msg) msg.innerHTML = "❌ 导入被校验拦截：<br>" + errs.map(mfEsc).join("<br>"); return; }
+      MF.state = st; MF.mc = null; MF.paths = null;
+      mfRenderAll(); mfSave();
+    } catch (err){ if (msg) msg.textContent = "❌ 导入失败：" + err.message; }
+  };
+  reader.readAsText(file);
+}
+function mfAddRow(kind){
+  var st = MF.state, ts = Date.now();
+  if (kind === "accounts") st.accounts.push({ id: null, clientKey: "acct-" + ts, name: "新账户", type: "taxable", ownerClientKey: st.persons[0].clientKey, balanceCents: 0, annualContributionCents: 0, includeInInvestable: true });
+  if (kind === "loans") st.loans.push({ id: null, clientKey: "loan-" + ts, name: "新贷款", balanceCents: 0, annualRateBps: 600, termMonths: 360, propertyClientKey: st.properties.length ? st.properties[0].clientKey : "" });
+  if (kind === "properties") st.properties.push({ id: null, clientKey: "prop-" + ts, name: "新房产", kind: "rental", valueCents: 0, monthlyRentCents: 0, monthlyCostsCents: 0, rentGrowthBps: 200, valueGrowthBps: 200, vacancyBps: 500, sellYear: null });
+  if (kind === "events"){ if (!st.events) st.events = []; st.events.push({ id: null, name: "新事件", year: st.household.baseYear + 5, amountCents: 0 }); }
+  mfMarkDirty(); mfRenderAll();
+}
+function mfScAdd(){
+  var g = function(id){ var el = document.getElementById(id); return el ? String(el.value).trim() : ""; };
+  var sc = { id: Date.now(), name: g("mf-sc-name") || "新场景", isActive: false, annualSpendingCents: null, spendingScaleBps: null, annualSavingsCents: null, nominalReturnBps: null, inflationBps: null, retireAgeP1: null, retireAgeP2: null, plannedRetirementAge: null, secondChildEnabledOverride: null, sellRentalYearOverride: null };
+  if (g("mf-sc-spend")) sc.annualSpendingCents = Math.round(parseFloat(g("mf-sc-spend")) * 100);
+  if (g("mf-sc-scale")) sc.spendingScaleBps = Math.round(parseFloat(g("mf-sc-scale")) * 100);
+  if (g("mf-sc-save")) sc.annualSavingsCents = Math.round(parseFloat(g("mf-sc-save")) * 100);
+  if (g("mf-sc-nom")) sc.nominalReturnBps = Math.round(parseFloat(g("mf-sc-nom")) * 100);
+  if (g("mf-sc-inf")) sc.inflationBps = Math.round(parseFloat(g("mf-sc-inf")) * 100);
+  if (g("mf-sc-ret")) sc.plannedRetirementAge = parseInt(g("mf-sc-ret"), 10);
+  if (g("mf-sc-sell")) sc.sellRentalYearOverride = parseInt(g("mf-sc-sell"), 10);
+  MF.state.scenarios.push(sc); mfMarkDirty(); mfRenderAll();
+}
+function mfOnClick(e){
+  var t = e.target; if (!t || !t.getAttribute) return;
+  var act = t.getAttribute("data-act");
+  if (act === "save") mfSave();
+  else if (act === "export") mfExport();
+  else if (act === "import"){ var f = document.getElementById("mf-import-file"); if (f) f.click(); }
+  else if (act === "markreal"){ MF.state.household.isExample = false; mfSave(); mfRenderAll(); }
+  else if (act === "mc") mfRunMC();
+  else if (act === "solve") mfSolve();
+  else if (act === "paths") mfRunPaths();
+  else if (act === "sc-add") mfScAdd();
+  var stress = t.getAttribute("data-stress"); if (stress) mfRunStress(stress);
+  var add = t.getAttribute("data-add"); if (add) mfAddRow(add);
+  ["accounts", "loans", "properties", "events"].forEach(function(kind){
+    var del = t.getAttribute("data-del-" + kind);
+    if (del != null){ MF.state[kind].splice(parseInt(del, 10), 1); mfMarkDirty(); mfRenderAll(); }
+  });
+  var ap = t.getAttribute("data-sc-apply");
+  if (ap != null){ var idx = parseInt(ap, 10); MF.state.scenarios.forEach(function(sc, i){ sc.isActive = i === idx; }); MF.mc = null; mfMarkDirty(); mfRenderAll(); }
+  var sd = t.getAttribute("data-sc-del");
+  if (sd != null){ var j = parseInt(sd, 10); var wasActive = MF.state.scenarios[j].isActive; MF.state.scenarios.splice(j, 1); if (wasActive && MF.state.scenarios.length) MF.state.scenarios[0].isActive = true; mfMarkDirty(); mfRenderAll(); }
+  var pr = t.getAttribute("data-preset");
+  if (pr != null){
+    var def = MF_PRESETS[parseInt(pr, 10)]; var ov = mfClone(def.ov);
+    if (ov.annualSavingsCents === "__plus6000") ov.annualSavingsCents = MF.state.household.annualSavingsCents + 600000;
+    var sc2 = { id: Date.now(), name: def.name, isActive: false, annualSpendingCents: null, spendingScaleBps: null, annualSavingsCents: null, nominalReturnBps: null, inflationBps: null, retireAgeP1: null, retireAgeP2: null, plannedRetirementAge: null, secondChildEnabledOverride: null, sellRentalYearOverride: null };
+    Object.keys(ov).forEach(function(k){ sc2[k] = ov[k]; });
+    MF.state.scenarios.push(sc2); mfMarkDirty(); mfRenderAll();
+  }
+}
+
+/* ================= 初始化：挂登录态 ================= */
+(function mfInit(){
+  var tp = document.getElementById("tp-fire"); if (!tp) return;
+  var root = document.createElement("div");
+  root.id = "myfire-root"; root.style.display = "none";
+  tp.insertBefore(root, tp.firstChild);
+  MF.root = root; MF.demoSections = [];
+  for (var i = 0; i < tp.children.length; i++){
+    var ch = tp.children[i];
+    if (ch !== root && (ch.className || "").indexOf("section") >= 0) MF.demoSections.push(ch);
+  }
+  root.addEventListener("change", mfOnChange);
+  root.addEventListener("click", mfOnClick);
+  if (window.__sb && window.__sb.auth){
+    window.__sb.auth.getSession().then(function(res){ mfLoad(res.data.session ? res.data.session.user : null); });
+    window.__sb.auth.onAuthStateChange(function(ev, session){ mfLoad(session ? session.user : null); });
+  }
+})();
+
+})();
+</script>
 </body></html>
