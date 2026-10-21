@@ -30,6 +30,7 @@
 #myAccounts .due-soon{color:#ff6b6b;font-weight:bold}.acct-sum-main{font-size:0.95em;color:#fff}.acct-sum-main .big{color:#ffd93d;font-size:1.5em}.acct-sum-sub{color:#aaa;font-size:0.82em;margin-left:10px}.acct-sum-sub b{color:#4ecdc4}.acct-sum-line{font-size:0.85em;color:#ccc;margin-top:6px;line-height:1.7}.acct-sum-line b{color:#fff}.acct-toggle{margin-top:10px;color:#4ecdc4;font-size:0.85em;cursor:pointer;user-select:none}.acct-box.warn{border-color:#ff9f43;box-shadow:inset 3px 0 0 #ff9f43}.acct-box.dim{opacity:0.55}.acct-chip{display:inline-block;font-size:0.72em;padding:1px 7px;border-radius:8px;margin-left:8px;vertical-align:middle}.warn-chip{background:#5a3a1a;color:#ffb26b}.due-chip{background:#5a1a1a;color:#ff8a8a}
 .sub-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.sub-row .sub-main{color:#ddd;line-height:1.55}.sub-row .sub-main b{color:#fff}.sub-row .sub-note{color:#999;font-size:0.88em;margin-top:2px}.sub-row .sub-amt{color:#ffd93d;font-weight:bold;white-space:nowrap;text-align:right}.sub-row .sub-amt .sub-cycle{color:#888;font-weight:normal;font-size:0.8em;display:block}.sub-save{color:#7fc97f;font-weight:bold;white-space:nowrap}
 .fee-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.fee-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.fee-main b{color:#fff}.fee-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.fee-bar i{display:block;height:100%}.fee-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}
+.hold-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.hold-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.hold-main b{color:#fff}.hold-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.hold-bar i{display:block;height:100%;background:#ff9f43}.hold-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.hold-nums b{color:#ffd93d}
 .bilt-section{border-color:#ffd93d}.bilt-section h2{color:#ffd93d}.bilt-slider{width:100%;margin:8px 0;accent-color:#667eea}.bilt-result{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.bilt-stat{text-align:center;padding:8px;background:#16213e;border-radius:6px}.bilt-stat .num{font-size:1.2em;font-weight:bold;color:#4ecdc4}.bilt-stat .label{font-size:0.7em;color:#888;margin-top:2px}
 .credits-section h2{color:#ff6b6b}.credit-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #222;font-size:0.82em}.credit-item:last-child{border:none}
 .reco-section{border-color:#667eea;background:linear-gradient(135deg,#1a1a3e,#1a1a2e)}
@@ -525,6 +526,7 @@ renderRecs();
 <div id="myAccounts" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💳 我的账户</h3><div id="acctSummary"></div><div id="acctCover"></div><div class="acct-toggle" id="acctToggle" style="display:none">展开每张卡明细 ▾</div><div class="acct-grid" id="acctGrid" style="display:none"></div><p id="acctMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="mySubs" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📺 我的订阅（流水实测）</h3><div id="subSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="subList"></div><div id="subCand"></div><details id="subMore" style="margin-top:6px"><summary style="cursor:pointer;color:#8a8f98;font-size:0.85em">已停扣 / 待留意</summary><div id="subMoreList" style="margin-top:6px"></div></details><p id="subMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="myFees" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💸 年费回本账（登录实测）</h3><div id="feeSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="feeList"></div><p id="feeMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
+<div id="myHoldings" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📊 持仓集中度（登录实测）</h3><div id="holdSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="holdList"></div><div id="holdAgg"></div><p id="holdMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 </div>
 
 <!-- Perks & Status Map -->
@@ -1373,6 +1375,40 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     $("feeMeta").textContent = "口径：credit 为当前周期快照（月度 / 季度项逐期刷新），已到手只算已记录周期，不等于全年累计；按面值计，酒店 / 入住类 credit 实际价值因人而异。Platinum 待入账含 FHR 入住福利 $575（与具体入住绑定）" + (latest ? " · 数据更新 " + latest.slice(0, 10) : "");
     box.style.display = "block";
   }
+  function renderHoldings(rows){
+    if (!rows || !rows.length) return;
+    var box = $("myHoldings"); if (!box) return;
+    var totalRow = null, holds = [], aggs = [];
+    rows.forEach(function(r){
+      if (r.category === "total") totalRow = r;
+      else if (r.category === "holding") holds.push(r);
+      else if (r.category === "aggregate") aggs.push(r);
+    });
+    if (!totalRow || !holds.length) return;
+    var total = Number(totalRow.value);
+    holds.sort(function(a, b){ return Number(b.value) - Number(a.value); });
+    var topSum = 0; holds.forEach(function(r){ topSum += Number(r.value); });
+    var meta = holds[0];
+    var metaPct = total ? Number(meta.value) / total * 100 : 0;
+    $("holdSummary").innerHTML = "持仓市值合计 <b style='color:#fff'>" + money(total) + "</b>（覆盖投资账户余额 100%，未投资现金差额另计）｜ 前 " + holds.length + " 大合计 <b style='color:#ffd93d'>" + money(topSum) + "</b>（" + (total ? (topSum / total * 100).toFixed(1) : "—") + "%）<br>"
+      + "<span style='color:#ff9f43'>⚠️ 第一大持仓 <b>" + esc(meta.ticker) + "</b> 一只占 " + metaPct.toFixed(1) + "%</span>——再加上夫妻双方工资都来自 Meta，家庭对单一公司的总暴露（股票＋人力资本）显著高于这个数字本身。先看懂集中度，再谈调不调仓；本视图只呈现，不给买卖建议。";
+    $("holdList").innerHTML = holds.map(function(r){
+      var v = Number(r.value), p = total ? v / total * 100 : 0;
+      var w = Math.max(1, Math.round(p));
+      return "<div class='hold-row'><div class='hold-main'><b>" + esc(r.ticker) + "</b> <span style='color:#aaa'>" + esc(r.name) + "</span>"
+        + "<div class='hold-bar'><i style=\"width:" + w + "%\"></i></div>"
+        + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "")
+        + "</div><div class='hold-nums'><b>" + money(v) + "</b><br>" + p.toFixed(2) + "%" + (r.shares ? "<br><span style='color:#888'>" + esc(r.shares) + "</span>" : "") + "</div></div>";
+    }).join("");
+    $("holdAgg").innerHTML = aggs.length ? "<div style='color:#4ecdc4;font-weight:bold;font-size:0.9em;margin:10px 0 6px'>关键聚合（与上表重叠计，不另加总）</div>" + aggs.map(function(r){
+      var v = Number(r.value), p = total ? v / total * 100 : 0;
+      return "<div class='hold-row'><div class='hold-main'><b>" + esc(r.name) + "</b>" + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "") + "</div><div class='hold-nums'><b>" + money(v) + "</b><br>" + p.toFixed(2) + "%</div></div>";
+    }).join("") : "";
+    var latest = "";
+    rows.forEach(function(r){ if (r.updated_at && r.updated_at > latest) latest = r.updated_at; });
+    $("holdMeta").textContent = "来源：2026-10-20 持仓集中度分析（Plaid investments-holdings 实测，4 个返回持仓的 item 已覆盖投资余额 100%）· 占比以持仓市值合计为分母" + (latest ? " · 数据更新 " + latest.slice(0, 10) : "");
+    box.style.display = "block";
+  }
   function renderSubs(rows){
     if (!rows || !rows.length) return;
     $("mySubs").style.display = "block";
@@ -1434,6 +1470,11 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       .then(function(res){
         if (res.error) { console.warn("subscriptions", res.error.message); return; }
         renderSubs(res.data);
+      });
+    sb.from("holdings_concentration").select("ticker,name,value,pct,shares,category,note,sort,updated_at").order("sort")
+      .then(function(res){
+        if (res.error) { console.warn("holdings_concentration", res.error.message); return; }
+        renderHoldings(res.data);
       });
     sb.from("cash_accounts").select("name,mask,kind,balance,available,updated_at").order("id")
       .then(function(res){
