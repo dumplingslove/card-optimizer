@@ -32,6 +32,7 @@
 .fee-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.fee-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.fee-main b{color:#fff}.fee-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.fee-bar i{display:block;height:100%}.fee-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}
 .hold-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.hold-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.hold-main b{color:#fff}.hold-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.hold-bar i{display:block;height:100%;background:#ff9f43}.hold-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.hold-nums b{color:#ffd93d}
 .rot-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.rot-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.rot-main b{color:#fff}.rot-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.rot-bar i{display:block;height:100%;background:#4ecdc4}.rot-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.rot-nums b{color:#ffd93d}
+.nw-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.nw-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.nw-main b{color:#fff}.nw-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.nw-bar i{display:block;height:100%}.nw-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.nw-nums b{color:#ffd93d}
 .bilt-section{border-color:#ffd93d}.bilt-section h2{color:#ffd93d}.bilt-slider{width:100%;margin:8px 0;accent-color:#667eea}.bilt-result{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.bilt-stat{text-align:center;padding:8px;background:#16213e;border-radius:6px}.bilt-stat .num{font-size:1.2em;font-weight:bold;color:#4ecdc4}.bilt-stat .label{font-size:0.7em;color:#888;margin-top:2px}
 .credits-section h2{color:#ff6b6b}.credit-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #222;font-size:0.82em}.credit-item:last-child{border:none}
 .reco-section{border-color:#667eea;background:linear-gradient(135deg,#1a1a3e,#1a1a2e)}
@@ -530,6 +531,7 @@ renderRecs();
 <div id="myFees" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💸 年费回本账（登录实测）</h3><div id="feeSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="feeList"></div><p id="feeMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="myHoldings" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📊 持仓集中度（登录实测）</h3><div id="holdSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="holdList"></div><div id="holdAgg"></div><p id="holdMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="myRotation" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">🎯 季度 5% 额度用量（登录实测）</h3><div id="rotSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="rotList"></div><p id="rotMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
+<div id="myNetWorth" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">🏠 净资产构成（登录实测）</h3><div id="nwSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="nwAssets"></div><div id="nwLiabs"></div><p id="nwMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 </div>
 
 <!-- Perks & Status Map -->
@@ -1441,6 +1443,36 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     $("rotMeta").textContent = "口径：只统计 Plaid 已连接卡本季（10/1 起）流水；超市按 Chase 口径不含 Walmart / Target / Costco；每卡 $1,500 额度三类共用、卡与卡之间不互通；Chase 12/14 前激活可追溯，Discover 须先激活再消费" + (latest ? " · 数据更新 " + latest.slice(0, 10) : "");
     box.style.display = "block";
   }
+  function renderNetWorth(rows){
+    if (!rows || !rows.length) return;
+    var box = $("myNetWorth"); if (!box) return;
+    var assets = [], liabs = [], latest = "";
+    rows.forEach(function(r){
+      if (r.category === "asset") assets.push(r); else if (r.category === "liability") liabs.push(r);
+      if (r.updated_at && r.updated_at > latest) latest = r.updated_at;
+    });
+    if (!assets.length || !liabs.length) return;
+    var totA = 0, totL = 0, reVal = 0, mtg = 0, cardDebt = 0;
+    assets.forEach(function(r){ totA += Number(r.value); if ((r.name || "").indexOf("评估值") >= 0) reVal += Number(r.value); });
+    liabs.forEach(function(r){ totL += Number(r.value); if ((r.name || "").indexOf("房贷") >= 0) mtg += Number(r.value); else cardDebt += Number(r.value); });
+    var net = totA - totL, finAssets = totA - reVal, finNet = finAssets - cardDebt, equity = reVal - mtg;
+    var ltv = reVal ? mtg / reVal * 100 : 0, lev = totA ? totL / totA * 100 : 0;
+    $("nwSummary").innerHTML = "总资产 <b style='color:#fff'>" + money(totA) + "</b> ｜ 总负债 <b style='color:#ffb26b'>" + money(totL) + "</b>（占总资产 " + lev.toFixed(1) + "%）｜ <b style='color:#4ecdc4'>净资产 " + money(net) + "</b><br>"
+      + "拆开看：金融净资产（金融资产 − 卡债）<b style='color:#fff'>" + money(finNet) + "</b> ＋ 房净值（评估总值 − 房贷）<b style='color:#fff'>" + money(equity) + "</b>；两套房贷款成数 LTV " + ltv.toFixed(1) + "%。";
+    function rowHtml(r, color){
+      var v = Number(r.value), p = totA ? v / totA * 100 : 0;
+      var w = Math.max(1, Math.round(p));
+      return "<div class='nw-row'><div class='nw-main'><b>" + esc(r.name) + "</b>"
+        + "<div class='nw-bar'><i style=\"width:" + w + "%;background:" + color + "\"></i></div>"
+        + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "")
+        + (r.as_of ? "<div class='sub-note'>数据时点：" + esc(r.as_of) + "</div>" : "")
+        + "</div><div class='nw-nums'><b>" + money(v) + "</b><br>占总资产 " + p.toFixed(1) + "%</div></div>";
+    }
+    $("nwAssets").innerHTML = "<div style='color:#4ecdc4;font-weight:bold;font-size:0.9em;margin:4px 0 6px'>资产</div>" + assets.map(function(r){ return rowHtml(r, "#4ecdc4"); }).join("");
+    $("nwLiabs").innerHTML = "<div style='color:#ffb26b;font-weight:bold;font-size:0.9em;margin:10px 0 6px'>负债</div>" + liabs.map(function(r){ return rowHtml(r, "#ff9f43"); }).join("");
+    $("nwMeta").textContent = "口径：净资产 = 总资产 − 总负债，房贷只扣一次（此前约 $495 万的旧口径把房贷重复扣除了，本视图已修正）；房产用 King County 评估值（征税口径，通常低于市价）；信用卡为当前余额合计、非账单额" + (latest ? " · 数据更新 " + latest.slice(0, 10) : "");
+    box.style.display = "block";
+  }
   function renderSubs(rows){
     if (!rows || !rows.length) return;
     $("mySubs").style.display = "block";
@@ -1512,6 +1544,11 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       .then(function(res){
         if (res.error) { console.warn("rotation_usage", res.error.message); return; }
         renderRotation(res.data);
+      });
+    sb.from("net_worth").select("name,value,category,note,as_of,sort,updated_at").order("sort")
+      .then(function(res){
+        if (res.error) { console.warn("net_worth", res.error.message); return; }
+        renderNetWorth(res.data);
       });
     sb.from("cash_accounts").select("name,mask,kind,balance,available,updated_at").order("id")
       .then(function(res){
