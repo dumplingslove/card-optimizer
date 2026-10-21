@@ -1293,7 +1293,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
   function daysFromToday(ds){ if (!ds) return null; var t = new Date(); t.setHours(0, 0, 0, 0); var d = new Date(ds + "T00:00:00"); return Math.round((d - t) / 864e5); }
   function localTodayStr(){ var t = new Date(); function p(n){ return (n < 10 ? "0" : "") + n; } return t.getFullYear() + "-" + p(t.getMonth() + 1) + "-" + p(t.getDate()); }
   function dueInWindow(rows, n){ var s = 0; rows.forEach(function(a){ if (!a.due_date) return; var stmt = a.statement_balance == null ? 0 : Number(a.statement_balance); if (stmt <= 0) return; var dd = daysFromToday(a.due_date); if (dd !== null && dd >= -3 && dd < n) s += stmt; }); return s; }
-  function cashPrimary(){ if (!CASH) return null; var sum = 0, n = 0, single = null, sav = 0; CASH.forEach(function(a){ var av = a.available == null ? (a.balance == null ? 0 : Number(a.balance)) : Number(a.available); if (a.kind === "checking") { sum += av; n++; single = { a: a, av: av }; } else if (a.kind === "savings") { sav += av; } }); if (!n) return null; return { sum: sum, n: n, single: n === 1 ? single : null, sav: sav }; }
+  function cashPrimary(){ if (!CASH) return null; var sum = 0, n = 0, single = null, sav = 0, cd = 0; CASH.forEach(function(a){ var av = a.available == null ? (a.balance == null ? 0 : Number(a.balance)) : Number(a.available); if (a.kind === "checking") { sum += av; n++; single = { a: a, av: av }; } else if (a.kind === "savings") { sav += av; } else if (a.kind === "cd") { cd += av; } }); if (!n) return null; return { sum: sum, n: n, single: n === 1 ? single : null, sav: sav, cd: cd }; }
   function renderCover(){
     var el = $("acctCover"); if (!el || !ACCT || !CASH) return;
     var cp = cashPrimary(); if (!cp) { el.innerHTML = ""; return; }
@@ -1304,6 +1304,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       : "Checking 合计 <b>" + money(cp.sum) + "</b>（" + cp.n + " 个账户）";
     el.innerHTML = "<div class='acct-sum-line acct-cover'>💰 还款覆盖：" + baseTxt
       + (cp.sav > 0 ? "（+Savings " + money(cp.sav) + " 缓冲）" : "")
+      + (cp.cd > 0 ? "（另有 CD " + money(cp.cd) + "，定期不计入缓冲）" : "")
       + " ｜ 14 天内到期账单 <b>" + money(d14) + "</b>（" + cov(d14) + "） ｜ 30 天内 <b>" + money(d30) + "</b>（" + cov(d30) + "）</div>";
   }
   function renderAlerts(){
