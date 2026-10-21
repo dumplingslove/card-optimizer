@@ -31,6 +31,7 @@
 .sub-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.sub-row .sub-main{color:#ddd;line-height:1.55}.sub-row .sub-main b{color:#fff}.sub-row .sub-note{color:#999;font-size:0.88em;margin-top:2px}.sub-row .sub-amt{color:#ffd93d;font-weight:bold;white-space:nowrap;text-align:right}.sub-row .sub-amt .sub-cycle{color:#888;font-weight:normal;font-size:0.8em;display:block}.sub-save{color:#7fc97f;font-weight:bold;white-space:nowrap}
 .fee-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.fee-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.fee-main b{color:#fff}.fee-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.fee-bar i{display:block;height:100%}.fee-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}
 .hold-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.hold-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.hold-main b{color:#fff}.hold-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.hold-bar i{display:block;height:100%;background:#ff9f43}.hold-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.hold-nums b{color:#ffd93d}
+.rot-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.rot-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.rot-main b{color:#fff}.rot-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.rot-bar i{display:block;height:100%;background:#4ecdc4}.rot-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.rot-nums b{color:#ffd93d}
 .bilt-section{border-color:#ffd93d}.bilt-section h2{color:#ffd93d}.bilt-slider{width:100%;margin:8px 0;accent-color:#667eea}.bilt-result{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.bilt-stat{text-align:center;padding:8px;background:#16213e;border-radius:6px}.bilt-stat .num{font-size:1.2em;font-weight:bold;color:#4ecdc4}.bilt-stat .label{font-size:0.7em;color:#888;margin-top:2px}
 .credits-section h2{color:#ff6b6b}.credit-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #222;font-size:0.82em}.credit-item:last-child{border:none}
 .reco-section{border-color:#667eea;background:linear-gradient(135deg,#1a1a3e,#1a1a2e)}
@@ -176,16 +177,17 @@
 
 <!-- Q3 -->
 <div class="section quarter-banner">
-<h2>🔄 本季5%轮转 (Q4: Oct-Dec 2026 · 剩74天)</h2>
+<h2>🔄 本季5%轮转 (Q4: Oct-Dec 2026<span id="q4days"></span>)</h2>
 <div class="q-grid">
-<div class="q-card"><h3>Chase Freedom/Flex</h3><ul><li>超市（不含Walmart/Target）</li><li>餐饮（Flex叠加到7%!）</li><li>美国红十字会捐款</li></ul><p style="color:#888;font-size:0.7em;margin-top:4px">$1,500/卡(两张=$3,000) · 12/14前激活</p></div>
+<div class="q-card"><h3>Chase Freedom/Flex</h3><ul><li>超市（不含Walmart/Target）</li><li>餐饮（Flex叠加到7%!）</li><li>美国红十字会捐款</li></ul><p style="color:#888;font-size:0.7em;margin-top:4px">$1,500/卡 · 家庭三份 Chase 额度共 $4,500（Linjun 的老 Freedom 独立一份）· 12/14前激活</p></div>
 <div class="q-card"><h3>Discover it®</h3><ul><li>餐饮</li><li>娱乐（史上首次!）</li><li>水电/网费/话费</li></ul><p style="color:#ffd93d;font-size:0.7em;margin-top:4px">⚡先激活再消费，无追溯</p></div>
 </div></div>
+<script>(function(){var el=document.getElementById("q4days");if(!el)return;var end=new Date(2026,11,31,23,59,59),now=new Date();var d=Math.max(0,Math.ceil((end-now)/86400000));el.textContent=" · 剩"+d+"天";})();</script>
 <!-- Q1 2027 -->
 <div class="section quarter-banner">
 <h2>📅 下季5%轮转 (Q1 2027: Jan-Mar · 12/15开放激活)</h2>
 <div class="q-grid">
-<div class="q-card"><h3>Chase Freedom/Flex</h3><ul><li>超市（连续第二季!）</li><li>主流流媒体服务</li></ul><p style="color:#888;font-size:0.7em;margin-top:4px">$1,500/卡(两张=$3,000)</p></div>
+<div class="q-card"><h3>Chase Freedom/Flex</h3><ul><li>超市（连续第二季!）</li><li>主流流媒体服务</li></ul><p style="color:#888;font-size:0.7em;margin-top:4px">$1,500/卡 · 家庭三份 Chase 额度共 $4,500</p></div>
 <div class="q-card"><h3>Discover it®</h3><ul><li>未公布（约12月初）</li></ul></div>
 </div></div>
 
@@ -263,7 +265,7 @@ var REC_CATS = [
     candidates: [ { n: "Bilt Palladium", cur: "Bilt", m: 1.25, rate: "最高1.25x≈2.8%", pin: true } ] },
   { g: 1, icon: "🥦", name: "超市",
     why: function() {
-      if (rotOn("chase", "grocery")) { var R = REC_ROTATION.chase; return "💡 " + REC_ROTATION.qLabel + "轮转:超市" + R.cats.grocery + "x UR,按转Hyatt≈2¢算≈10%,高于Gold 4x MR≈8%。额度$" + R.cap.toLocaleString() + "/卡/季(与餐饮+捐款共用),两张卡合计$3,000;不含Walmart/Target;" + R.activateBy + "前激活(Chase可追溯)。"; }
+      if (rotOn("chase", "grocery")) { var R = REC_ROTATION.chase; return "💡 " + REC_ROTATION.qLabel + "轮转:超市" + R.cats.grocery + "x UR,按转Hyatt≈2¢算≈10%,高于Gold 4x MR≈8%。额度$" + R.cap.toLocaleString() + "/卡/季(与餐饮+捐款共用),家庭三份Chase额度共$4,500;不含Walmart/Target;" + R.activateBy + "前激活(Chase可追溯)。"; }
       return "💡 本季轮转没有超市。Amex Gold 4x MR≈8%(转航司,TPG 2.0cpp),$25K/年cap。";
     },
     candidates: [
@@ -487,7 +489,7 @@ renderRecs();
 
 <div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">U.S. Bank Cash+</span><span class="cf">免年费</span></div><div class="cb"><b>5%</b>自选两类 <span class="ftf ftf-bad">⚠️ 境外手续费 3%</span></div><div class="cd"><h4>推荐选</h4><ul><li>5%①: 水电Utilities</li><li>5%②: TV/Internet/Streaming</li></ul><div class="protip">🎯 资深玩家：每季度可以换!大额支出季度切类别(如Q4选百货/home improvement)。Prepaid travel通过USB Travel Center也有5%(但选择有限)</div></div></div>
 
-<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">CFF / CF / Discover</span><span class="cf">免年费x3</span></div><div class="cb"><b>5%</b>Q4:超市/餐饮/娱乐 <span class="ftf ftf-ok">🌍 Flex·Discover 免境外费</span><span class="ftf ftf-bad">⚠️ CF 3%</span></div><div class="cd"><h4>Q4类别(10/1-12/31)</h4><ul><li>CFF+CF: 超市/餐饮/美国红十字会（Flex餐饮叠加3%→7%!）</li><li>Discover: 餐饮/娱乐/水电网账单</li></ul><p style="color:#aaa;margin-top:4px">总额度$4,500/季(3x$1,500) · Chase 12/14前激活可追溯；Discover先激活再消费</p><div class="protip">🎯 资深玩家：CFF/CF的UR通过CSR转Hyatt=真实10%+！Discover只能cash但第一年match=10%。Flex 9/20起免境外手续费——Q4海外餐饮超市也能7%/5%!</div></div></div>
+<div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">CFF / CF / Discover</span><span class="cf">免年费x3</span></div><div class="cb"><b>5%</b>Q4:超市/餐饮/娱乐 <span class="ftf ftf-ok">🌍 Flex·Discover 免境外费</span><span class="ftf ftf-bad">⚠️ CF 3%</span></div><div class="cd"><h4>Q4类别(10/1-12/31)</h4><ul><li>CFF+CF: 超市/餐饮/美国红十字会（Flex餐饮叠加3%→7%!）</li><li>Discover: 餐饮/娱乐/水电网账单</li></ul><p style="color:#aaa;margin-top:4px">每卡 $1,500/季、额度独立不互通（Chase 家庭三份共 $4,500 · Discover 另有一份 $1,500）· Chase 12/14前激活可追溯；Discover先激活再消费</p><div class="protip">🎯 资深玩家：CFF/CF的UR通过CSR转Hyatt=真实10%+！Discover只能cash但第一年match=10%。Flex 9/20起免境外手续费——Q4海外餐饮超市也能7%/5%!</div></div></div>
 
 <div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Amazon Prime Visa</span><span class="cf">免年费</span></div><div class="cb"><b>5%</b>Amazon+WF <span class="ftf ftf-ok">🌍 免境外手续费</span></div><div class="cd"><ul><li>5% Amazon+Whole Foods</li><li>2% 餐饮/加油/公交</li></ul><div class="protip">🎯 资深玩家：不要在Amazon结账时用积分抵扣(价值低)，拿cash back更好。Subscribe&Save也算5%。Whole Foods用Amazon账户关联此卡</div></div></div>
 
@@ -527,6 +529,7 @@ renderRecs();
 <div id="mySubs" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📺 我的订阅（流水实测）</h3><div id="subSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="subList"></div><div id="subCand"></div><details id="subMore" style="margin-top:6px"><summary style="cursor:pointer;color:#8a8f98;font-size:0.85em">已停扣 / 待留意</summary><div id="subMoreList" style="margin-top:6px"></div></details><p id="subMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="myFees" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💸 年费回本账（登录实测）</h3><div id="feeSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="feeList"></div><p id="feeMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="myHoldings" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📊 持仓集中度（登录实测）</h3><div id="holdSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="holdList"></div><div id="holdAgg"></div><p id="holdMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
+<div id="myRotation" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">🎯 季度 5% 额度用量（登录实测）</h3><div id="rotSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="rotList"></div><p id="rotMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 </div>
 
 <!-- Perks & Status Map -->
@@ -1409,6 +1412,35 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     $("holdMeta").textContent = "来源：2026-10-20 持仓集中度分析（Plaid investments-holdings 实测，4 个返回持仓的 item 已覆盖投资余额 100%）· 占比以持仓市值合计为分母" + (latest ? " · 数据更新 " + latest.slice(0, 10) : "");
     box.style.display = "block";
   }
+  function renderRotation(rows){
+    if (!rows || !rows.length) return;
+    var box = $("myRotation"); if (!box) return;
+    var cards = [], pool = null, latest = "";
+    rows.forEach(function(r){
+      if (r.card_key === "POOL") pool = r; else cards.push(r);
+      if (r.updated_at && r.updated_at > latest) latest = r.updated_at;
+    });
+    if (!cards.length) return;
+    var connCap = 0, connUsed = 0;
+    cards.forEach(function(r){ if (r.connected) { connCap += Number(r.cap || 0); connUsed += Number(r.used || 0); } });
+    var daysLeft = Math.max(0, Math.ceil((new Date(2026, 11, 31, 23, 59, 59) - new Date()) / 86400000));
+    $("rotSummary").innerHTML = "本季已连接的轮转额度共 <b style='color:#fff'>" + money(connCap) + "</b>，已用 <b style='color:#ffd93d'>" + money(connUsed) + "</b>——Q4 已过约三分之一、剩 " + daysLeft + " 天。"
+      + (pool ? "<br>同期超市＋餐饮共花了 <b style='color:#fff'>" + money(Number(pool.used)) + "</b>（已连接卡合计），却没有一笔落在轮转卡上：不是没消费，是消费没走到 5%/7% 的卡上（明细口径见每张卡备注）。" : "");
+    $("rotList").innerHTML = cards.map(function(r){
+      var cap = Number(r.cap || 1500);
+      if (!r.connected) {
+        return "<div class='rot-row'><div class='rot-main'><b>" + esc(r.card_name) + "</b> <span style='color:#888'>··" + esc(r.mask || "") + "</span><div class='sub-note'>额度 " + money(cap) + "/季 · 类别：" + esc(r.cats_text || "") + "</div>" + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "") + "</div><div class='rot-nums'><span style='color:#ffb26b'>未连接</span><br>用量未知</div></div>";
+      }
+      var used = Number(r.used || 0), pct = cap ? Math.min(100, used / cap * 100) : 0;
+      return "<div class='rot-row'><div class='rot-main'><b>" + esc(r.card_name) + "</b> <span style='color:#888'>··" + esc(r.mask || "") + "</span>"
+        + "<div class='rot-bar'><i style=\"width:" + Math.max(used > 0 ? 1 : 0, Math.round(pct)) + "%\"></i></div>"
+        + "<div class='sub-note'>类别：" + esc(r.cats_text || "") + "</div>"
+        + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "")
+        + "</div><div class='rot-nums'>已用 <b>" + money(used) + "</b> / " + money(cap) + "<br>还剩 " + money(cap - used) + " · " + pct.toFixed(1) + "%</div></div>";
+    }).join("");
+    $("rotMeta").textContent = "口径：只统计 Plaid 已连接卡本季（10/1 起）流水；超市按 Chase 口径不含 Walmart / Target / Costco；每卡 $1,500 额度三类共用、卡与卡之间不互通；Chase 12/14 前激活可追溯，Discover 须先激活再消费" + (latest ? " · 数据更新 " + latest.slice(0, 10) : "");
+    box.style.display = "block";
+  }
   function renderSubs(rows){
     if (!rows || !rows.length) return;
     $("mySubs").style.display = "block";
@@ -1475,6 +1507,11 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       .then(function(res){
         if (res.error) { console.warn("holdings_concentration", res.error.message); return; }
         renderHoldings(res.data);
+      });
+    sb.from("rotation_usage").select("card_key,card_name,mask,issuer,cats_text,used,cap,connected,note,period_label,sort,updated_at").order("sort")
+      .then(function(res){
+        if (res.error) { console.warn("rotation_usage", res.error.message); return; }
+        renderRotation(res.data);
       });
     sb.from("cash_accounts").select("name,mask,kind,balance,available,updated_at").order("id")
       .then(function(res){
