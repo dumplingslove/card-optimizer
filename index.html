@@ -1417,7 +1417,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     }).join("") : "";
     var latest = "";
     rows.forEach(function(r){ if (r.updated_at && r.updated_at > latest) latest = r.updated_at; });
-    $("holdMeta").textContent = "来源：2026-10-20 持仓集中度分析（Plaid investments-holdings 实测，4 个返回持仓的 item 已覆盖投资余额 100%）· 占比以持仓市值合计为分母" + (latest ? " · 数据更新 " + fmtDateLocal(latest) : "");
+    $("holdMeta").textContent = "来源：持仓集中度分析（Plaid investments-holdings 实测，4 个返回持仓的 item 已覆盖投资余额 100%）· 占比以持仓市值合计为分母" + (latest ? " · 数据更新 " + fmtDateLocal(latest) : "");
     box.style.display = "block";
   }
   function renderRotation(rows){
