@@ -1488,8 +1488,14 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     var mTot = 0, aTot = 0;
     act.forEach(function(r){ mTot += Number(r.monthly_cents || 0); aTot += Number(r.annual_cents || 0); });
     var save = 0; cand.forEach(function(r){ save += Number(r.annual_cents || 0); });
+    var nStopped = rest.filter(function(r){ return r.category === "stopped"; }).length;
+    var nWatch = rest.filter(function(r){ return r.category === "watch"; }).length;
+    var watchAnnual = 0; rest.forEach(function(r){ if (r.category === "watch") watchAnnual += Number(r.annual_cents || 0); });
     $("subSummary").innerHTML = "真订阅 <b style='color:#fff'>" + act.length + " 项</b>在扣：月度等效 <b style='color:#ffd93d'>" + money(mTot / 100) + "/月</b> · 年化 <b style='color:#ffd93d'>" + money(aTot / 100) + "</b>"
-      + (save > 0 ? " ｜ 可取消/降级候选合计约年省 <b style='color:#7fc97f'>" + money(save / 100) + "</b>（见下方，逐项决定）" : "");
+      + (save > 0 ? " ｜ 可取消/降级候选合计约年省 <b style='color:#7fc97f'>" + money(save / 100) + "</b>（见下方，逐项决定）" : "")
+      + (rest.length ? " ｜ 另有已停扣 <b style='color:#fff'>" + nStopped + " 项</b>、待留意 <b style='color:#fff'>" + nWatch + " 项</b>" + (watchAnnual > 0 ? "（待留意年化毛额 " + money(watchAnnual / 100) + "，实际净支出见逐项注记）" : "") + "，在下方折叠区" : "");
+    var subMoreSummary = document.querySelector("#subMore summary");
+    if (subMoreSummary) subMoreSummary.textContent = "已停扣 " + nStopped + " 项 / 待留意 " + nWatch + " 项" + (watchAnnual > 0 ? "（待留意年化毛额 " + money(watchAnnual / 100) + "）" : "");
     $("subList").innerHTML = act.map(function(r){
       return "<div class='sub-row'><div class='sub-main'><b>" + esc(r.name) + "</b>"
         + (r.account_text ? " <span style='color:#888'>· " + esc(r.account_text) + "</span>" : "")
@@ -1502,7 +1508,9 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     }).join("") : "";
     $("subMoreList").innerHTML = rest.map(function(r){
       var tag = r.category === "stopped" ? "<span style='color:#8a8f98'>已停扣</span>" : "<span style='color:#ffb26b'>待留意</span>";
-      return "<div class='sub-row'><div class='sub-main'>" + tag + " <b>" + esc(r.name) + "</b>" + (r.amount_text ? " <span style='color:#888'>· " + esc(r.amount_text) + "</span>" : "") + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "") + "</div></div>";
+      return "<div class='sub-row'><div class='sub-main'>" + tag + " <b>" + esc(r.name) + "</b>" + (r.amount_text ? " <span style='color:#888'>· " + esc(r.amount_text) + "</span>" : "") + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "") + "</div>"
+        + (r.category === "watch" && Number(r.annual_cents || 0) > 0 ? "<div class='sub-amt'>年化毛额 " + money(Number(r.annual_cents) / 100) + "</div>" : "")
+        + "</div>";
     }).join("");
     var latest = "";
     rows.forEach(function(r){ if (r.updated_at && r.updated_at > latest) latest = r.updated_at; });
