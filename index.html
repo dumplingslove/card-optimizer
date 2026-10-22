@@ -1431,9 +1431,13 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     if (!cards.length) return;
     var connCap = 0, connUsed = 0;
     cards.forEach(function(r){ if (r.connected) { connCap += Number(r.cap || 0); connUsed += Number(r.used || 0); } });
-    var daysLeft = Math.max(0, Math.ceil((new Date(2026, 11, 31, 23, 59, 59) - new Date()) / 86400000));
-    $("rotSummary").innerHTML = "本季已连接的轮转额度共 <b style='color:#fff'>" + money(connCap) + "</b>，已用 <b style='color:#ffd93d'>" + money(connUsed) + "</b>——Q4 已过约三分之一、剩 " + daysLeft + " 天。"
-      + (pool ? "<br>同期超市＋餐饮共花了 <b style='color:#fff'>" + money(Number(pool.used)) + "</b>（已连接卡合计），却没有一笔落在轮转卡上：不是没消费，是消费没走到 5%/7% 的卡上（明细口径见每张卡备注）。" : "");
+    var nowR = new Date(); nowR.setHours(0, 0, 0, 0);
+    var qStart = new Date(nowR.getFullYear(), Math.floor(nowR.getMonth() / 3) * 3, 1);
+    var qEnd = new Date(nowR.getFullYear(), Math.floor(nowR.getMonth() / 3) * 3 + 3, 0, 23, 59, 59);
+    var daysLeft = Math.max(0, Math.ceil((qEnd - nowR) / 86400000));
+    var qPct = Math.min(100, Math.max(0, Math.round((nowR - qStart) / (qEnd - qStart) * 100)));
+    $("rotSummary").innerHTML = "本季已连接的轮转额度共 <b style='color:#fff'>" + money(connCap) + "</b>，已用 <b style='color:#ffd93d'>" + money(connUsed) + "</b>——本季已过 " + qPct + "%、剩 " + daysLeft + " 天。"
+      + (pool ? "<br>同期超市＋餐饮共花了 <b style='color:#fff'>" + money(Number(pool.used)) + "</b>（已连接卡合计）" + (connUsed > 0 ? "，其中落在轮转卡上的有 " + money(connUsed) + "（明细口径见每张卡备注）。" : "，却没有一笔落在轮转卡上：不是没消费，是消费没走到 5%/7% 的卡上（明细口径见每张卡备注）。") : "");
     $("rotList").innerHTML = cards.map(function(r){
       var cap = Number(r.cap || 1500);
       if (!r.connected) {
