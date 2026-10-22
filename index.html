@@ -1301,7 +1301,9 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
   var ACCT = null, CASH = null, CREDIT_ROWS = null;
   function daysFromToday(ds){ if (!ds) return null; var t = new Date(); t.setHours(0, 0, 0, 0); var d = new Date(ds + "T00:00:00"); return Math.round((d - t) / 864e5); }
   function localTodayStr(){ var t = new Date(); function p(n){ return (n < 10 ? "0" : "") + n; } return t.getFullYear() + "-" + p(t.getMonth() + 1) + "-" + p(t.getDate()); }
-  function dueInWindow(rows, n){ var s = 0; rows.forEach(function(a){ if (!a.due_date) return; var stmt = a.statement_balance == null ? 0 : Number(a.statement_balance); if (stmt <= 0) return; var dd = daysFromToday(a.due_date); if (dd !== null && dd >= -3 && dd < n) s += stmt; }); return s; }
+  // 待还账单语义：账单余额只有在仍有最低还款未清时才算待还；min_payment=0 表示该期账单已结清（如 autopay 全额还清），按 0 计；min_payment 缺失(null)时不臆测，按账单额计
+  function stmtOwed(a){ var stmt = a.statement_balance == null ? 0 : Number(a.statement_balance); if (stmt <= 0) return 0; if (a.min_payment != null && Number(a.min_payment) <= 0) return 0; return stmt; }
+  function dueInWindow(rows, n){ var s = 0; rows.forEach(function(a){ if (!a.due_date) return; var stmt = stmtOwed(a); if (stmt <= 0) return; var dd = daysFromToday(a.due_date); if (dd !== null && dd >= -3 && dd < n) s += stmt; }); return s; }
   function cashPrimary(){ if (!CASH) return null; var sum = 0, n = 0, single = null, sav = 0, cd = 0; CASH.forEach(function(a){ var av = a.available == null ? (a.balance == null ? 0 : Number(a.balance)) : Number(a.available); if (a.kind === "checking") { sum += av; n++; single = { a: a, av: av }; } else if (a.kind === "savings") { sav += av; } else if (a.kind === "cd") { cd += av; } }); if (!n) return null; return { sum: sum, n: n, single: n === 1 ? single : null, sav: sav, cd: cd }; }
   function renderCover(){
     var el = $("acctCover"); if (!el || !ACCT || !CASH) return;
@@ -1319,7 +1321,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
   function renderAlerts(){
     var b = $("alertBanner"); if (!b || !ACCT) return;
     var alerts = [];
-    ACCT.forEach(function(a){ var stmt = a.statement_balance == null ? 0 : Number(a.statement_balance); var dd = daysFromToday(a.due_date); if (a.due_date && stmt > 0 && dd !== null && dd < 0) alerts.push({ lv: "red", txt: "🔴 <b>账单已逾期</b>：" + esc(a.card_name) + (a.mask ? " ··" + esc(a.mask) : "") + " 账单余额 " + money(stmt) + " 已于 " + esc(a.due_date) + " 到期，请尽快还款" }); });
+    ACCT.forEach(function(a){ var stmt = stmtOwed(a); var dd = daysFromToday(a.due_date); if (a.due_date && stmt > 0 && dd !== null && dd < 0) alerts.push({ lv: "red", txt: "🔴 <b>账单已逾期</b>：" + esc(a.card_name) + (a.mask ? " ··" + esc(a.mask) : "") + " 账单余额 " + money(stmt) + " 已于 " + esc(a.due_date) + " 到期，请尽快还款" }); });
     if (CASH) { var cp = cashPrimary(); if (cp) { var d14 = dueInWindow(ACCT, 14); if (d14 > cp.sum) alerts.push({ lv: "red", txt: "🔴 <b>还款资金缺口</b>：14 天内到期账单 " + money(d14) + "，Checking 可用 " + money(cp.sum) + "，差额 " + money(d14 - cp.sum) + "——记得从 Savings 挪钱或提前安排" }); } }
     ACCT.forEach(function(a){ if (a.credit_limit != null && Number(a.credit_limit) > 0) { var u = Number(a.balance || 0) / Number(a.credit_limit); if (u >= 0.5) alerts.push({ lv: "orange", txt: "🟠 <b>额度吃紧</b>：" + esc(a.card_name) + (a.mask ? " ··" + esc(a.mask) : "") + " 利用率 " + Math.round(u * 100) + "%（余额 " + money(a.balance) + " / 额度 " + money(a.credit_limit) + "）" }); } });
     if (!alerts.length) { b.style.display = "none"; b.innerHTML = ""; b.className = ""; return; }
@@ -1569,12 +1571,12 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         var num = function(v){ return v == null ? 0 : Number(v); };
         var totBal = 0, totStmt = 0, totMin = 0, totLimit = 0, totLimitBal = 0, nLimit = 0, nNpsl = 0;
         rows.forEach(function(a){
-          totBal += num(a.balance); totStmt += num(a.statement_balance); totMin += num(a.min_payment);
+          totBal += num(a.balance); totStmt += stmtOwed(a); totMin += num(a.min_payment);
           if (a.credit_limit == null) { nNpsl++; } else { nLimit++; totLimit += num(a.credit_limit); totLimitBal += num(a.balance); }
         });
         var today = new Date(); today.setHours(0, 0, 0, 0);
         function daysTo(ds){ if (!ds) return null; var d = new Date(ds + "T00:00:00"); return Math.round((d - today) / 864e5); }
-        var dueList = rows.filter(function(a){ return a.due_date && num(a.statement_balance) > 0; })
+        var dueList = rows.filter(function(a){ return a.due_date && stmtOwed(a) > 0; })
           .map(function(a){ return { a: a, days: daysTo(a.due_date) }; })
           .filter(function(x){ return x.days !== null && x.days >= -1; })
           .sort(function(x, y){ return x.days - y.days; });
