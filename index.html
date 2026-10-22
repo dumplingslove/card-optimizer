@@ -407,8 +407,8 @@ var REC_CATS = [
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] }
 ];
 // ===== 消费执行度（登录后由 Supabase spend_compliance 注入 window.__COMP_MAP__，未登录无此数据、不渲染）=====
-// 映射：推荐行名 → 合规类别键（仅这 7 行有执行度块）
-var REC_COMP_BY_NAME = { "超市": "grocery", "餐饮": "dining", "加油": "gas", "Alaska机票": "airline", "其他酒店": "hotel", "流媒体": "streaming", "打车": "rideshare" };
+// 映射：推荐行名 → 合规类别键（仅这 8 行有执行度块）
+var REC_COMP_BY_NAME = { "超市": "grocery", "餐饮": "dining", "加油": "gas", "Alaska机票": "airline", "其他酒店": "hotel", "流媒体": "streaming", "打车": "rideshare", "水电": "utilities" };
 function compEsc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 function compMoney(v){ return "$" + Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function compBlockHtml(catName){
