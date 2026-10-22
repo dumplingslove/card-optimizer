@@ -3179,6 +3179,7 @@ function mfRenderResults(){
   var swrAmt = inv * 0.035;
   var stageE = mfvStage(res, "early"), stageB = mfvStage(res, "bothss");
   var firstClaim = ssList.slice().sort(function(a, b){ return a.start - b.start; })[0];
+  var ssSameYear = ssList.length > 1 && ssList.every(function(s){ return s.start === firstClaim.start; });
   h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>💰 被动收入从哪来？</h3>";
   h += "<div style='line-height:1.75'>"
     + "<p style='margin:4px 0'>🏠 <b>出租房租金（净到手）</b>：现在每年 <b>" + mf$(rentNetNow) + "</b>（毛租金 " + mf$(rentGross) + " − 税费保险等持有成本 " + mf$(rentCosts) + " − 房贷本息 " + mf$(rentPI) + "）。" + (lastLoanYear ? lastLoanYear + " 年房贷还清后，同一套房每年净收升到 <b>" + mf$(rentGross - rentCosts) + "</b>（按今天租金算，本息那 " + mf$(rentPI) + " 不再被扣走）。" : "") + "</p>"
@@ -3187,7 +3188,7 @@ function mfRenderResults(){
   if (stageE){
     h += "<p style='margin:10px 0 2px'><b>阶段一 · 刚停工时</b>（" + stageE.year + " 年，按计划双人皆退休的第一年，社保还没开始领）：这一年总支出 " + mf$(stageE.outTotal) + "，钱这样来——</p>"
       + mfvStackBar([{ label: "租金净收入", val: stageE.rent, color: "#38c6d9" }, { label: "社保", val: stageE.ss, color: "#6ea8ff" }, { label: "兼职", val: stageE.part, color: "#c39bff" }, { label: "从投资账户取款", val: stageE.wd, color: "#43d17c" }], stageE.outTotal)
-      + "<p style='color:#aaa;font-size:.85em;margin:2px 0'>被动收入（租金+社保）只覆盖日常开销 " + mf$(stageE.spendBase) + " 的 <b style='color:#ddd'>" + (stageE.spendBase > 0 ? ((stageE.rent + stageE.ss) / stageE.spendBase * 100).toFixed(0) : "—") + "%</b>，其余靠账户取款——这是最吃老本的阶段（也叫桥接期：有人已停工、社保还没开的年份）。" + (firstClaim ? firstClaim.start + " 年起 " + mfEsc(firstClaim.name) + " 先开始领社保，取款压力逐年下降。" : "") + "</p>";
+      + "<p style='color:#aaa;font-size:.85em;margin:2px 0'>被动收入（租金+社保）只覆盖日常开销 " + mf$(stageE.spendBase) + " 的 <b style='color:#ddd'>" + (stageE.spendBase > 0 ? ((stageE.rent + stageE.ss) / stageE.spendBase * 100).toFixed(0) : "—") + "%</b>，其余靠账户取款——这是最吃老本的阶段（也叫桥接期：有人已停工、社保还没开的年份）。" + (firstClaim ? firstClaim.start + " 年起 " + (ssSameYear ? "两人开始领社保" : mfEsc(firstClaim.name) + " 先开始领社保") + "，取款压力逐年下降。" : "") + "</p>";
   }
   if (stageB){
     h += "<p style='margin:10px 0 2px'><b>阶段二 · 社保全开后</b>（" + stageB.year + " 年起，两人社保都开始领）：这一年总支出 " + mf$(stageB.outTotal) + "，钱这样来——</p>"
