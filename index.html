@@ -98,6 +98,8 @@
 .fire-table td:first-child,.fire-table th:first-child{text-align:left}
 .fire-table tr.fire-short td{color:#ff7b72;font-weight:bold}
 .fire-range{background:#16213e;border-radius:8px;padding:10px 12px;font-size:.82em;line-height:1.7;color:#cfe3ff;margin-top:12px}
+
+/* FIRE 新首屏（mfv）沿用现有深色卡片风，无新增类名依赖；保留钩子便于后续微调 */
 @media(max-width:768px){.fire-grid{grid-template-columns:1fr 1fr}.fire-stats{grid-template-columns:1fr}}
 .tabbar{position:sticky;top:0;z-index:50;background:rgba(15,15,35,.96);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;padding:10px 2px;margin-bottom:14px;border-bottom:1px solid #2a2a4a;scrollbar-width:none}
 .tabbar::-webkit-scrollbar{display:none}
@@ -3071,12 +3073,208 @@ function mfTopRisk(st, main, eff, mc){
   return "🟢 未发现突出风险：确定性推演全程不断粮，桥接期 " + bridgeYears + " 年可控。";
 }
 
+/* ================= 新首屏：结论 / 进度 / 被动收入 / 行动 / 时间线（呈现层，引擎零改动） =================
+   信息架构借鉴：Boldin（每区块用用户的问题做标题、Chance of Success 式主结论、FIRE 最早可退日）、
+   ProjectionLab（里程碑时间线、分阶段收入来源构成）、Empower（How can I improve 式行动清单）。
+   所有数字在浏览器里由 MF.state + 引擎输出（runAll 轨迹 / raw 逐年）现算，静态 HTML 不含个人金额。 */
+function mfvCrossYear(res, target){
+  if (target == null || !isFinite(target) || !res || !res.main) return null;
+  var start = mfInvestable(MF.state);
+  if (start >= target) return res.eff.baseYear;
+  for (var i = 0; i < res.main.rows.length; i++){ if (res.main.rows[i].end >= target) return res.main.rows[i].year; }
+  return null;
+}
+function mfvVariant(mut){
+  try { var c = mfClone(MF.state); mut(c); return mfCompute(c); } catch (e){ return null; }
+}
+function mfvStage(res, mode){
+  var ys = (res && res.main && res.main.raw && res.main.raw.years) || [];
+  var found = null;
+  for (var i = 0; i < ys.length; i++){
+    var y = ys[i];
+    if (y.phase !== "retirement") continue;
+    if (mode === "early"){ found = y; break; }
+    if (mode === "bothss" && y.ssByPersonCents.every(function(v){ return v > 0; })){ found = y; break; }
+  }
+  if (!found) return null;
+  var out = (found.mustCents + found.likeCents + found.childCents + found.primaryHomeCents + found.healthcareCents + found.taxCents + (found.eventsExpenseCents || 0)) / 100;
+  return {
+    year: found.year, ages: found.ages,
+    ss: found.ssTotalCents / 100, rent: found.rentalNetCents / 100,
+    part: found.partTimeCents / 100, wd: found.withdrawalTotalCents / 100,
+    spendBase: (found.mustCents + found.likeCents) / 100, outTotal: out
+  };
+}
+function mfvStackBar(segments, refTotal){
+  var tot = 0; segments.forEach(function(s){ tot += Math.max(0, s.val); });
+  var denom = Math.max(refTotal || 0, tot);
+  if (denom <= 0) return "";
+  var bar = "<div style='display:flex;height:20px;border-radius:6px;overflow:hidden;border:1px solid #333;margin:6px 0 4px'>";
+  segments.forEach(function(s){
+    if (s.val <= 0) return;
+    bar += "<div style='width:" + (s.val / denom * 100).toFixed(1) + "%;background:" + s.color + "' title='" + mfEsc(s.label) + " " + mf$(s.val) + "'></div>";
+  });
+  bar += "</div><div style='font-size:.8em;color:#aaa;line-height:1.6'>";
+  segments.forEach(function(s){
+    if (s.val <= 0) return;
+    bar += "<span style='margin-right:12px'><span style='display:inline-block;width:9px;height:9px;border-radius:2px;background:" + s.color + ";margin-right:4px'></span>" + mfEsc(s.label) + " <b style='color:#ddd'>" + mf$(s.val) + "</b>（" + (s.val / denom * 100).toFixed(0) + "%）</span>";
+  });
+  bar += "</div>";
+  return bar;
+}
+function mfvProgBar(name, plain, target, inv, crossYear, baseYear){
+  var pct = target > 0 ? inv / target * 100 : 0;
+  var done = pct >= 100;
+  var w = Math.min(100, pct);
+  var gap = target - inv;
+  var h = "<div style='margin:10px 0'><div style='display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px'><span><b>" + mfEsc(name) + "</b> <span style='color:#aaa;font-size:.85em'>" + mfEsc(plain) + "</span></span>"
+    + "<span style='color:#cfe3ff'>" + (done ? "✅ 已达标" : "还差 <b>" + mf$(gap) + "</b>") + " · " + (crossYear == null ? "推演期内未达" : crossYear <= baseYear ? "现在已达标" : "预计 <b>" + crossYear + " 年</b>达标") + "</span></div>"
+    + "<div style='height:14px;background:#26314f;border-radius:7px;overflow:hidden;margin-top:4px'><div style='height:100%;width:" + w.toFixed(1) + "%;background:" + (done ? "#43d17c" : "#4ecdc4") + "'></div></div>"
+    + "<div style='font-size:.8em;color:#888;margin-top:2px'>现在 " + mf$(inv) + " / 目标 " + mf$(target) + "（" + pct.toFixed(0) + "%）</div></div>";
+  return h;
+}
+
 function mfRenderResults(){
   var box = document.getElementById("mf-results"); if (!box || !MF.state) return;
   var st = MF.state;
   var res, err = null;
   try { res = mfCompute(st); } catch (e){ err = e; }
   if (err){ box.innerHTML = "<p style='color:#f88'>计算出错：" + mfEsc(err.message) + "</p>"; return; }
+  var eff = res.eff, spend = eff.spendMust + eff.spendLike, inv = mfInvestable(st);
+  var baseYear = eff.baseYear || st.household.baseYear;
+  var adults = mfAdults(st);
+  var childP = null; st.persons.forEach(function(p){ if (p.role === "child" && !childP) childP = p; });
+  var tFI = res.fi, t40 = spend / 0.04, t35 = spend / 0.035;
+  var xFI = mfvCrossYear(res, tFI), x40 = mfvCrossYear(res, t40), x35 = mfvCrossYear(res, t35);
+  var yr = function(y){ return y == null ? "推演期内未达" : y <= baseYear ? baseYear + " 年（现在）" : y + " 年"; };
+  var h = "";
+
+  /* ---------- ① 一句话结论（学 Boldin：首屏先给主结论 + 最早可停工年） ---------- */
+  h += "<div style='background:#12291f;border:1px solid #2e7d4f;border-radius:10px;padding:14px 16px'>"
+    + "<div style='color:#8fd6a4;font-size:.85em;letter-spacing:.05em'>🔥 还要工作多久？一句话结论（按最保守的算法）</div>"
+    + "<p style='font-size:1.25em;line-height:1.55;margin:8px 0 4px'><b>" + (x35 == null ? "按最保守的算法（每年只取 3.5%），推演期内还没攒够" : x35 <= baseYear ? "按最保守的算法（每年只取 3.5%），你家现在就已经攒够了" : "按最保守的算法（每年只取 3.5%），你家在 <span style='color:#4ecdc4'>" + x35 + " 年</span>攒够——距今 " + (x35 - baseYear) + " 年，那时起账面上就有资格停工") + "。</b></p>"
+    + "<p style='color:#cfe3ff;line-height:1.7;margin:4px 0'>另外两种算法对照：精确模拟口径（退休后每年取钱花到 95 岁刚好够）目标 " + mf$(tFI) + "，" + (xFI != null && xFI <= baseYear ? "已经达到" : yr(xFI) + "达标") + "；每年取 4% 的经验法则口径目标 " + mf$(t40) + "，" + yr(x40) + "达标。</p>"
+    + "<p style='color:#999;font-size:.85em;line-height:1.6;margin:2px 0'>注意别混淆：『攒够』是资产门槛；你们在计划里把退休年龄设成双人 60 岁（" + (adults[0] ? adults[0].birthYear + adults[0].retirementAge : "—") + " 年、" + (adults[1] ? adults[1].birthYear + adults[1].retirementAge : "—") + " 年先后停工）——那是你们的选择，不是门槛。门槛跨过之后，多工作的每一年都是在加厚余量。金额全程按今天的购买力计。</p></div>";
+
+  /* ---------- ② 离目标还有多远（美元进度条 + 年份，双呈现） ---------- */
+  h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>📏 离目标还有多远？</h3>";
+  h += mfvProgBar("精确模拟口径（引擎）", "退休时有这么多，之后每年取 " + mf$(spend) + " 花到 95 岁刚好够", tFI, inv, xFI, baseYear);
+  h += mfvProgBar("经验法则 · 每年取 4%", "本金基本不动、每年最多取 4% 来花", t40, inv, x40, baseYear);
+  h += mfvProgBar("经验法则 · 每年取 3.5%（保守）", "取得更少、更稳妥，本页主结论按这个口径", t35, inv, x35, baseYear);
+  h += "<p style='color:#888;font-size:.82em;line-height:1.6'>达标年怎么来的：按现在的攒钱轨迹逐年推演（工资结余存入账户、投资按实际回报 " + mfPct(eff.real, 2) + " 增长——实际回报 = 扣掉通胀后真正多出来的购买力），账户余额第一次达到该目标的年份。缺口（保守口径）= " + mf$(Math.max(0, t35 - inv)) + "；按现在的速度不用额外多存，" + (x35 ? x35 + " 年" : "推演期内") + "自动补齐。</p>";
+
+  /* ---------- ③ 被动收入从哪来（学 ProjectionLab：来源构成随阶段变化） ---------- */
+  var rental = null, prim = null;
+  st.properties.forEach(function(p){ if (p.kind === "rental") rental = p; if (p.kind === "primary") prim = p; });
+  var rentLoan = null, primLoan = null;
+  st.loans.forEach(function(L){ if (rental && L.propertyClientKey === rental.clientKey) rentLoan = L; if (prim && L.propertyClientKey === prim.clientKey) primLoan = L; });
+  var rentGross = rental ? rental.monthlyRentCents / 100 * 12 : 0;
+  var rentCosts = rental ? rental.monthlyCostsCents / 100 * 12 : 0;
+  var rentPI = rentLoan ? rentLoan.monthlyPaymentCents / 100 * 12 : 0;
+  var rentNetNow = rentGross - rentCosts - rentPI;
+  var lastLoanYear = null;
+  res.main.rows.forEach(function(r){ if (r.loanPay > 0) lastLoanYear = r.year; });
+  var ssList = adults.map(function(p){ return { name: p.name, annual: ssAnnualCents(p.ssMonthlyAtFraCents, p.ssClaimAge) / 100, start: p.birthYear + p.ssClaimAge }; });
+  var ssTot = ssList.reduce(function(s, x){ return s + x.annual; }, 0);
+  var swrAmt = inv * 0.035;
+  var stageE = mfvStage(res, "early"), stageB = mfvStage(res, "bothss");
+  var firstClaim = ssList.slice().sort(function(a, b){ return a.start - b.start; })[0];
+  h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>💰 被动收入从哪来？</h3>";
+  h += "<div style='line-height:1.75'>"
+    + "<p style='margin:4px 0'>🏠 <b>出租房租金（净到手）</b>：现在每年 <b>" + mf$(rentNetNow) + "</b>（毛租金 " + mf$(rentGross) + " − 税费保险等持有成本 " + mf$(rentCosts) + " − 房贷本息 " + mf$(rentPI) + "）。" + (lastLoanYear ? lastLoanYear + " 年房贷还清后，同一套房每年净收升到 <b>" + mf$(rentGross - rentCosts) + "</b>（按今天租金算，本息那 " + mf$(rentPI) + " 不再被扣走）。" : "") + "</p>"
+    + "<p style='margin:4px 0'>🏛️ <b>社保（两人合计）</b>：" + ssList.map(function(s){ return s.name + " " + mf$(s.annual) + "/年（" + s.start + " 年起领）"; }).join(" + ") + " = <b>" + mf$(ssTot) + "/年</b>。<span style='color:#ffb26b'>估算·待核实</span>（金额是种子估算，不是社保局真数；去 ssa.gov 查到真数后在下方编辑区更新）</p>"
+    + "<p style='margin:4px 0'>📈 <b>投资账户可持续提取</b>：按保守的每年取 3.5% × 现在的可投资资产 " + mf$(inv) + " = <b>" + mf$(swrAmt) + "/年</b>。这笔是『本金购买力基本不动』的取法；实际推演里社保和租金到位后，每年真正需要从账户取的钱会比这少。</p></div>";
+  if (stageE){
+    h += "<p style='margin:10px 0 2px'><b>阶段一 · 刚停工时</b>（" + stageE.year + " 年，按计划双人皆退休的第一年，社保还没开始领）：这一年总支出 " + mf$(stageE.outTotal) + "，钱这样来——</p>"
+      + mfvStackBar([{ label: "租金净收入", val: stageE.rent, color: "#38c6d9" }, { label: "社保", val: stageE.ss, color: "#6ea8ff" }, { label: "兼职", val: stageE.part, color: "#c39bff" }, { label: "从投资账户取款", val: stageE.wd, color: "#43d17c" }], stageE.outTotal)
+      + "<p style='color:#aaa;font-size:.85em;margin:2px 0'>被动收入（租金+社保）只覆盖日常开销 " + mf$(stageE.spendBase) + " 的 <b style='color:#ddd'>" + (stageE.spendBase > 0 ? ((stageE.rent + stageE.ss) / stageE.spendBase * 100).toFixed(0) : "—") + "%</b>，其余靠账户取款——这是最吃老本的阶段（也叫桥接期：有人已停工、社保还没开的年份）。" + (firstClaim ? firstClaim.start + " 年起 " + mfEsc(firstClaim.name) + " 先开始领社保，取款压力逐年下降。" : "") + "</p>";
+  }
+  if (stageB){
+    h += "<p style='margin:10px 0 2px'><b>阶段二 · 社保全开后</b>（" + stageB.year + " 年起，两人社保都开始领）：这一年总支出 " + mf$(stageB.outTotal) + "，钱这样来——</p>"
+      + mfvStackBar([{ label: "租金净收入", val: stageB.rent, color: "#38c6d9" }, { label: "社保", val: stageB.ss, color: "#6ea8ff" }, { label: "兼职", val: stageB.part, color: "#c39bff" }, { label: "从投资账户取款", val: stageB.wd, color: "#43d17c" }], stageB.outTotal)
+      + "<p style='color:#aaa;font-size:.85em;margin:2px 0'>被动收入（租金+社保）覆盖日常开销的 <b style='color:#ddd'>" + (stageB.spendBase > 0 ? ((stageB.rent + stageB.ss) / stageB.spendBase * 100).toFixed(0) : "—") + "%</b>，账户取款降到总支出的 " + (stageB.outTotal > 0 ? (stageB.wd / stageB.outTotal * 100).toFixed(0) : "—") + "%——从这一年起，日子主要靠被动收入过，账户只补差额。</p>";
+  }
+
+  /* ---------- ④ 行动区（学 Empower「How can I improve」：数据推导的问题+影响+动作） ---------- */
+  var metaCents = st.assumptions.allocEmployerStockCents || 0;
+  var metaShare = inv > 0 ? (metaCents / 100) / inv : 0;
+  var metaStress = mfvVariant(function(c){ var tx = null; c.accounts.forEach(function(a){ if (a.type === "taxable" && !tx) tx = a; }); if (tx) tx.balanceCents -= Math.round(metaCents * 0.30); });
+  var msX35 = metaStress ? mfvCrossYear(metaStress, t35) : null;
+  var likeCut = mfvVariant(function(c){ c.household.spendingLikeCents -= 1000000; });
+  var likeSpend = likeCut ? (likeCut.eff.spendMust + likeCut.eff.spendLike) : null;
+  var likeX35 = likeCut ? mfvCrossYear(likeCut, likeSpend / 0.035) : null;
+  var lj0 = mfvVariant(function(c){ var ads = mfAdults(c); if (ads[1]) ads[1].annualIncomeCents = 0; });
+  var lj0X35 = lj0 ? mfvCrossYear(lj0, t35) : null;
+  var ljHi = mfvVariant(function(c){ var ads = mfAdults(c); if (ads[0] && ads[1]) ads[1].annualIncomeCents = ads[0].annualIncomeCents; });
+  var ljHiX35 = ljHi ? mfvCrossYear(ljHi, t35) : null;
+  var evHit = null;
+  (res.main.raw ? res.main.raw.years : []).forEach(function(y){ if (!evHit && (y.eventsExpenseCents || 0) > 0) evHit = { year: y.year, amt: y.eventsExpenseCents / 100 }; });
+  function actItem(icon, title, impact, action){
+    return "<div style='border:1px solid #3a4a6b;border-radius:8px;padding:10px 12px;margin:8px 0;background:#141f38'><p style='margin:0 0 4px'><b>" + icon + " " + mfEsc(title) + "</b></p>"
+      + "<p style='margin:2px 0;color:#cfe3ff;line-height:1.65'><span style='color:#ffb26b'>影响：</span>" + impact + "</p>"
+      + "<p style='margin:2px 0;color:#aaa;line-height:1.65'><span style='color:#8fd6a4'>建议动作：</span>" + action + "</p></div>";
+  }
+  h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>🧭 现在该注意什么 / 该做什么</h3>";
+  if (adults[1]) h += actItem("👩", "Linjun 的收入还是估算值（" + mf$(adults[1].annualIncomeCents / 100) + "/年），是全模型最大的不确定性",
+    "用引擎实测了两头：若她实际收入为 0，保守口径达标年从 " + yr(x35) + " 推迟到 " + yr(lj0X35) + "；若与 Daran 相当（" + mf$((adults[0] ? adults[0].annualIncomeCents : 0) / 100) + "/年），提前到 " + yr(ljHiX35) + "。一个数字就能让结论摆动约 3 年。",
+    "把她的工资账户连进 Plaid（或直接在下方「编辑我的数字」填她的真实税后年收入），其余结论立刻变实。");
+  if (metaCents > 0) h += actItem("📉", "META 一只股票占可投资资产的 " + mfPct(metaShare, 1) + "（" + mf$(metaCents / 100) + "），集中度很高",
+    "压力测试（引擎轨迹）：META 跌 30% ≈ 蒸发 " + mf$(metaCents / 100 * 0.30) + "，保守口径达标年从 " + yr(x35) + " 推迟到 " + yr(msX35) + "。你们两人的工资也来自 Meta，收入和资产押在同一家公司上。",
+    "给雇主股设一个上限（比如下方「资产配置」区建议的 ≤10–20%），把超出部分逐步转到宽基指数；不用一次清仓，分批降集中度即可。");
+  h += actItem("🏛️", "社保金额是种子估算（两人合计 " + mf$(ssTot) + "/年），不是社保局真数",
+    "社保全开后它占当年总收入的 " + (stageB && stageB.outTotal > 0 ? (stageB.ss / (stageB.ss + stageB.rent + stageB.part + stageB.wd) * 100).toFixed(0) : "—") + "% 左右；估错 20%，退休后每年就差约 " + mf$(ssTot * 0.2) + "，达标结论也会跟着动。",
+    "两人各去 ssa.gov 建账户查真实的预计月领额，把下方编辑区里两人的「社保（FRA 月领额）」换成真数。");
+  if (evHit) h += actItem("🎓", evHit.year + " 年有一笔 −" + mf$(evHit.amt) + " 的支出，名字还叫「示例」",
+    "引擎推演里这笔钱被真的扣了（该年现金流多出一笔 " + mf$(evHit.amt) + " 支出）。而且按出生年算，Dylan " + evHit.year + " 年才 " + (childP ? evHit.year - childP.birthYear : "十几") + " 岁，和「大学教育」的时间对不上——它更像建站时的示例残留。",
+    "如果不是你家真计划的一笔钱，到下方「编辑我的数字 / 事件」里删掉它；如果是教育金计划，把年份和名称改对。删改后所有结论自动重算。");
+  h += actItem("✈️", "「享受类」支出是最灵敏的达标杠杆（现在 " + mf$(eff.spendLike) + "/年）",
+    "实测：享受类每年少花 $10,000（约 −15%），保守口径目标直接降 " + (likeSpend ? mf$(t35 - likeSpend / 0.035) : "—") + "，达标年从 " + yr(x35) + " 提前到 " + yr(likeX35) + "。必要支出（" + mf$(eff.spendMust) + "/年）动起来伤生活质量，享受类是弹性所在。",
+    "如果想再提前停工，先从享受类里找可砍项；反过来，如果觉得现在的日子不能降，这组数字就是『多工作约 1 年换现在的消费水平』的明码标价。");
+  if (adults[0] && /未核实/.test(adults[0].notes || "")) h += actItem("🎂", adults[0].name + " 的出生年（" + adults[0].birthYear + "）还没核实",
+    "退休年（" + (adults[0].birthYear + adults[0].retirementAge) + "）、社保开启年（" + (adults[0].birthYear + adults[0].ssClaimAge) + "）和模拟终点（95 岁）全都按这个年份平移；差 1 年，时间线整体差 1 年。",
+    "在下方编辑区核对成真实出生年（Linjun 与 Dylan 的已由本人确认）。");
+
+  /* ---------- ⑤ 人生时间线（学 ProjectionLab：里程碑同轴呈现） ---------- */
+  var marks = [];
+  marks.push({ y: baseYear, label: "今年 · 可投资 " + mf$(inv) });
+  if (x40 && x40 > baseYear) marks.push({ y: x40, label: "攒够（4% 口径）" });
+  if (x35 && x35 > baseYear) marks.push({ y: x35, label: "⭐ 攒够（3.5% 保守口径）" });
+  if (childP) marks.push({ y: childP.birthYear + 18, label: childP.name.split(" ")[0] + " 成年（18 岁）" });
+  if (adults[0]) marks.push({ y: adults[0].birthYear + adults[0].retirementAge, label: adults[0].name.split(" ")[0] + " 计划退休（" + adults[0].retirementAge + " 岁）" });
+  if (lastLoanYear) marks.push({ y: lastLoanYear, label: "两笔房贷还清" });
+  if (adults[1]) marks.push({ y: adults[1].birthYear + adults[1].retirementAge, label: adults[1].name.split(" ")[0] + " 计划退休 · 双人停工" });
+  var ssMaxStart = 0; ssList.forEach(function(s){ if (s.start > ssMaxStart) ssMaxStart = s.start; });
+  ssList.forEach(function(s){ marks.push({ y: s.start, label: s.name.split(" ")[0] + " 社保开启" + (s.start === ssMaxStart ? " · 被动收入全开" : "") }); });
+  marks.sort(function(a, b){ return a.y - b.y; });
+  var axMin = baseYear, axMax = baseYear + 2;
+  marks.forEach(function(m){ if (m.y + 2 > axMax) axMax = m.y + 2; });
+  h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>🗓️ 人生时间线</h3><div style='overflow-x:auto'><div style='position:relative;min-width:700px;height:96px;margin-top:2px'>"
+    + "<div style='position:absolute;left:0;right:0;top:47px;height:2px;background:#3a4a6b'></div>";
+  marks.forEach(function(m, i){
+    var left = (m.y - axMin) / (axMax - axMin) * 100;
+    var top = i % 2 === 0;
+    h += "<div style='position:absolute;left:" + left.toFixed(1) + "%;top:42px;width:12px;height:12px;border-radius:50%;background:#4ecdc4;border:2px solid #0e1526;transform:translateX(-50%)'></div>"
+      + "<div style='position:absolute;left:" + left.toFixed(1) + "%;top:" + (top ? "2px" : "58px") + ";transform:translateX(-50%);width:104px;text-align:center;font-size:.7em;line-height:1.35;color:#cfe3ff'><b style='color:#4ecdc4'>" + m.y + "</b><br>" + mfEsc(m.label) + "</div>";
+  });
+  h += "</div></div>";
+
+  /* ---------- ⑥ 这页是怎么算的（大白话讲解，默认可见） ---------- */
+  h += "<div style='background:#16213e;border:1px solid #333;border-radius:10px;padding:12px 14px;margin-top:16px;line-height:1.8;color:#cfe3ff'>"
+    + "<b style='color:#ffd93d'>📖 这页是怎么算的（大白话）</b><br>"
+    + "我们把你家未来的每一年都推演一遍：工资进账、日常开销、孩子花费、房贷月供照单计入，投资按『实际回报 " + mfPct(eff.real, 2) + "』逐年增长（名义回报 " + mfPct(eff.nominal) + " 扣掉通胀 " + mfPct(eff.inflation) + "，剩下的才是购买力真涨幅），一直算到最年长者 95 岁。『攒够了』有两种算法，答案不同是因为保守程度不同：<b>精确模拟</b>问的是『退休那天要有多少，才能每年取 " + mf$(spend) + " 一直花到 95 岁刚好够』——它允许本金在 95 岁花完，还把社保和租金算作帮手，所以目标最低（" + mf$(tFI) + "）；<b>经验法则</b>要求本金购买力基本不动、每年只取 3.5%–4%，所以目标更高（" + mf$(t40) + "–" + mf$(t35) + "）。本页主结论按最保守的 3.5% 口径，宁可把门槛说高。推演假设社保按现在填的金额、67 岁开始领，租金按每年实际涨 2% 计——这些假设变了，结论会跟着变，所以行动区里把没核实的数字都点名了。</div>";
+
+  /* ---------- ⑦ 模型细节（旧指标全量保留，默认折叠） ---------- */
+  h += "<details style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.02em'>🔬 模型细节（FI 求解 / 头号风险 / 退休工资单 / 桥接期 / 逐年现金流 / 场景对比）</summary><div style='margin-top:8px'>" + mfLegacyResultsHTML() + "</div></details>";
+
+  box.innerHTML = h;
+}
+
+function mfLegacyResultsHTML(){
+  if (!MF.state) return "";
+  var st = MF.state;
+  var res, err = null;
+  try { res = mfCompute(st); } catch (e){ err = e; }
+  if (err){ return "<p style='color:#f88'>计算出错：" + mfEsc(err.message) + "</p>"; }
   var eff = res.eff, main = res.main, fi = res.fi;
   var spend = eff.spendMust + eff.spendLike;
   var inv = mfInvestable(st);
@@ -3142,9 +3340,8 @@ function mfRenderResults(){
           return "<tr" + (sc.isActive ? " style='background:#1d2b1d'" : "") + "><td>" + mfEsc(sc.name) + (sc.isActive ? "（当前）" : "") + "</td><td>" + mf$(rr.fi) + "</td><td>" + (rr.achieveYear || "—") + "</td><td>" + (rr.main.failed ? "❌ " + rr.main.failYear + " 年断粮" : mf$(rr.endBalance)) + "</td></tr>";
         }).join("") + "</table></div>";
   }
-  box.innerHTML = h;
+  return h;
 }
-
 
 /* ================= Monte Carlo / 压力测试 / 反向求解 ================= */
 function mfMcParams(){
