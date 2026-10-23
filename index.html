@@ -3559,7 +3559,7 @@ function mfRunMC(){
       var eff = effectiveInputs(MF.state, null); eff.flags = defaultFlags();
       var mc = mcRun(eff, { seed: p.seed, runs: p.runs, sigmaBps: p.sigmaBps, dist: p.dist, streamMode: "shared" });
       MF.mc = mc;
-      var h = "<table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(mc.p10) + "</td><td>" + mf$(mc.p50) + "</td><td>" + mf$(mc.p90) + "</td></tr></table>";
+      var h = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(mc.p10) + "</td><td>" + mf$(mc.p50) + "</td><td>" + mf$(mc.p90) + "</td></tr></table></div>";
       if (p.guard){
         var mcg = mcRun(eff, { seed: p.seed, runs: p.runs, sigmaBps: p.sigmaBps, dist: p.dist, streamMode: "shared", guardrail: true });
         h += "<p style='line-height:1.7'>🛡️ 护栏开启（回撤超 " + mfPct(MF.state.assumptions.guardrailTriggerBps / 10000) + " 砍享受支出 " + mfPct(MF.state.assumptions.guardrailCutBps / 10000) + "）：通过率 <b>" + (mcg.passRate * 100).toFixed(1) + "%</b>（" + ((mcg.passRate - mc.passRate) * 100 >= 0 ? "+" : "") + ((mcg.passRate - mc.passRate) * 100).toFixed(1) + " pp），P50 " + mf$(mcg.p50) + "。</p>";
@@ -3591,9 +3591,9 @@ function mfRunStress(kind){
       var base = evalState(MF.state);
       var st2 = mfClone(MF.state); MF_STRESS[kind].apply(st2);
       var alt = evalState(st2);
-      out.innerHTML = "<table class='mf-tb'><tr><th>情景</th><th>确定性期末</th><th>MC 通过率</th><th>MC P50</th></tr>"
+      out.innerHTML = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>情景</th><th>确定性期末</th><th>MC 通过率</th><th>MC P50</th></tr>"
         + "<tr><td>基准</td><td>" + (base.det.failed ? "❌ " + base.det.failYear + " 年断粮" : mf$(base.det.endBalance)) + "</td><td>" + (base.mc.passRate * 100).toFixed(1) + "%</td><td>" + mf$(base.mc.p50) + "</td></tr>"
-        + "<tr><td>" + mfEsc(MF_STRESS[kind].label) + "</td><td>" + (alt.det.failed ? "❌ " + alt.det.failYear + " 年断粮" : mf$(alt.det.endBalance)) + "</td><td>" + (alt.mc.passRate * 100).toFixed(1) + "%</td><td>" + mf$(alt.mc.p50) + "</td></tr></table>";
+        + "<tr><td>" + mfEsc(MF_STRESS[kind].label) + "</td><td>" + (alt.det.failed ? "❌ " + alt.det.failYear + " 年断粮" : mf$(alt.det.endBalance)) + "</td><td>" + (alt.mc.passRate * 100).toFixed(1) + "%</td><td>" + mf$(alt.mc.p50) + "</td></tr></table></div>";
     } catch (e){ out.innerHTML = "<span style='color:#f88'>压力测试出错：" + mfEsc(e.message) + "</span>"; }
   }, 30);
 }
@@ -3781,7 +3781,7 @@ function mfRenderAll(){
   mfRenderAlloc();
   mfRenderScenarios();
   mfRenderForms();
-  if (MF.mc){ var out = document.getElementById("mf-mc-out"); if (out) out.innerHTML = "<table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (MF.mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(MF.mc.p10) + "</td><td>" + mf$(MF.mc.p50) + "</td><td>" + mf$(MF.mc.p90) + "</td></tr></table>"; }
+  if (MF.mc){ var out = document.getElementById("mf-mc-out"); if (out) out.innerHTML = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (MF.mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(MF.mc.p10) + "</td><td>" + mf$(MF.mc.p50) + "</td><td>" + mf$(MF.mc.p90) + "</td></tr></table></div>"; }
 }
 
 /* ================= 场景管理 ================= */
