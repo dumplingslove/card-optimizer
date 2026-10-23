@@ -3152,6 +3152,29 @@ function mfvProgBar(name, plain, target, inv, crossYear, baseYear){
   return h;
 }
 
+
+function mfvOutTotal(y){
+  return (y.mustCents + y.likeCents + y.childCents + y.primaryHomeCents + y.healthcareCents + y.taxCents + (y.eventsExpenseCents || 0)) / 100;
+}
+function mfvYearFlow(res, pred){
+  var ys = (res && res.main && res.main.raw && res.main.raw.years) || [];
+  for (var i = 0; i < ys.length; i++){ if (pred(ys[i])) return ys[i]; }
+  return null;
+}
+function mfvSpendRows(st){
+  var bd = st.household.spendingBreakdown;
+  if (!bd || !bd.length) return "";
+  var tot = 0; bd.forEach(function(x){ tot += x.amountCents / 100; });
+  if (tot <= 0) return "";
+  var colors = ["#4ecdc4", "#ffd93d", "#6ea8ff", "#ff9f68", "#43d17c", "#c39bff", "#38c6d9", "#f78fb3", "#a8b8d8"];
+  var h = "";
+  bd.forEach(function(x, i){
+    var v = x.amountCents / 100, pct = v / tot * 100;
+    h += "<div style='margin:7px 0'><div style='display:flex;justify-content:space-between;gap:6px'><span>" + mfEsc(x.label) + "</span><span style='color:#cfe3ff'><b>" + mf$(v) + "</b> · " + pct.toFixed(1) + "%</span></div>"
+      + "<div style='height:10px;background:#26314f;border-radius:5px;overflow:hidden;margin-top:3px'><div style='height:100%;width:" + pct.toFixed(1) + "%;background:" + colors[i % colors.length] + "'></div></div></div>";
+  });
+  return h;
+}
 function mfRenderResults(){
   var box = document.getElementById("mf-results"); if (!box || !MF.state) return;
   var st = MF.state;
@@ -3182,6 +3205,17 @@ function mfRenderResults(){
   if (x40 != null && x35 != null && x35 > x40)
     h += "<p style='color:#cfe3ff;line-height:1.65;margin:10px 0 2px'>从「够用」升到「有厚垫子」，差的是 <b>" + mf$(Math.max(0, t35 - t40)) + "</b>、约多工作 <b>" + (x35 - x40) + " 年</b>——买的是退休后 50 多年的抗风险余量。</p>";
   h += "<p style='color:#888;font-size:.82em;line-height:1.6'>达标年怎么来的：按现在的攒钱轨迹逐年推演（工资结余存入账户、投资按实际回报 " + mfPct(eff.real, 2) + " 增长——实际回报 = 扣掉通胀后真正多出来的购买力），账户余额第一次达到该目标的年份。缺口（保守口径）= " + mf$(Math.max(0, t35 - inv)) + "；按现在的速度不用额外多存，" + (x35 ? x35 + " 年" : "推演期内") + "自动补齐。</p>";
+
+  /* ---------- ②.5 你们的钱现在花在哪（支出构成，实测分类，数据在 state 里） ---------- */
+  if (st.household.spendingBreakdown && st.household.spendingBreakdown.length){
+    var loanLastA = null;
+    res.main.rows.forEach(function(r){ if (r.loanPay > 0) loanLastA = r.year; });
+    h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>🧾 你们的钱，现在花在哪？</h3>";
+    h += "<p style='color:#aaa;font-size:.88em;line-height:1.65;margin:2px 0 6px'>上面达标线用的年支出 " + mf$(spend) + "（必要 " + mf$(eff.spendMust) + " + 享受 " + mf$(eff.spendLike) + "）不是拍脑袋估的——它就是按你们最近 12 个月的真实银行流水拆出来的，大头长这样：</p>";
+    h += mfvSpendRows(st);
+    h += "<p style='color:#cfe3ff;line-height:1.7;margin:8px 0 2px'>划重点：<b>FIRE 的目标额就是按这套真实花法算的</b>——旅行、大额购物都在里面。孩子和房贷没混在这张图里，引擎给它们单独记账（孩子按年龄曲线一年一年算，两笔房贷按月供扣到 " + (loanLastA || "还清") + " 年还清），算『够不够』时一样都没落下。所以『攒够』指的是退休后<b>照样能维持现在这个花法</b>，不是让你过苦日子。</p>";
+    if (st.household.spendingBreakdownSource) h += "<p style='color:#888;font-size:.8em;line-height:1.6'>口径：" + mfEsc(st.household.spendingBreakdownSource) + "</p>";
+  }
 
   /* ---------- ③ 被动收入从哪来（学 ProjectionLab：来源构成随阶段变化） ---------- */
   var rental = null, prim = null;
@@ -3214,6 +3248,92 @@ function mfRenderResults(){
     h += "<p style='margin:10px 0 2px'><b>阶段二 · 社保全开后</b>（" + stageB.year + " 年起，两人社保都开始领）：这一年总支出 " + mf$(stageB.outTotal) + "，钱这样来——</p>"
       + mfvStackBar([{ label: "租金净收入", val: stageB.rent, color: "#38c6d9" }, { label: "社保", val: stageB.ss, color: "#6ea8ff" }, { label: "兼职", val: stageB.part, color: "#c39bff" }, { label: "从投资账户取款", val: stageB.wd, color: "#43d17c" }], stageB.outTotal)
       + "<p style='color:#aaa;font-size:.85em;margin:2px 0'>被动收入（租金+社保）覆盖日常开销的 <b style='color:#ddd'>" + (stageB.spendBase > 0 ? ((stageB.rent + stageB.ss) / stageB.spendBase * 100).toFixed(0) : "—") + "%</b>，账户取款降到总支出的 " + (stageB.outTotal > 0 ? (stageB.wd / stageB.outTotal * 100).toFixed(0) : "—") + "%——从这一年起，日子主要靠被动收入过，账户只补差额。</p>";
+  }
+
+  /* ---------- ③.5 退休之后三阶段收支对照 + ③.6 随时间变化图 ---------- */
+  var yWork = mfvYearFlow(res, function(y){ return y.year === baseYear; });
+  var yRet = mfvYearFlow(res, function(y){ return y.phase === "retirement"; });
+  var ySS = mfvYearFlow(res, function(y){ return y.phase === "retirement" && y.ssByPersonCents.every(function(v){ return v > 0; }); });
+  function mfvFlowCard(title, y, verdict){
+    if (!y) return "";
+    var items = [
+      { icon: "💼", label: "工资", val: y.incomeTotalCents / 100 },
+      { icon: "🏠", label: "租金（净到手）", val: y.rentalNetCents / 100 },
+      { icon: "🏛️", label: "社保", val: y.ssTotalCents / 100 },
+      { icon: "🧑‍🍳", label: "兼职", val: y.partTimeCents / 100 },
+      { icon: "📈", label: "从账户取款", val: y.withdrawalTotalCents / 100 }
+    ].filter(function(x){ return x.val > 0; });
+    var inc = 0; items.forEach(function(x){ inc += x.val; });
+    var out = mfvOutTotal(y);
+    var chips = items.map(function(x){
+      return "<div style='border:1px solid #3a4a6b;border-radius:8px;padding:8px 10px;min-width:104px;background:#141f38'><div style='font-size:1.25em'>" + x.icon + "</div><div style='color:#aaa;font-size:.8em'>" + x.label + "</div><div><b>" + mf$(x.val) + "</b></div></div>";
+    }).join("");
+    return "<div style='border:1px solid #2e7d4f;border-radius:10px;padding:12px 14px;margin:10px 0'>"
+      + "<p style='margin:0 0 8px'><b>" + title + "</b></p>"
+      + "<div style='display:flex;flex-wrap:wrap;gap:8px'>" + chips + "</div>"
+      + "<p style='margin:8px 0 2px;color:#cfe3ff'>这一年收入合计 <b>" + mf$(inc) + "</b> · 支出 budget <b>" + mf$(out) + "</b>（其中日常开销 " + mf$((y.mustCents + y.likeCents) / 100) + "，其余是孩子、住房、医疗与税，引擎同一口径）</p>"
+      + "<p style='margin:2px 0;color:#aaa;font-size:.88em;line-height:1.65'>" + verdict + "</p></div>";
+  }
+  if (yWork && yRet){
+    var bridgeWd = 0, bridgeN = 0;
+    if (ySS) (res.main.raw.years || []).forEach(function(y){ if (y.year >= yRet.year && y.year < ySS.year){ bridgeWd += y.withdrawalTotalCents / 100; bridgeN++; } });
+    var wInc = (yWork.incomeTotalCents + yWork.rentalNetCents + yWork.ssTotalCents + yWork.partTimeCents + yWork.withdrawalTotalCents) / 100;
+    h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>🏖️ 退休之后，钱从哪来、够不够花？</h3>";
+    h += "<p style='color:#aaa;font-size:.88em;line-height:1.65;margin:2px 0'>把人生三段并排摆出来——每段靠什么收入、支出 budget 有多少，一眼能比。金额都是引擎按你们现在的计划逐年实算的（今天购买力）。</p>";
+    h += mfvFlowCard("① 现在 · 还在上班（" + yWork.year + " 年，" + (yWork.ages ? yWork.ages[0] : "—") + " 岁）", yWork,
+      "工资还没停，收入盖过支出，多出来的 <b style='color:#ddd'>" + mf$(wInc - mfvOutTotal(yWork)) + "</b> 存进投资账户——你们的可投资资产就是这么一年年涨上去的。");
+    h += mfvFlowCard("② 双人停工 · 桥接期（" + yRet.year + " 年起，" + (yRet.ages ? yRet.ages[0] : "—") + " 岁）", yRet,
+      "工资归零。租金只顶一小部分，大头靠从账户里取钱——这是全程最吃老本的阶段" + (bridgeN > 0 ? "，一共 " + bridgeN + " 年、累计取约 <b style='color:#ddd'>" + mf$(bridgeWd) + "</b>" : "") + "。熬过这段，社保就接上了。");
+    if (ySS) h += mfvFlowCard("③ 社保全开后（" + ySS.year + " 年起，" + (ySS.ages ? ySS.ages[0] : "—") + " 岁）", ySS,
+      "租金 + 社保合计 <b style='color:#ddd'>" + mf$((ySS.rentalNetCents + ySS.ssTotalCents) / 100) + "</b>，占了这一年总支出的一大半；每年从账户取的钱从桥接期的 " + mf$(yRet.withdrawalTotalCents / 100) + " 降到 " + mf$(ySS.withdrawalTotalCents / 100) + "，本金动得少多了。");
+  }
+  var ysAll = (res.main.raw && res.main.raw.years) || [];
+  if (ysAll.length > 4 && yRet){
+    var lastLoanY = null, childPkY = null, childPkEnd = null, childPkV = 0;
+    ysAll.forEach(function(y){
+      if (y.primaryMortgagePaidCents + y.rentalMortgagePaidCents > 0) lastLoanY = y.year;
+      if (y.childCents > childPkV){ childPkV = y.childCents; childPkY = y.year; }
+      if (y.childCents === childPkV && childPkV > 0) childPkEnd = y.year;
+    });
+    var nodeRetY = yRet.year, nodeSSY = ySS ? ySS.year : null;
+    var samp = ysAll.filter(function(y){ return (y.year - baseYear) % 2 === 0 || y.year === nodeRetY || y.year === nodeSSY || y.year === lastLoanY; });
+    var maxV = 1;
+    samp.forEach(function(y){
+      var inc = (y.incomeTotalCents + y.rentalNetCents + y.ssTotalCents + y.partTimeCents + y.withdrawalTotalCents) / 100;
+      var out = mfvOutTotal(y);
+      if (inc > maxV) maxV = inc;
+      if (out > maxV) maxV = out;
+    });
+    h += "<h3 style='color:#ffd93d;margin:18px 0 4px'>🌊 这些钱，随时间怎么变？</h3>";
+    h += "<p style='color:#aaa;font-size:.88em;line-height:1.65;margin:2px 0'>每一根柱子是一年（每 2 年取一根，关键年份都标了）：颜色是这一年的钱从哪来，<span style='color:#ff8a80'>● 红点</span>是这一年的总支出。柱子比红点高 = 那年在存钱；红点贴着柱顶 = 当年靠取款补到刚好打平（退休后属正常）。把鼠标停在柱子上能看那一年的明细。</p>";
+    h += "<div style='overflow-x:auto'><div style='display:flex;gap:2px;min-width:660px'>";
+    samp.forEach(function(y){
+      var segs = [
+        { v: y.incomeTotalCents / 100, c: "#ffd93d" },
+        { v: y.rentalNetCents / 100, c: "#38c6d9" },
+        { v: y.ssTotalCents / 100, c: "#6ea8ff" },
+        { v: y.partTimeCents / 100, c: "#c39bff" },
+        { v: y.withdrawalTotalCents / 100, c: "#43d17c" }
+      ];
+      var out = mfvOutTotal(y);
+      var col = "<div style='flex:1;min-width:14px' title='" + y.year + " 年：工资 " + mf$(y.incomeTotalCents / 100) + " · 租金 " + mf$(y.rentalNetCents / 100) + " · 社保 " + mf$(y.ssTotalCents / 100) + " · 取款 " + mf$(y.withdrawalTotalCents / 100) + " · 总支出 " + mf$(out) + "'>"
+        + "<div style='position:relative;height:120px'><div style='position:absolute;left:1px;right:1px;bottom:0;display:flex;flex-direction:column-reverse'>";
+      segs.forEach(function(sg){ if (sg.v > 0) col += "<div style='height:" + Math.max(1, sg.v / maxV * 118).toFixed(1) + "px;background:" + sg.c + "'></div>"; });
+      col += "</div><div style='position:absolute;left:50%;transform:translate(-50%,50%);bottom:" + (out / maxV * 100).toFixed(1) + "%;width:7px;height:7px;border-radius:50%;background:#ff8a80;border:1px solid #0e1526'></div></div>"
+        + "<div style='font-size:.6em;color:#888;text-align:center;margin-top:3px'>" + String(y.year).slice(2) + "</div></div>";
+      h += col;
+    });
+    h += "</div></div>";
+    var chipC = function(c, t){ return "<span style='margin-right:12px'><span style='display:inline-block;width:9px;height:9px;border-radius:2px;background:" + c + ";margin-right:4px'></span>" + t + "</span>"; };
+    h += "<div style='font-size:.8em;color:#aaa;margin-top:6px;line-height:1.7'>" + chipC("#ffd93d", "工资") + chipC("#38c6d9", "租金") + chipC("#6ea8ff", "社保") + chipC("#c39bff", "兼职") + chipC("#43d17c", "从账户取款") + "<span style='color:#ff8a80'>●</span> 当年总支出</div>";
+    var yAt = function(yy){ return mfvYearFlow(res, function(z){ return z.year === yy; }); };
+    var notes = [];
+    if (childPkY) notes.push("🎓 " + childPkY + (childPkEnd && childPkEnd > childPkY ? "–" + childPkEnd : "") + " 年是孩子教育开销的高峰（" + mf$(childPkV / 100) + "/年），那几年红点被顶得最高");
+    if (lastLoanY && yAt(lastLoanY - 1) && yAt(lastLoanY + 1)) notes.push("🏠 " + lastLoanY + " 年两笔房贷还清：出租房净租金从 " + mf$(yAt(lastLoanY - 1).rentalNetCents / 100) + " 升到 " + mf$(yAt(lastLoanY + 1).rentalNetCents / 100) + "（还清后第一年），柱子里的青色一段明显变高");
+    notes.push("🛑 " + nodeRetY + " 年双人停工：工资（黄色）从柱子里消失，改由取款（绿色）顶上");
+    if (nodeSSY && yAt(nodeSSY - 1)) notes.push("🏛️ " + nodeSSY + " 年社保全开：每年取款从 " + mf$(yAt(nodeSSY - 1).withdrawalTotalCents / 100) + " 降到 " + mf$(yAt(nodeSSY).withdrawalTotalCents / 100) + "，台阶很明显");
+    h += "<p style='color:#aaa;font-size:.85em;line-height:1.75;margin:6px 0 2px'>" + notes.join("；") + "。</p>";
+    h += "<p style='color:#cfe3ff;line-height:1.7;margin:4px 0 2px'>一句话看形状：<b>上班时工资一根独大、年年有结余；停工后先靠取款顶住桥接期；社保一开，取款台阶式往下掉；房贷还清后租金又跳一截。</b>越往后，日子越不依赖『从账户掏钱』，靠的是租金和社保这两股细水长流。</p>";
   }
 
   /* ---------- ④ 行动区（学 Empower「How can I improve」：数据推导的问题+影响+动作） ---------- */
@@ -3561,11 +3681,14 @@ function mfRenderAll(){
     h += "<div style='background:#3a2f10;border:1px solid #d4a017;border-radius:8px;padding:10px 12px;line-height:1.7'>⚠️ <b>当前是示例数据</b>（虚构 persona）。在下方「编辑我的数字」里填入真实数字，点「保存到云端」即替换；确认填好后点 <button data-act='markreal' style='margin-left:6px'>标记为真实数据</button> 去掉这个提示。</div>";
   }
   h += "<p style='color:#888;font-size:.85em'><span id='mf-updated'>" + (MF.updatedAt ? "数据更新于 " + new Date(MF.updatedAt).toLocaleString("zh-CN") : "") + "</span> · 数据存 Supabase（仅白名单邮箱可读） · 全程今天美元（实际购买力）</p>";
-  h += "<div style='margin:8px 0'><button data-act='save' style='padding:8px 18px;font-weight:bold'>💾 保存到云端</button> "
-    + "<button data-act='export'>⬇️ 导出 JSON</button> "
-    + "<button data-act='import'>⬆️ 导入 JSON</button>"
-    + "<input type='file' id='mf-import-file' accept='.json,application/json' style='display:none'>"
+  h += "<div style='margin:8px 0'><button data-act='save' title='把你在下方改的数字存到云端数据库；不点这个按钮，改动只停留在当前页面，刷新就没了' style='padding:8px 18px;font-weight:bold'>💾 保存到云端</button>"
+    + "<span style='color:#888;font-size:.82em;margin-left:8px'>在下方改了任何数字，都要点这个按钮才存得住——不点，刷新页面就丢了。</span>"
     + "<span id='mf-savemsg' style='margin-left:10px;color:#9fd69f'></span></div>";
+  h += "<details style='margin:4px 0 8px'><summary style='cursor:pointer;color:#aaa;font-size:.9em'>🗄️ 数据管理（备份 / 恢复）——平时用不到</summary>"
+    + "<div style='margin:8px 0;line-height:1.9'><button data-act='export' title='把当前整套 FIRE 数字下载成一个 JSON 文件，存到你自己的电脑里留底'>⬇️ 导出 JSON（下载备份）</button> "
+    + "<button data-act='import' title='选一个以前导出的 JSON 备份文件，把里面的数字整套恢复进来；会覆盖现在的数字，恢复成功后自动保存到云端'>⬆️ 导入 JSON（从备份恢复）</button>"
+    + "<input type='file' id='mf-import-file' accept='.json,application/json' style='display:none'>"
+    + "<div style='color:#888;font-size:.82em;line-height:1.65'>导出 = 把整套数字下载成一个文件，备份到你自己电脑；导入 = 用备份文件整套恢复（会覆盖现在的数字，导入成功后会自动保存到云端）。换设备、或者改数字之前想留个底，才用得上。</div></div></details>";
   h += "<div id='mf-results'></div>";
   /* MC */
   h += "<details open style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🎲 Monte Carlo 与压力测试</summary>"
