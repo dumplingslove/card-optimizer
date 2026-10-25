@@ -979,6 +979,120 @@ renderRecs();
 <div style="color:#9fb6d8;margin-top:6px">市场结构一句话：$180–250 万档货非常薄（只有 4 套），真正的竞争区在 $280–420 万——挑房先看学校链和 $/sqft，别只看总价。</div>
 </div>
 </div>
+<div style="background:#0e1830;border:1px solid #2a4a7f;border-radius:10px;padding:14px 14px 10px;margin-bottom:12px">
+<div style="color:#ffd93d;font-weight:700;margin-bottom:8px">📊 市场与趋势 · 近一年成交回溯（2025-10 → 2026-10）</div>
+<div style="background:#132c1e;border:1px solid #2f6e46;border-radius:8px;padding:9px 12px;font-size:.9em;line-height:1.7;color:#dff5e3;margin-bottom:12px">一句话：<b>你要的那种房（第一梯队学校链）转手快约 2.5 倍、单价贵约 18%，但不用加价</b>——近一年成交/挂牌比两组同在 0.96–0.97，出价锚就是挂牌价的 96–97%；买方最划算的季度是 <b>Q2</b>（卖家平均让价 4%），Q1 卖家最硬、几乎不让价。</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px">
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">98 套</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">近一年成交样本<br>口径：Tier A 精确 82 套 + Tier B 县记录 16 套</div></div>
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">0.975</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">中位成交 / 挂牌比<br>口径：有挂牌价的 50 套；卖家平均让价约 2.5%</div></div>
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">9 天</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">中位挂牌天数（DOM）<br>口径：有 DOM 的 61 套 Tier A；页面天数，或被重挂洗低</div></div>
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">$739<span style="font-size:.55em;color:#9fb6d8">/sqft</span></div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">中位成交单价<br>口径：Tier A；中位成交价 $2,977,500</div></div>
+</div>
+<div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 4px">📅 按季度：成交量 vs 成交/挂牌比</div>
+<div id="bh-qchart"></div>
+<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin:2px 0 12px">柱 = Tier A 成交量（括号内为含 Tier B 的总成交量）；线 = 中位成交/挂牌比（越低卖家让价越多）。Q3 仅 7 套 Tier A，读数仅供参考；Q4 尚无 Tier A 数据（仅 Tier B 6 套月度记录），不画柱、比值断线，标注「数据积累中」。</div>
+<div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 6px">⚡ 卖得快 vs 卖得慢（有 DOM 的 Tier A 61 套）</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:6px">
+<div style="background:#12260f;border:1px solid #2f6e46;border-radius:8px;padding:10px 12px;font-size:.85em;line-height:1.75;color:#dff5e3"><b>🚀 快销 · DOM ≤14 天（39 套，64%）</b><br>中位 DOM <b>4 天</b>；成交/挂牌比 <b>1.000</b>（n=15，原价成交、不靠降价）；单价为自身价格档中位的 <b>100.9%</b>——不是定价低才快，是定价贴市场就立刻被接走；有降价记录可查的 <b>0 套</b>。</div>
+<div style="background:#2a1215;border:1px solid #6e2f3a;border-radius:8px;padding:10px 12px;font-size:.85em;line-height:1.75;color:#f5dfe1"><b>🐌 滞销 · DOM ≥60 天（仅 4 套，7%）</b><br>中位 DOM <b>约 124 天</b>；成交/挂牌比 0.966（n=3）；单价降到自身档位中位的 95.8% 才成交；有降价记录的 3 套 <b>3/3 都降过价</b>（极端个案：挂 351 天、降 7 次共 −18.5%）；4 套中 3 套是 2020 年后新房——开价过高是这组的主线。</div>
+</div>
+<div style="font-size:.84em;color:#ffe9a8;line-height:1.7;margin-bottom:12px">分水岭是<b>开价是否贴市场</b>：贴档位中位 → 一周内原价走；开价过高 → 降价马拉松，最终成交价还要再低约 4%。滞销组样本极小（n=4），以上是个案共性、不是统计定律。</div>
+<div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 4px">🎯 「你要的那种」：第一梯队学校链 vs 其他 BSD 已核实</div>
+<div id="bh-t1bars"></div>
+<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin:2px 0 12px">第一梯队链 = Medina/Clyde Hill→Bellevue HS、Somerset/Newport Heights/Spiritridge→Newport HS、Bennett→Interlake HS（n=9）；对照组为学校已核实的其他 BSD 成交（n=18）。结论：抢手体现在<b>周转快</b>、不是加价——看中要快下手，但出价不必超过挂牌价。</div>
+<div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 6px">🔴 实时追踪 · 本站在售 23 套</div>
+<div id="bh-track"></div>
+<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin-top:10px">数据说明：① 本回溯共 98 套，未达 150 套目标，如实标注；Tier B（16 套）为县记录约数、无 DOM 与比值，只计成交量。② <b>DOM 口径局限</b>：页面 DOM 是当前一轮挂牌的天数；在售审计发现「撤牌重挂洗天数」普遍存在，成交样本同样可能被洗——慢销的真实占比与天数被系统性低估，DOM≥60 的 n=4 应理解为下限。③ Q3 样本薄（Tier A 7 套）、Q4 无 Tier A，两季读数仅供参考；2025Q4 样本偏密（数据源快照偏向 2025 年末），跨季比较已打折。④ 学校链结论只基于 27 套已核实 Tier A，另约 70 套学校未核实（估计约 5% 可能不在 BSD 内）。⑤ 在售台账 23 套的中位挂牌单价约 $805/sqft，比已成交中位 $739 高约 9%——在售的是「还没卖掉的」，别拿挂牌价当市场价。⑥ 降价史字段仅 7/98 有据，相关结论只作旁证。完整口径见回溯分析报告（2026-10-25）。</div>
+</div>
+<script>
+var BH_MARKET={quarters:[
+{q:"2025 Q4",volA:28,volT:28,ratio:0.970,dom:"10.5",tag:""},
+{q:"2026 Q1",volA:23,volT:28,ratio:0.989,dom:"6.5",tag:"卖方最硬"},
+{q:"2026 Q2",volA:24,volT:26,ratio:0.960,dom:"9",tag:"买方季"},
+{q:"2026 Q3",volA:7,volT:10,ratio:0.960,dom:"9",tag:"样本薄"},
+{q:"2026 Q4",volA:0,volT:6,ratio:null,dom:null,tag:"数据积累中"}],
+t1:{label:"第一梯队链（n=9）",dom:11.5,domN:8,pps:872,ratio:0.962,ratioN:4},
+oth:{label:"其他 BSD 已核实（n=18）",dom:29,domN:9,pps:738,ratio:0.971,ratioN:16}};
+var BH_TRACK={asOf:"2026-10-25",active:23,bands:[["$180–250 万",4],["$250–350 万",7],["$350–500 万",12]],drops:[],domTop:[{n:22,addr:"2009 102nd Pl SE",days:60},{n:20,addr:"10314 SE 25th St",days:43},{n:6,addr:"3240 112th Ave SE",days:41}]};
+var BH_PH={1:[["2026-10-25", 1800000]],2:[["2026-10-25", 1850000]],3:[["2026-10-25", 1998000]],4:[["2026-10-25", 2188000]],5:[["2026-10-25", 2750000]],6:[["2026-10-25", 2950000]],7:[["2026-10-25", 2950000]],8:[["2026-10-25", 2999000]],9:[["2026-10-25", 3250000]],10:[["2026-10-25", 3388000]],11:[["2026-10-25", 3495000]],12:[["2026-10-25", 3695000]],13:[["2026-10-25", 3698000]],14:[["2026-10-25", 3799950]],15:[["2026-10-25", 3998000]],16:[["2026-10-25", 3999000]],17:[["2026-10-25", 4125000]],18:[["2026-10-25", 4298000]],19:[["2026-10-25", 4495000]],20:[["2026-10-25", 4498000]],21:[["2026-10-25", 4700000]],22:[["2026-10-25", 4998000]],23:[["2026-10-25", 4999950]]};
+function bhSpark(h){
+ var ph=(typeof BH_PH!=="undefined")?BH_PH[h.n]:null;
+ if(!ph||ph.length<2)return "";
+ var W=300,H=52,pad=8,ps=ph.map(function(p){return p[1]});
+ var mn=Math.min.apply(null,ps),mx=Math.max.apply(null,ps);if(mx===mn){mx=mn+1}
+ var pts=ps.map(function(p,i){var x=pad+i*(W-2*pad)/(ps.length-1);var y=6+(mx-p)/(mx-mn)*(H-26);return x.toFixed(1)+","+y.toFixed(1)}).join(" ");
+ function fmt(v){return "$"+(v/10000).toFixed(v%10000===0?0:1)+" 万"}
+ return '<div style="margin:10px 0 2px"><span class="bh-kv">价格走势</span> <span style="font-size:.78em;color:#8fa3c8">首挂 '+fmt(ps[0])+" · 现价 "+fmt(ps[ps.length-1])+" · "+ph[0][0]+" 起追踪</span><br>"
+ +'<svg viewBox="0 0 '+W+" "+H+'" style="width:100%;height:52px;display:block" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="#7cc4ff" stroke-width="2" vector-effect="non-scaling-stroke"/></svg></div>';
+}
+(function(){
+ function esc(s){return s}
+ var qc=document.getElementById("bh-qchart");
+ if(qc){
+  var W=660,H=318,base=246,slotW=124,x0=64,maxV=30,top=54;
+  function ry(r){return 60+(1.00-r)/0.06*(base-60)}
+  var s='<svg viewBox="0 0 '+W+" "+H+'" style="width:100%;height:auto;display:block" role="img" aria-label="季度成交量与成交挂牌比图">';
+  s+='<line x1="'+x0+'" y1="'+base+'" x2="'+(x0+slotW*5)+'" y2="'+base+'" stroke="#35507e" stroke-width="1"/>';
+  s+='<text x="'+(x0-8)+'" y="'+(base+4)+'" fill="#8fa3c8" font-size="11" text-anchor="end">0</text>';
+  s+='<text x="'+(x0-8)+'" y="'+(top+4)+'" fill="#8fa3c8" font-size="11" text-anchor="end">30 套</text>';
+  s+='<text x="'+(x0+slotW*5+8)+'" y="'+(ry(1.00)+4)+'" fill="#ffd93d" font-size="11">1.00</text>';
+  s+='<text x="'+(x0+slotW*5+8)+'" y="'+(ry(0.96)+4)+'" fill="#ffd93d" font-size="11">0.96</text>';
+  var linePts=[];
+  BH_MARKET.quarters.forEach(function(d,i){
+   var cx=x0+slotW*i+slotW/2;
+   if(d.tag){var tw=d.tag.length*13+12;s+='<rect x="'+(cx-tw/2)+'" y="6" width="'+tw+'" height="20" rx="10" fill="'+(d.tag==="买方季"?"#2f6e46":d.tag==="卖方最硬"?"#6e2f3a":"#2a2f3a")+'"/><text x="'+cx+'" y="20" fill="#fff" font-size="12" text-anchor="middle">'+d.tag+"</text>"}
+   if(d.volA>0){
+    var bh=(d.volA/maxV)*(base-top);
+    s+='<rect x="'+(cx-30)+'" y="'+(base-bh)+'" width="60" height="'+bh+'" rx="4" fill="#2b6cb0"/>';
+    s+='<text x="'+cx+'" y="'+(base-bh-8)+'" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">'+d.volA+(d.volT!==d.volA?"（共"+d.volT+"）":"")+" 套</text>";
+   }else{
+    s+='<rect x="'+(cx-30)+'" y="'+(base-3)+'" width="60" height="3" fill="#35507e"/>';
+    s+='<text x="'+cx+'" y="'+(base-12)+'" fill="#8fa3c8" font-size="12" text-anchor="middle">积累中</text>';
+   }
+   if(d.ratio!==null){linePts.push([cx,ry(d.ratio),d.ratio])}
+   s+='<text x="'+cx+'" y="'+(base+22)+'" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">'+d.q+"</text>";
+   s+='<text x="'+cx+'" y="'+(base+42)+'" fill="#9fb6d8" font-size="12" text-anchor="middle">'+(d.dom!==null?"DOM "+d.dom+" 天":"DOM —")+"</text>";
+  });
+  if(linePts.length>1){s+='<polyline points="'+linePts.map(function(p){return p[0]+","+p[1].toFixed(1)}).join(" ")+'" fill="none" stroke="#ffd93d" stroke-width="2.5"/>'}
+  linePts.forEach(function(p){s+='<circle cx="'+p[0]+'" cy="'+p[1].toFixed(1)+'" r="4.5" fill="#ffd93d" stroke="#0e1830" stroke-width="1.5"/><text x="'+p[0]+'" y="'+(p[1]-12).toFixed(1)+'" fill="#ffd93d" font-size="13" font-weight="700" text-anchor="middle">'+p[2].toFixed(3)+"</text>"});
+  s+="</svg>";
+  qc.innerHTML=s;
+ }
+ var tb=document.getElementById("bh-t1bars");
+ if(tb){
+  var T=BH_MARKET.t1,O=BH_MARKET.oth;
+  function row(label,v1,v2,fmt,note){
+   var mx=Math.max(v1,v2);
+   function bar(v,c){return '<div style="background:#1d2c4d;border-radius:5px;height:16px;position:relative;min-width:120px"><div style="background:'+c+';height:16px;border-radius:5px;width:'+Math.max(6,v/mx*100)+'%"></div></div>'}
+   return '<div style="margin-bottom:9px"><div style="font-size:.84em;color:#fff;margin-bottom:3px">'+label+' <span style="color:#8fa3c8;font-size:.86em">'+note+"</span></div>"
+   +'<div style="display:grid;grid-template-columns:118px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#ffb35c"><span>第一梯队 n=9</span>'+bar(v1,"#d97706")+"<b>"+fmt(v1)+"</b></div>"
+   +'<div style="display:grid;grid-template-columns:118px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#9fb6d8;margin-top:3px"><span>其他已核实 n=18</span>'+bar(v2,"#2b6cb0")+"<b>"+fmt(v2)+"</b></div></div>";
+  }
+  tb.innerHTML=
+   row("中位挂牌天数 DOM（越短越抢手）",T.dom,O.dom,function(v){return v+" 天"},"（DOM 样本 n=8 / n=9）")
+  +row("中位成交单价 $/sqft",T.pps,O.pps,function(v){return "$"+v},"")
+  +row("中位成交/挂牌比（两组同档）",T.ratio,O.ratio,function(v){return v.toFixed(3)},"（样本 n=4 / n=16，第一梯队读数薄）");
+ }
+ var tr=document.getElementById("bh-track");
+ if(tr){
+  var h='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">';
+  h+='<span class="bh-tag" style="background:#1d2c4d;color:#9fd8ff;border-radius:20px;padding:2px 10px;font-size:.8em">在售 '+BH_TRACK.active+" 套</span>";
+  BH_TRACK.bands.forEach(function(b){h+='<span class="bh-tag" style="background:#1d2c4d;color:#9fd8ff;border-radius:20px;padding:2px 10px;font-size:.8em">'+b[0]+"："+b[1]+" 套</span>"});
+  h+="</div>";
+  h+='<div style="font-size:.86em;line-height:1.8;color:#ddd"><b>最近降价事件：</b>';
+  if(BH_TRACK.drops&&BH_TRACK.drops.length){
+   h+=BH_TRACK.drops.map(function(d){return '<div>• '+d.addr+"：$"+d.from.toLocaleString("en-US")+" → $"+d.to.toLocaleString("en-US")+' <span style="color:#8fa3c8">（'+d.date+"）</span></div>"}).join("");
+  }else{
+   h+='<span style="color:#9fb6d8">台账 2026-10-25 刚建账，每套目前只有建账价一个记录点，暂无降价事件；每日追踪跑起来后，新降价会自动列在这里。</span>';
+  }
+  h+='</div><div style="font-size:.86em;line-height:1.8;color:#ddd;margin-top:6px"><b>累计挂牌最久 Top 3</b> <span style="color:#8fa3c8">（台账挂牌天数口径，点击看详情）</span>';
+  BH_TRACK.domTop.forEach(function(d){h+='<div>• <a href="javascript:void(0)" onclick="bhDetail('+d.n+')" style="color:#7cc4ff">No.'+d.n+" · "+d.addr+"</a> — "+d.days+" 天</div>"});
+  h+='</div><div style="font-size:.76em;color:#8fa3c8;margin-top:6px">数据截至 '+BH_TRACK.asOf+"，每日更新。</div>";
+  tr.innerHTML=h;
+ }
+})();
+</script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <div id="bh-map" style="height:480px;border-radius:10px;overflow:hidden;background:#0d1526;border:1px solid #2a3a5f"></div>
 <div id="bh-map-fallback" style="display:none;color:#f0b35e;font-size:.82em;margin-top:6px">⚠ 地图组件未加载（网络原因），下方列表照常可用。</div>
@@ -1165,6 +1279,7 @@ function bhDetail(n){
  +(h.renov?'<span class="bh-kv">翻新</span> '+h.renov+"<br>":"")
  +(h.open_house?'<span class="bh-kv">Open House</span> '+h.open_house+"<br>":"")
  +'<span class="bh-kv">挂牌</span> '+h.days+(h.cum_dom?"<br><span class='bh-kv'>累计挂牌</span> "+h.cum_dom+" 天"+(h.dom_note?"（"+h.dom_note+"）":""):"")+(h.mls?"<br><span class='bh-kv'>MLS#</span> "+h.mls:"")+"<br>"
+ +(typeof bhSpark==="function"?bhSpark(h):"")
  +'<span class="bh-kv">学校链</span> <span style="color:#9fd8ff">'+h.chain+"</span></div>"
  +(h.note?'<div style="font-size:.86em;color:#bbb;line-height:1.7;margin-top:8px"><span class="bh-kv">备注</span> '+h.note+"</div>":"")
  +'<div style="background:#132038;border:1px solid #2a4a7f;border-radius:10px;padding:11px 13px;margin-top:12px"><div style="color:#ffd93d;font-weight:700;margin-bottom:4px">🧭 小美点评</div><div style="font-size:.9em;line-height:1.8">'+h.take+"</div></div>"
