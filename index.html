@@ -109,6 +109,11 @@
 .tab-btn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff6b6b;margin-left:5px;vertical-align:middle;animation:chblink 1.6s infinite}
 .tab-page{display:none}
 .tab-page.active{display:block;animation:fadein .18s ease}
+.subbar{position:sticky;top:57px;z-index:40;background:rgba(15,15,35,.96);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;padding:8px 2px;margin-bottom:12px;border-bottom:1px solid #2a2a4a;scrollbar-width:none}
+.subbar::-webkit-scrollbar{display:none}
+.sub-btn{flex:1;min-width:96px;white-space:nowrap;background:#16213e;border:1px solid #2a3a5f;color:#9fb6d8;border-radius:20px;padding:7px 10px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
+.sub-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:#667eea;font-weight:bold}
+#tp-house[data-sub="view"] [data-subpage]:not([data-subpage="view"]),#tp-house[data-sub="market"] [data-subpage]:not([data-subpage="market"]),#tp-house[data-sub="school"] [data-subpage]:not([data-subpage="school"]),#tp-fire[data-sub="home"] [data-subpage]:not([data-subpage="home"]),#tp-fire[data-sub="balance"] [data-subpage]:not([data-subpage="balance"]),#tp-fire[data-sub="plan"] [data-subpage]:not([data-subpage="plan"]){display:none!important}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .cc-cardline{background:#2a2410;border:1px solid #ffd93d;color:#ffe9a8;border-radius:7px;padding:7px 9px;font-size:.92em;line-height:1.55;margin-bottom:8px}
@@ -535,9 +540,7 @@ renderRecs();
 <div id="myAccounts" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💳 我的账户</h3><div id="acctSummary"></div><div id="acctCover"></div><div class="acct-toggle" id="acctToggle" style="display:none">展开每张卡明细 ▾</div><div class="acct-grid" id="acctGrid" style="display:none"></div><p id="acctMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="mySubs" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📺 我的订阅（流水实测）</h3><div id="subSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="subList"></div><div id="subCand"></div><details id="subMore" style="margin-top:6px"><summary style="cursor:pointer;color:#8a8f98;font-size:0.85em">已停扣 / 待留意</summary><div id="subMoreList" style="margin-top:6px"></div></details><p id="subMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="myFees" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">💸 年费回本账（登录实测）</h3><div id="feeSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="feeList"></div><p id="feeMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
-<div id="myHoldings" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📊 持仓集中度（登录实测）</h3><div id="holdSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="holdList"></div><div id="holdAgg"></div><p id="holdMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 <div id="myRotation" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">🎯 季度 5% 额度用量（登录实测）</h3><div id="rotSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="rotList"></div><p id="rotMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
-<div id="myNetWorth" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">🏠 净资产构成（登录实测）</h3><div id="nwSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="nwAssets"></div><div id="nwLiabs"></div><p id="nwMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 </div>
 
 <!-- Perks & Status Map -->
@@ -830,6 +833,7 @@ renderRecs();
 
 <div class="tab-page" id="tp-fire">
 <div class="section">
+<div data-subpage="home">
 <h2>🔥 FIRE 财务自由计算器</h2>
 <div class="fire-demo">演示版 · 演示数据：本页只用虚构 persona 数字在你的浏览器本地计算，不保存、不上传任何数据。公式公开、全程按今天美元（实际购买力）计。</div>
 <p style="color:#aaa;font-size:.85em;line-height:1.6;margin-bottom:12px">60 秒快速模式：填下面几个数，立刻看到 Full FI 目标区间（公式法三档 SWR + 逐年取款模拟求解）、Coast 门槛、Barista 缺口、预计达标年份和逐年现金流表。演示 persona：35 岁、计划 55 岁退休的双职工家庭。</p>
@@ -858,6 +862,8 @@ renderRecs();
 <div class="fire-range" id="f-range">—</div>
 <p id="f-mile" style="color:#cfe3ff;font-size:.82em;line-height:1.7;margin-top:10px"></p>
 <p id="f-assump" style="color:#888;font-size:.78em;line-height:1.6;margin-top:12px"></p>
+</div>
+<div data-subpage="plan">
 <div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
 <h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🏠 演示 persona 家庭结构（完整模型 · 均为虚构数字）</h3>
 <p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0">双职工两位成人可各自设退休年龄（如 55 / 57 岁）、各自收入与 401(k) 供款+雇主 match；账户分 Taxable / Traditional / Roth / HSA / 529 五类；两套房两笔贷款（自住房 + 出租房，出租净现金流 = 租金×(1−空置) − 运营成本 − 贷款月供，可设卖出年份）；一个孩子 + 可开关的二孩情景；年支出拆 Must（必要）/ Like（享受）两层，如演示年支出 $60,000 = Must $42,000 + Like $18,000，大额支出（换车、父母支持、旅行）单列。上面的快速计算器是这套完整模型的简化版；私人版才保存真实数字，本页不保存任何输入。</p>
@@ -963,10 +969,18 @@ renderRecs();
 <p style="color:#666;font-size:.72em;margin-top:10px;line-height:1.6">口径：实际回报 = (1+名义回报) ÷ (1+通胀) − 1（Fisher 精确式，不用减法近似）；Coast = FI 目标 ÷ (1+实际回报)^(退休年龄−当前年龄)；模拟求解 FI = 逐年取款模拟二分/年金等价求解：退休时资产按实际回报增长、每年末取走年支出，恰好撑到预期寿命不耗尽。图中三条资产线是情景带（保守=名义回报−1.5pp 且通胀+0.5pp / 基准 / 乐观=名义回报+1pp），不是 Monte Carlo 百分位带。本工具为教育演示，估算非报税级，不是税务或投资建议。</p>
 </div>
 </div>
+<div data-subpage="balance" class="subbx" style="background:#1a1a2e;border-radius:14px;padding:18px;margin-bottom:16px;border:1px solid #333">
+<h2 style="margin-bottom:12px;font-size:1.15em">📋 我的资产负债表（登录实测）</h2>
+<p id="fire-balance-lock" style="color:#aaa;font-size:.85em;line-height:1.6">🔒 登录后查看你的净资产构成完整报表与持仓集中度（数据存 Supabase 白名单，仅白名单邮箱可见）。未登录时本页不显示任何个人数字。</p>
+<div id="myHoldings" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">📊 持仓集中度（登录实测）</h3><div id="holdSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="holdList"></div><div id="holdAgg"></div><p id="holdMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
+<div id="myNetWorth" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">🏠 净资产构成（登录实测）</h3><div id="nwSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="nwAssets"></div><div id="nwLiabs"></div><p id="nwMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
+</div>
+</div>
 
 </div>
 <div class="tab-page" id="tp-house">
 <div class="section" id="bh-module">
+<div data-subpage="view">
 <h2>🗺️ 看房地图 · 本站跟踪的在售房源</h2>
 <div style="background:#132038;border:1px solid #2a4a7f;border-radius:10px;padding:12px 14px;margin-bottom:12px">
 <div style="color:#ffd93d;font-weight:700;margin-bottom:6px">🧭 小美导读：避雷重裁后，本批只剩 1 套 ⭐</div>
@@ -979,6 +993,8 @@ renderRecs();
 <div style="color:#9fb6d8;margin-top:6px">市场结构一句话：$180–250 万档货非常薄（只有 4 套），真正的竞争区在 $280–420 万——挑房先看学校链和 $/sqft，别只看总价。</div>
 </div>
 </div>
+</div>
+<div data-subpage="market">
 <div style="background:#0e1830;border:1px solid #2a4a7f;border-radius:10px;padding:14px 14px 10px;margin-bottom:12px">
 <div style="color:#ffd93d;font-weight:700;margin-bottom:8px">📊 市场与趋势 · 近一年成交回溯（2025-10 → 2026-10）</div>
 <div style="background:#132c1e;border:1px solid #2f6e46;border-radius:8px;padding:9px 12px;font-size:.9em;line-height:1.7;color:#dff5e3;margin-bottom:12px">一句话：<b>你要的那种房（第一梯队学校链）转手快约 2.5 倍、单价贵约 18%，但不用加价</b>——近一年成交/挂牌比两组同在 0.96–0.97，出价锚就是挂牌价的 96–97%；买方最划算的季度是 <b>Q2</b>（卖家平均让价 4%），Q1 卖家最硬、几乎不让价。</div>
@@ -1003,6 +1019,7 @@ renderRecs();
 <div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 6px">🔴 实时追踪 · 本站在售 23 套</div>
 <div id="bh-track"></div>
 <div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin-top:10px">数据说明：① 本回溯共 98 套，未达 150 套目标，如实标注；Tier B（16 套）为县记录约数、无 DOM 与比值，只计成交量。② <b>DOM 口径局限</b>：页面 DOM 是当前一轮挂牌的天数；在售审计发现「撤牌重挂洗天数」普遍存在，成交样本同样可能被洗——慢销的真实占比与天数被系统性低估，DOM≥60 的 n=4 应理解为下限。③ Q3 样本薄（Tier A 7 套）、Q4 无 Tier A，两季读数仅供参考；2025Q4 样本偏密（数据源快照偏向 2025 年末），跨季比较已打折。④ 学校链结论只基于 27 套已核实 Tier A，另约 70 套学校未核实（估计约 5% 可能不在 BSD 内）。⑤ 在售台账 23 套的中位挂牌单价约 $805/sqft，比已成交中位 $739 高约 9%——在售的是「还没卖掉的」，别拿挂牌价当市场价。⑥ 降价史字段仅 7/98 有据，相关结论只作旁证。完整口径见回溯分析报告（2026-10-25）。</div>
+</div>
 </div>
 <script>
 var BH_MARKET={quarters:[
@@ -1044,7 +1061,8 @@ function bhSpark(h){
    if(d.volA>0){
     var bh=(d.volA/maxV)*(base-top);
     s+='<rect x="'+(cx-30)+'" y="'+(base-bh)+'" width="60" height="'+bh+'" rx="4" fill="#2b6cb0"/>';
-    s+='<text x="'+cx+'" y="'+(base-bh-8)+'" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">'+d.volA+(d.volT!==d.volA?"（共"+d.volT+"）":"")+" 套</text>";
+    var ly=base-bh-8;if(d.ratio!==null){var lry=ry(d.ratio);if(lry>ly-13&&lry<ly+3)ly=base-12}
+    s+='<text x="'+cx+'" y="'+ly+'" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">'+d.volA+(d.volT!==d.volA?"（共"+d.volT+"）":"")+" 套</text>";
    }else{
     s+='<rect x="'+(cx-30)+'" y="'+(base-3)+'" width="60" height="3" fill="#35507e"/>';
     s+='<text x="'+cx+'" y="'+(base-12)+'" fill="#8fa3c8" font-size="12" text-anchor="middle">积累中</text>';
@@ -1065,13 +1083,13 @@ function bhSpark(h){
    var mx=Math.max(v1,v2);
    function bar(v,c){return '<div style="background:#1d2c4d;border-radius:5px;height:16px;position:relative;min-width:120px"><div style="background:'+c+';height:16px;border-radius:5px;width:'+Math.max(6,v/mx*100)+'%"></div></div>'}
    return '<div style="margin-bottom:9px"><div style="font-size:.84em;color:#fff;margin-bottom:3px">'+label+' <span style="color:#8fa3c8;font-size:.86em">'+note+"</span></div>"
-   +'<div style="display:grid;grid-template-columns:118px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#ffb35c"><span>第一梯队 n=9</span>'+bar(v1,"#d97706")+"<b>"+fmt(v1)+"</b></div>"
-   +'<div style="display:grid;grid-template-columns:118px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#9fb6d8;margin-top:3px"><span>其他已核实 n=18</span>'+bar(v2,"#2b6cb0")+"<b>"+fmt(v2)+"</b></div></div>";
+   +'<div style="display:grid;grid-template-columns:136px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#ffb35c"><span>'+T.label.replace("（n=","（组 n=")+'</span>'+bar(v1,"#d97706")+"<b>"+fmt(v1)+"</b></div>"
+   +'<div style="display:grid;grid-template-columns:136px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#9fb6d8;margin-top:3px"><span>'+O.label.replace("（n=","（组 n=")+'</span>'+bar(v2,"#2b6cb0")+"<b>"+fmt(v2)+"</b></div></div>";
   }
   tb.innerHTML=
-   row("中位挂牌天数 DOM（越短越抢手）",T.dom,O.dom,function(v){return v+" 天"},"（DOM 样本 n=8 / n=9）")
+   row("中位挂牌天数 DOM（越短越抢手）",T.dom,O.dom,function(v){return v+" 天"},"（该指标 n="+T.domN+" / n="+O.domN+")")
   +row("中位成交单价 $/sqft",T.pps,O.pps,function(v){return "$"+v},"")
-  +row("中位成交/挂牌比（两组同档）",T.ratio,O.ratio,function(v){return v.toFixed(3)},"（样本 n=4 / n=16，第一梯队读数薄）");
+  +row("中位成交/挂牌比（两组同档）",T.ratio,O.ratio,function(v){return v.toFixed(3)},"（该指标 n="+T.ratioN+" / n="+O.ratioN+"，第一梯队读数薄）");
  }
  var tr=document.getElementById("bh-track");
  if(tr){
@@ -1093,6 +1111,7 @@ function bhSpark(h){
 })();
 </script>
 
+<div data-subpage="view">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <div id="bh-map" style="height:480px;border-radius:10px;overflow:hidden;background:#0d1526;border:1px solid #2a3a5f"></div>
 <div id="bh-map-fallback" style="display:none;color:#f0b35e;font-size:.82em;margin-top:6px">⚠ 地图组件未加载（网络原因），下方列表照常可用。</div>
@@ -1141,6 +1160,17 @@ function bhSpark(h){
 @media (min-width:700px){.bh-modal-bg{align-items:center}}
 .bh-modal{background:#101c33;border:1px solid #35507e;border-radius:14px;max-width:640px;width:94%;max-height:88vh;overflow-y:auto;padding:18px 20px;color:#ddd}
 .bh-kv{color:#8fa3c8;font-size:.8em}
+.bh-tb{margin-top:8px;border-top:1px solid #26365a}
+.bh-tr{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #1d2c4d;font-size:.83em;line-height:1.55}
+.bh-tr:last-child{border-bottom:none}
+.bh-tl{flex:0 0 46px;color:#8fa3c8}
+.bh-tv{flex:1;color:#e6ecf5}
+.bh-badge{position:absolute;top:8px;left:8px;z-index:3;padding:3px 10px;border-radius:20px;font-size:.78em;font-weight:700;pointer-events:none}
+.bh-badge.b-top{background:rgba(146,86,8,.94);color:#ffe9a8}
+.bh-badge.b-neg{background:rgba(13,74,54,.94);color:#8ff0c8}
+.bh-badge.b-worth{background:rgba(23,64,110,.94);color:#9fd8ff}
+.bh-badge.b-watch{background:rgba(38,42,54,.94);color:#cfd8ea}
+.bh-badge.b-avoid{background:rgba(110,25,25,.95);color:#ffb3b3}
 </style>
 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 10px">
 <select id="bh-sort" onchange="bhRender()" style="background:#101c33;color:#eee;border:1px solid #35507e;border-radius:8px;padding:7px 10px;font-size:.85em">
@@ -1167,6 +1197,7 @@ function bhSpark(h){
 </div>
 <div id="bh-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
 <p style="color:#888;font-size:.78em;line-height:1.6;margin-top:10px">房源数据截至 2026-10-25，来自公开挂牌页（Redfin / Compass / RE/MAX / Homes.com 等）；编号与地图针一一对应。约看前请复核价格与在售状态。</p>
+</div>
 </div>
 <div class="bh-modal-bg" id="bh-modal-bg" onclick="if(event.target===this)bhClose()">
 <div class="bh-modal" id="bh-modal"></div>
@@ -1218,25 +1249,41 @@ function bhBdChip(h){
  }
  return '<span class="bh-tag bd-unk">🏗 建商未披露</span>';
 }
+var BH_BADGE={top:["⭐ 重点推荐","b-top"],worth_neg:["🎯 谈判目标","b-neg"],worth:["👍 值得约看","b-worth"],watch:["可关注","b-watch"],ok:["可关注","b-watch"],avoid:["⛔ 不推","b-avoid"]};
+var BH_CAUSE={1:"pricing",2:"unknown",3:"unknown",4:"unknown",5:"pricing",6:"unknown",8:"pricing",9:"unknown",10:"pricing",11:"defect",12:"pricing",13:"pricing",14:"unknown",15:"pricing",16:"unknown",17:"pricing",18:"pricing",19:"unknown",20:"pricing",21:"unknown",22:"unknown"};
+var BH_CPH={pricing:"定价问题",defect:"房屋硬伤",unknown:"原因待查"};
 function bhCard(h){
- var p=bhPpsf(h),tags="";
- var rfb=h.rf?'<span class="bh-tag '+(h.rf.lv==="实锤"?"warn":h.rf.lv==="传闻"?"rf-mid":"rf-ok")+'">⚠ 避雷·'+h.rf.lv+"</span>":"";
- h.tags.forEach(function(t){tags+='<span class="bh-tag'+(t.indexOf("⚠")===0?" warn":"")+'">'+t+"</span>"});
- if(h.tier==="top")tags='<span class="bh-tag hot">⭐ 重点推荐</span>'+tags;
- var ver=h.ver?'<span class="bh-ver">✔ 逐页核实</span>':'<span class="bh-ver w">⚠ 聚合页信息，约看前复核</span>';
- var cum=h.cum_dom?'<span class="bh-tag dom">🗓 累计挂牌 '+h.cum_dom+" 天</span>":"";
+ var p=bhPpsf(h),bd=BH_BADGE[h.tier];
+ var badge=bd?'<span class="bh-badge '+bd[1]+'">'+bd[0]+"</span>":"";
+ var spec=[h.beds+" 卧",h.baths+" 卫"];
+ if(h.sqft)spec.push(h.sqft.toLocaleString("en-US")+" sqft");
+ if(h.lot&&h.lot!=="未标注")spec.push("地块 "+h.lot);
+ if(p)spec.push("$"+p+"/sqft");
+ var rows="";
+ function row(l,v){if(v)rows+='<div class="bh-tr"><span class="bh-tl">'+l+'</span><span class="bh-tv">'+v+"</span></div>"}
+ row("结论",h.summary_line||"");
+ var rfv="";
+ if(h.rf){rfv=h.rf.lv;var cz=BH_CAUSE[h.n];if(cz&&BH_CPH[cz])rfv+=" · "+BH_CPH[cz]}
+ row("避雷",rfv);
+ row("学校",h.chain?'<span style="color:#9fd8ff">'+h.chain+"</span>":"");
+ var bdv="";
+ if(h.bd)bdv=h.bd.n?(h.bd.n.split("（")[0].split("(")[0].replace(/\s+$/,"")+" · "+h.bd.r):"未披露";
+ row("建商",bdv);
+ row("挂牌",h.cum_dom?("累计 "+h.cum_dom+" 天"):"");
+ var age=h.year?("建于 "+h.year+" 年"):"";
+ if(h.renov)age=(age?age+" · ":"")+h.renov;
+ row("房龄",age);
+ row("开放日",h.open_house||"");
  return '<div class="bh-card" id="bh-card-'+h.n+'" onclick="bhDetail('+h.n+')">'
  +(h.photos&&h.photos.length?'<div class="bh-phwrap"><img class="bh-photo" id="bh-ph-'+h.n+'" src="'+h.photos[0]+'" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'">'
+  +badge
   +(h.photos.length>1?'<button class="bh-nav prev" onclick="bhCardNav(event,'+h.n+',-1)" aria-label="上一张">‹</button><button class="bh-nav next" onclick="bhCardNav(event,'+h.n+',1)" aria-label="下一张">›</button><span class="bh-pg" id="bh-pg-'+h.n+'">1 / '+h.photos.length+"</span>":"")
-  +"</div>":"")
- +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+bhMoney(h.price)+'</span><span style="color:#8fa3c8;font-size:.78em">No.'+h.n+" · "+BH_TIER[h.tier].label+"</span></div>"
+  +"</div>":(bd?'<div style="margin:2px 0 6px"><span class="bh-badge '+bd[1]+'" style="position:static">'+bd[0]+"</span></div>":""))
+ +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+bhMoney(h.price)+'</span><span style="color:#8fa3c8;font-size:.78em">No.'+h.n+"</span></div>"
  +'<div style="color:#fff;font-weight:600;margin:2px 0">📍 '+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+h.city+"</div>"
- +(h.summary_line?'<div style="font-size:.86em;color:#ffe9a8;line-height:1.65;margin-top:6px">💬 '+h.summary_line+"</div>":"")
- +'<div style="font-size:.84em;color:#ccc;margin:6px 0">'+h.beds+" 卧 / "+h.baths+" 卫 ｜ "+(h.sqft?h.sqft.toLocaleString("en-US")+" sqft":"面积未标注")+(p?" ｜ $"+p+"/sqft":"")+"<br>地块 "+h.lot+" ｜ 挂牌 "+h.days+"</div>"
- +'<div style="font-size:.8em;color:#9fd8ff">🎓 '+h.chain+"</div>"
- +(h.year?'<div style="font-size:.82em;color:#ccc;margin-top:5px">🏠 建于 '+h.year+" 年"+(h.renov?" ｜ 🔨 翻新："+h.renov:"")+"</div>":(h.renov?'<div style="font-size:.82em;color:#ccc;margin-top:5px">🔨 翻新：'+h.renov+"</div>":""))
- +(h.open_house?'<div style="font-size:.82em;color:#a8e6a1;margin-top:4px">🏠 Open House：'+h.open_house+"</div>":"")
- +'<div style="margin-top:6px">'+tags+ver+rfb+cum+bhBdChip(h)+"</div></div>";
+ +'<div style="font-size:.84em;color:#ccc;margin:6px 0">'+spec.join(" · ")+"</div>"
+ +(rows?'<div class="bh-tb">'+rows+"</div>":"")
+ +"</div>";
 }
 function bhFiltered(){
  var s=document.getElementById("bh-sort").value,fp=document.getElementById("bh-fprice").value,fc=document.getElementById("bh-fchain").value,fs=document.getElementById("bh-fstar").checked;
@@ -1275,12 +1322,12 @@ function bhDetail(n){
  +'<span class="bh-kv">户型</span> '+h.beds+" 卧 / "+h.baths+" 卫<br>"
  +'<span class="bh-kv">面积</span> '+(h.sqft?h.sqft.toLocaleString("en-US")+" sqft":"未标注")+(p?"（$"+p+"/sqft，本批中位 $805）":"")+"<br>"
  +'<span class="bh-kv">地块</span> '+h.lot+"<br>"
- +'<span class="bh-kv">建造</span> '+h.year+"<br>"
+ +'<span class="bh-kv">房龄</span> '+h.year+"<br>"
  +(h.renov?'<span class="bh-kv">翻新</span> '+h.renov+"<br>":"")
- +(h.open_house?'<span class="bh-kv">Open House</span> '+h.open_house+"<br>":"")
+ +(h.open_house?'<span class="bh-kv">开放日</span> '+h.open_house+"<br>":"")
  +'<span class="bh-kv">挂牌</span> '+h.days+(h.cum_dom?"<br><span class='bh-kv'>累计挂牌</span> "+h.cum_dom+" 天"+(h.dom_note?"（"+h.dom_note+"）":""):"")+(h.mls?"<br><span class='bh-kv'>MLS#</span> "+h.mls:"")+"<br>"
  +(typeof bhSpark==="function"?bhSpark(h):"")
- +'<span class="bh-kv">学校链</span> <span style="color:#9fd8ff">'+h.chain+"</span></div>"
+ +'<span class="bh-kv">学校</span> <span style="color:#9fd8ff">'+h.chain+"</span></div>"
  +(h.note?'<div style="font-size:.86em;color:#bbb;line-height:1.7;margin-top:8px"><span class="bh-kv">备注</span> '+h.note+"</div>":"")
  +'<div style="background:#132038;border:1px solid #2a4a7f;border-radius:10px;padding:11px 13px;margin-top:12px"><div style="color:#ffd93d;font-weight:700;margin-bottom:4px">🧭 小美点评</div><div style="font-size:.9em;line-height:1.8">'+h.take+"</div></div>"
  +(h.rf?'<div style="background:#241418;border:1px solid #6e2f3a;border-radius:10px;padding:11px 13px;margin-top:12px"><div style="color:#ff9d9d;font-weight:700;margin-bottom:4px">⚠ 避雷尽调 · '+h.rf.lv+'（2026-10-25 查核）</div>'+(h.rf.vd?'<div style="font-size:.88em;line-height:1.7;margin-bottom:6px"><b>裁决：</b>'+h.rf.vd+"</div>":"")+(h.rf.items.length?h.rf.items.map(function(it){return '<div style="font-size:.85em;line-height:1.7;margin-top:7px">• <b>'+it.f+'</b><br><span style="color:#bbb">'+it.e+"</span>"+(it.u?' <a href="'+it.u+'" target="_blank" rel="noopener" style="color:#7cc4ff">来源 ↗</a>':"")+"</div>"}).join(""):'<div style="font-size:.85em;color:#bbb">本轮未发现红旗条目。</div>')+"</div>":"")
@@ -1350,7 +1397,7 @@ bhRender();
  if(mo&&window.MutationObserver){new MutationObserver(function(){if(mo.classList.contains("active"))init()}).observe(mo,{attributes:true,attributeFilter:["class"]})}
 })();
 </script>
-<div class="section">
+<div class="section" data-subpage="school">
 <h2>🏡 Bellevue 学区换房 · 市场总览</h2>
 <p style="color:#aaa;font-size:.85em;line-height:1.6;margin-bottom:12px">公开市场研究 · 首轮扫描 2026-10-25（数据源：Redfin / Compass / RE/MAX 等公开挂牌页）。筛选口径：Bellevue School District 辖区独栋、在售、挂牌价 ≥ $180 万、≥4 卧 ≥3 卫。本轮为抽样扫描（收录 29 套，非全量），约看前需逐套复核。</p>
 <div class="fire-stats">
@@ -1366,7 +1413,7 @@ bhRender();
 </table></div>
 <p style="color:#888;font-size:.78em;line-height:1.6;margin-top:8px">每周持续监控中：只报新上房源与已见房源降价 ≥5% 的变动。</p>
 </div>
-<div class="section">
+<div class="section" data-subpage="school">
 <h2>⭐ 重点房源（公开挂牌信息）</h2>
 <div class="acct-grid">
 <div class="acct-box"><span class="an">11030 SE 60th Ln, Bellevue</span> <b>$1,850,000</b><br>4 卧 / 3.5 卫 ｜ 3,400 sqft（另 900 sqft 已装修地下层）｜ 地块 7,679 sqft ｜ 2022 年建<br>对口链：Newport Heights Elementary（9/10）→ Tyee（10/10）→ Newport High（10/10）——双 10 分链，本档最新房龄<br><a href="https://www.compass.com/homedetails/11030-SE-60th-Ln-Bellevue-WA-98006/1RU5UX_pid/" target="_blank" rel="noopener">Compass 挂牌页 ↗</a></div>
@@ -1376,7 +1423,7 @@ bhRender();
 </div>
 <p style="color:#888;font-size:.78em;line-height:1.6;margin-top:8px">另有 1106 167th Ave SE（$2,100,000，4 卧 / 3 卫）标「Coming Soon」尚未正式在售，持续留意转 Active。</p>
 </div>
-<div class="section">
+<div class="section" data-subpage="school">
 <h2>🎓 学区要点（公开政策）</h2>
 <div style="font-size:.85em;line-height:1.8;color:#ccc">
 <p><b style="color:#fff">先看 feeder 链，再看单校排名。</b>三条 K–12 全程第一梯队的对口链：</p>
@@ -1391,7 +1438,7 @@ bhRender();
 <p>🗺️ <b style="color:#fff">邮编 ≠ 学区</b>：Bellevue 市南部 Lakemont / Cougar Mountain 一带（邮编 98006）实属 Issaquah 学区，下单前必须按地址在学区官网查对口。</p>
 </div>
 </div>
-<div class="section" id="house-private">
+<div class="section" id="house-private" data-subpage="school">
 <h2>🔒 我的换房测算（私人）</h2>
 <p id="house-lock" style="color:#aaa;font-size:.85em;line-height:1.6">登录后查看你的换房测算：预算口径、卖房/转租两条路径的 FIRE 影响对比与假设清单。本区数据存 Supabase（白名单 RLS），未登录不显示任何个人数字。</p>
 <div id="house-body" style="display:none"></div>
@@ -1399,13 +1446,76 @@ bhRender();
 </div>
 
 <script>
-function setTab(t,scroll){document.querySelectorAll('.tab-page').forEach(function(p){p.classList.toggle('active',p.id==='tp-'+t)});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});try{localStorage.setItem('co_tab',t)}catch(e){}if(history.replaceState)history.replaceState(null,'','#'+t);var ab=document.querySelector('.tab-btn.active'),bar=document.querySelector('.tabbar');if(ab&&bar){bar.scrollLeft=ab.offsetLeft-bar.clientWidth/2+ab.clientWidth/2}if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
+function setTab(t,scroll){document.querySelectorAll('.tab-page').forEach(function(p){p.classList.toggle('active',p.id==='tp-'+t)});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});try{localStorage.setItem('co_tab',t)}catch(e){}if(history.replaceState)history.replaceState(null,'',window.__subHash?window.__subHash(t):'#'+t);var ab=document.querySelector('.tab-btn.active'),bar=document.querySelector('.tabbar');if(ab&&bar){bar.scrollLeft=ab.offsetLeft-bar.clientWidth/2+ab.clientWidth/2}if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
 function goTab(t){setTab(t,true)}
 document.addEventListener('DOMContentLoaded',function(){var t=(location.hash||'').slice(1);if(!document.getElementById('tp-'+t)){try{t=localStorage.getItem('co_tab')||'spend'}catch(e){t='spend'}}if(!document.getElementById('tp-'+t))t='spend';setTab(t,false);if(document.querySelector('#tp-updates .ch-tag.new')){var b=document.querySelector('[data-tab="updates"]');if(b&&!b.querySelector('.dot')){var d=document.createElement('span');d.className='dot';b.appendChild(d)}}
 var chu=document.getElementById('ch-updated'),sl=document.getElementById('st-last');if(chu&&sl)sl.textContent=chu.textContent;
 var scc=document.getElementById('st-count');if(scc)scc.textContent=document.querySelectorAll('#tp-updates .change-item').length;
 var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.getDay())%7;if(df===0&&nwd.getHours()>=10)df=7;var dd=new Date(nwd);dd.setDate(nwd.getDate()+df);var wkn=['周日','周一','周二','周三','周四','周五','周六'];snx.textContent=(df===0?'今天 ':((dd.getMonth()+1)+'月'+dd.getDate()+'日 '))+wkn[dd.getDay()]+' ~09:13';}
 });
+</script>
+<script>
+/* ===== 二级菜单（换房 house / FIRE fire）===== */
+(function(){
+ var INIT_HASH=location.hash||"";
+ var SUBS={house:{def:"view",list:["view","market","school"]},fire:{def:"home",list:["home","balance","plan"]}};
+ var LABELS={house:{view:"🗺️ 看房",market:"📊 市场趋势",school:"🎓 学区与测算"},fire:{home:"🏠 总览",balance:"📋 资产负债表",plan:"🧮 退休测算"}};
+ var firstRoute=true;
+ function stored(tab){try{return localStorage.getItem("co_sub_"+tab)}catch(e){return null}}
+ function cur(tab){var tp=document.getElementById("tp-"+tab);return tp?tp.getAttribute("data-sub"):null}
+ window.__subHash=function(t){var c=SUBS[t];if(!c)return "#"+t;var s=cur(t)||stored(t)||c.def;return s===c.def?"#"+t:"#"+t+"/"+s};
+ window.goSub=function(tab,sub,opts){
+  var c=SUBS[tab];if(!c)return;if(c.list.indexOf(sub)<0)sub=c.def;
+  var tp=document.getElementById("tp-"+tab);if(!tp)return;
+  tp.setAttribute("data-sub",sub);
+  tp.querySelectorAll(".sub-btn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-sub")===sub)});
+  try{localStorage.setItem("co_sub_"+tab,sub)}catch(e){}
+  if(!(opts&&opts.noHash)&&history.replaceState)history.replaceState(null,"",window.__subHash(tab));
+  if(tab==="house"&&sub==="view"){var kick=function(){try{window.dispatchEvent(new Event("resize"))}catch(e){}};setTimeout(kick,80);setTimeout(kick,450)}
+ };
+ function tagFireRoot(){
+  var root=document.getElementById("myfire-root");if(!root)return;
+  var sec=root.querySelector(".section")||root.firstElementChild;if(!sec)return;
+  Array.prototype.forEach.call(sec.children,function(ch){
+   if(!ch.getAttribute||ch.getAttribute("data-subpage"))return;
+   var sub="home";
+   if(ch.tagName==="DETAILS"){
+    if(ch.querySelector("#mf-mc-out,#mf-stress-out,#mf-alloc,#mf-paths-out,#mf-scenarios,#mf-forms"))sub="plan";
+    else if((ch.textContent||"").indexOf("口径与免责")>=0)sub="plan";
+   }
+   ch.setAttribute("data-subpage",sub);
+  });
+ }
+ function buildBar(tab){
+  var tp=document.getElementById("tp-"+tab);if(!tp||tp.querySelector(".subbar"))return;
+  var bar=document.createElement("div");bar.className="subbar";
+  SUBS[tab].list.forEach(function(s){var b=document.createElement("button");b.className="sub-btn";b.setAttribute("data-sub",s);b.textContent=LABELS[tab][s];b.onclick=function(){window.goSub(tab,s)};bar.appendChild(b)});
+  if(tab==="fire"){var r=document.getElementById("myfire-root");if(r&&r.parentNode===tp){tp.insertBefore(bar,r);return}}
+  tp.insertBefore(bar,tp.firstChild);
+ }
+ function route(){
+  var h=((firstRoute?INIT_HASH:(location.hash||""))).replace(/^#/,"");firstRoute=false;
+  var parts=h.split("/"),tab=parts[0];
+  if(!tab||!document.getElementById("tp-"+tab))return;
+  var active=document.querySelector(".tab-page.active");
+  if((!active||active.id!=="tp-"+tab)&&window.setTab)setTab(tab,false);
+  var c=SUBS[tab];if(!c)return;
+  var sub=(parts[1]&&c.list.indexOf(parts[1])>=0)?parts[1]:c.def;
+  window.goSub(tab,sub,{noHash:true});
+  if(history.replaceState)history.replaceState(null,"",window.__subHash(tab));
+ }
+ function syncBalanceLock(user){var n=document.getElementById("fire-balance-lock");if(n)n.style.display=user?"none":""}
+ document.addEventListener("DOMContentLoaded",function(){
+  buildBar("house");buildBar("fire");tagFireRoot();
+  ["house","fire"].forEach(function(tab){var tp=document.getElementById("tp-"+tab);if(tp&&!tp.getAttribute("data-sub"))window.goSub(tab,stored(tab)||SUBS[tab].def,{noHash:true})});
+  route();
+  var root=document.getElementById("myfire-root");
+  if(root&&window.MutationObserver)new MutationObserver(tagFireRoot).observe(root,{childList:true});
+  setTimeout(tagFireRoot,1200);
+  if(window.__sb&&window.__sb.auth){window.__sb.auth.getSession().then(function(r){syncBalanceLock(r.data.session?r.data.session.user:null)});window.__sb.auth.onAuthStateChange(function(ev,s){syncBalanceLock(s?s.user:null)})}
+ });
+ window.addEventListener("hashchange",route);
+})();
 </script>
 <script>
 function cb(){const s=parseInt(document.getElementById('bs').value),r=7000,p=s/r;let m;if(p>=1)m=1.25;else if(p>=.75)m=1;else if(p>=.5)m=.75;else if(p>=.25)m=.5;else m=0;const pts=Math.floor(r*m);document.getElementById('bS').textContent='$'+s.toLocaleString()+'/月';document.getElementById('bR').textContent=Math.round(p*100)+'%';document.getElementById('bM').textContent=m+'x';document.getElementById('bP').textContent=pts.toLocaleString();document.getElementById('bV').textContent='≈$'+(pts*.018).toFixed(0)+'/月(1.8cpp) | $'+(pts*.025).toFixed(0)+'/月(Hyatt 2.5cpp)'}
