@@ -966,6 +966,197 @@ renderRecs();
 
 </div>
 <div class="tab-page" id="tp-house">
+<div class="section" id="bh-module">
+<h2>🗺️ 看房地图 · 本站跟踪的在售房源</h2>
+<div style="background:#132038;border:1px solid #2a4a7f;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+<div style="color:#ffd93d;font-weight:700;margin-bottom:6px">🧭 小美导读：本批先看这 3 套</div>
+<div style="font-size:.88em;line-height:1.75;color:#ddd">
+<div>⭐ <b style="color:#fff">#2 · 11030 SE 60th Ln — $1,850,000</b>：2022 年新房 + 双 10 分学校链 + $544/sqft，本批综合性价比第一。<a href="javascript:void(0)" onclick="bhDetail(2)" style="color:#7cc4ff">看详情 →</a></div>
+<div>⭐ <b style="color:#fff">#16 · 10710 SE 16th St — $3,999,000</b>：全批最大 6,040 sqft 却只要 $662/sqft，多次降价、低于评估价，大房子里最划算的一套。<a href="javascript:void(0)" onclick="bhDetail(16)" style="color:#7cc4ff">看详情 →</a></div>
+<div>⭐ <b style="color:#fff">#21 · 2042 77th Ave NE, Medina — $4,700,000</b>：$500 万内唯一的 Medina 新盘，Medina → Bellevue HS 最硬链条的入门票。<a href="javascript:void(0)" onclick="bhDetail(21)" style="color:#7cc4ff">看详情 →</a></div>
+<div style="color:#9fb6d8;margin-top:6px">市场结构一句话：$180–250 万档货非常薄（只有 4 套），真正的竞争区在 $280–420 万——挑房先看学校链和 $/sqft，别只看总价。</div>
+</div>
+</div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<div id="bh-map" style="height:480px;border-radius:10px;overflow:hidden;background:#0d1526;border:1px solid #2a3a5f"></div>
+<div id="bh-map-fallback" style="display:none;color:#f0b35e;font-size:.82em;margin-top:6px">⚠ 地图组件未加载（网络原因），下方列表照常可用。</div>
+<style>
+@media (max-width:700px){#bh-map{height:360px!important}}
+.bh-pin{background:#2b6cb0;color:#fff;border:2px solid #fff;border-radius:50%;width:26px;height:26px;line-height:22px;text-align:center;font-weight:700;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.bh-pin.top{background:#d97706}
+.bh-card{background:#101c33;border:1px solid #26365a;border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
+.bh-card:hover{border-color:#4a6db3}
+.bh-card.bh-hl{border-color:#ffd93d;box-shadow:0 0 0 2px rgba(255,217,61,.35)}
+.bh-price{font-size:1.25em;font-weight:800;color:#fff}
+.bh-tag{display:inline-block;background:#1d2c4d;color:#9fd8ff;border-radius:20px;padding:1px 9px;font-size:.72em;margin:2px 3px 2px 0}
+.bh-tag.hot{background:#5b3a08;color:#ffd93d}
+.bh-tag.warn{background:#5b1f1f;color:#ff9d9d}
+.bh-ver{font-size:.72em;color:#8fd48f}
+.bh-ver.w{color:#f0b35e}
+.bh-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:none;align-items:flex-end;justify-content:center}
+@media (min-width:700px){.bh-modal-bg{align-items:center}}
+.bh-modal{background:#101c33;border:1px solid #35507e;border-radius:14px;max-width:640px;width:94%;max-height:88vh;overflow-y:auto;padding:18px 20px;color:#ddd}
+.bh-kv{color:#8fa3c8;font-size:.8em}
+</style>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 10px">
+<select id="bh-sort" onchange="bhRender()" style="background:#101c33;color:#eee;border:1px solid #35507e;border-radius:8px;padding:7px 10px;font-size:.85em">
+<option value="rec">排序：推荐度</option>
+<option value="plo">价格：低 → 高</option>
+<option value="phi">价格：高 → 低</option>
+<option value="sqft">面积：大 → 小</option>
+</select>
+<select id="bh-fprice" onchange="bhRender()" style="background:#101c33;color:#eee;border:1px solid #35507e;border-radius:8px;padding:7px 10px;font-size:.85em">
+<option value="all">价格档：全部</option>
+<option value="b1">&lt; $250 万</option>
+<option value="b2">$250–350 万</option>
+<option value="b3">$350–500 万</option>
+</select>
+<select id="bh-fchain" onchange="bhRender()" style="background:#101c33;color:#eee;border:1px solid #35507e;border-radius:8px;padding:7px 10px;font-size:.85em">
+<option value="all">学校链：全部</option>
+<option value="bellevue">Bellevue HS 链</option>
+<option value="newport">Newport HS 链</option>
+<option value="interlake">Interlake 链</option>
+<option value="other">其他 / 待复核</option>
+</select>
+<label style="font-size:.85em;color:#ddd"><input type="checkbox" id="bh-fstar" onchange="bhRender()"> 只看 ⭐重点推荐</label>
+<span id="bh-count" style="color:#9fb6d8;font-size:.82em"></span>
+</div>
+<div id="bh-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
+<p style="color:#888;font-size:.78em;line-height:1.6;margin-top:10px">房源数据截至 2026-10-25，来自公开挂牌页（Redfin / Compass / RE/MAX / Homes.com 等）；编号与地图针一一对应。约看前请复核价格与在售状态。</p>
+</div>
+<div class="bh-modal-bg" id="bh-modal-bg" onclick="if(event.target===this)bhClose()">
+<div class="bh-modal" id="bh-modal"></div>
+</div>
+<script>
+var BH_HOMES=[
+{n:1,addr:"12156 SE 15th St",city:"Bellevue, WA 98005",price:1800000,mls:"2596673",beds:"4",baths:"3",sqft:3600,lot:"9,968 sqft",year:"1966",days:"约 3 天（近 7 天新上）",chain:"Woodridge Elementary（9/10）→ Chinook 中学 → Bellevue High",chainKey:"bellevue",tier:"worth",tags:["性价比之选","近 7 天新上"],ver:1,url:"https://www.redfin.com/WA/Bellevue/12156-SE-15th-St-98005/home/506955",lat:47.5980915,lng:-122.1762134,approx:false,note:"Woodridge 社区，可看 Bellevue / Seattle 天际线与 Olympics 山景。面积两口径：挂牌描述约 3,600+ sqft、公共记录完工面积 3,000 sqft，不一致。",take:"本批最低价入场券，$500/sqft 是全批最低（本批中位 $805）。Woodridge 9/10 → Chinook → Bellevue HS 是第一梯队链，学区不打折。代价是 1966 年老房：重点查屋顶、管道、电板与抗震，预算里留一笔整备费。面积两个口径不一致，约看时当面核实。"},
+{n:2,addr:"11030 SE 60th Ln",city:"Bellevue, WA 98006",price:1850000,mls:"2591139",beds:"4",baths:"3.5",sqft:3400,lot:"7,679 sqft",year:"2022",days:"18 天",chain:"Newport Heights Elementary（9/10）→ Tyee 中学（10/10）→ Newport High（10/10）",chainKey:"newport",tier:"top",tags:["学校链最强","新房省心","性价比之选"],ver:1,url:"https://www.compass.com/homedetails/11030-SE-60th-Ln-Bellevue-WA-98006/1RU5UX_pid/",lat:47.5500775,lng:-122.1941004,approx:false,note:"Newport Hills 社区，湖景 + 落日；另有 900 sqft 已装修地下层；HOA $127/月；2022 年成交价 $1,538,000。",take:"本批综合最优：2022 年建、$544/sqft 远低于中位 $805，还独占一条双 10 分链（Newport Heights 9/10 → Tyee 10/10 → Newport HS 10/10），房龄和学区同时拉满。另有 900 sqft 已装修地下层，实际可用面积比 3,400 更大。扣分项只有地块偏小（7,679 sqft）和 HOA $127/月——以 $185 万的总价，这笔账非常划算。"},
+{n:3,addr:"17120 SE 29th Pl",city:"Bellevue, WA 98008",price:1998000,mls:"2590746",beds:"4",baths:"约 4",sqft:3880,lot:"13,088 sqft",year:"1991",days:"23 天（累计 103 天，重挂）",chain:"Spiritridge Elementary（8/10）→ Tillicum 中学 → Sammamish High ⚠",chainKey:"other",tier:"worth",tags:["议价空间大","⚠ 高中掉档"],ver:1,url:"https://www.compass.com/homedetails/17120-SE-29th-Pl-Bellevue-WA-98008/1RVE0Z_pid/",lat:47.5839619,lng:-122.1118846,approx:false,note:"Lake Sammamish 湖景定制房，7 户小社区；2022 年曾以 $2,680,000 成交，现挂牌低了约 $68 万；地块为本档最大。",take:"价格故事最戏剧的一套：2022 年 $268 万成交、现挂 $199.8 万，累计挂牌 103 天重挂，谈判筹码明显；3,880 sqft + 大地块 + 湖景，$515/sqft 也低。但必须注意：该址挂牌页标注对口 Tillicum → Sammamish High，与 Spiritridge 传统对口（Tyee → Newport）不一致——高中掉档风险在，下手前务必按地址在 BSD 官网 locator 复核；链若坐实为 Sammamish，建议再压价或放弃。"},
+{n:4,addr:"12536 SE 15th St",city:"Bellevue, WA 98005",price:2188000,mls:"",beds:"4",baths:"3",sqft:3483,lot:"未标注",year:"未标注（2021 年全翻新）",days:"未标注",chain:"Woodridge 社区 → Chinook 中学 → Bellevue High（社区口径，待复核）",chainKey:"bellevue",tier:"maybe",tags:["全翻新"],ver:0,url:"https://www.homes.com/bellevue-wa/woodridge-neighborhood/houses-for-sale/",lat:47.5981285,lng:-122.1722380,approx:false,note:"中世纪建筑 2021 年「拆到骨架」全翻新，Sub-Zero / Wolf 电器；数据来自 Homes.com 社区页（抓取较旧），状态与参数需复核。",take:"Woodridge 社区、链走 Bellevue HS 线，2021 年全翻新等于买老地段的新内装，$628/sqft 低于中位。但它是本批数据最旧的一套（聚合页、未逐页核实），在售状态和参数都可能过期——先确认还在售，再谈约看。"},
+{n:5,addr:"9125 NE 21st Pl",city:"Clyde Hill, WA 98004",price:2750000,mls:"2595743",beds:"4",baths:"3",sqft:2260,lot:"未标注",year:"未标注",days:"约 8–9 天",chain:"Clyde Hill 片区 → Chinook 中学 → Bellevue High（小学待复核）",chainKey:"bellevue",tier:"maybe",tags:["地段溢价"],ver:0,url:"https://www.remax.com/homes-for-sale/wa/clyde-hill/zip/98004",lat:47.6294570,lng:-122.2185109,approx:false,note:"另一聚合源显示 $2,850,000，价格有出入待核；RE/MAX 标「New Listing」。",take:"$1,217/sqft 是全批最高——钱基本买的是 Clyde Hill 的地和 Bellevue HS 链，不是房子本身：仅 2,260 sqft 为全批最小，孩子长大后会局促。两个来源价格还不一致（$275 万 vs $285 万）。适合作 Clyde Hill 入门价的参照，不适合当首选。"},
+{n:6,addr:"3240 112th Ave SE",city:"Bellevue, WA 98004 · Enatai",price:2950000,mls:"2582648",beds:"5",baths:"4",sqft:3353,lot:"未标注",year:"未标注",days:"约 41 天",chain:"Enatai 片区 → Chinook 中学 → Bellevue High（待复核）",chainKey:"bellevue",tier:"maybe",tags:["需议价"],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/enatai/neighborhood/152659",lat:47.5811485,lng:-122.1905097,approx:false,note:"卫数另一聚合源记 3.5 卫，以详情页为准。",take:"Enatai 社区、5 卧 4 卫实用，挂牌约 41 天已有议价窗口。但 $880/sqft 高于中位 $805、学校链未逐项核实（按片区应为 Enatai → Chinook → Bellevue HS）。想看可以，先按挂牌天数谈一口价再约。"},
+{n:7,addr:"2325 88th Ave NE",city:"Clyde Hill, WA 98004",price:2950000,mls:"",beds:"4",baths:"3",sqft:3750,lot:"未标注",year:"未标注",days:"未标注",chain:"Clyde Hill Elementary 片区 → Chinook 中学 → Bellevue High（待复核）",chainKey:"bellevue",tier:"maybe",tags:[],ver:0,url:"https://WWW.REALTY.COM/schools/WA/Clyde-Hill/clyde-hill-elementary-school-01099468",lat:47.6315765,lng:-122.2240635,approx:false,note:"数据来自 Realty.com 的 Clyde Hill Elementary 对口房源页（约 6 天前抓取）。",take:"Clyde Hill、$787/sqft 贴近中位，对口链通 Bellevue HS。短板是信息太薄：年份、地块都未标注，除 4 卧 3 卫 3,750 sqft 外几乎没细节。约看前先索取完整披露，再决定值不值得跑一趟。"},
+{n:8,addr:"11276 SE 32nd Ln",city:"Bellevue, WA 98004",price:2999000,mls:"",beds:"6",baths:"5",sqft:4318,lot:"未标注",year:"未标注",days:"新上（聚合页标 New）",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"worth",tags:["性价比之选","大户型"],ver:0,url:"https://wymanrockwellpartners.com/west-bellevue/",lat:47.5822779,lng:-122.1897375,approx:false,note:"West Bellevue 列表页收录，MLS 号未标注。",take:"第二档里面积性价比突出：6 卧 5 卫 4,318 sqft，$695/sqft 低于中位约 14%，新上盘。老人来住或将来添丁都不用换房。唯一未知数是学校链未标注——约看前按地址查 BSD locator；链若落在 Bellevue HS 线，它的优先级还能再上调。"},
+{n:9,addr:"11042 SE 30th St",city:"Bellevue, WA 98004",price:3250000,mls:"2595482",beds:"4",baths:"5",sqft:3715,lot:"未标注",year:"未标注",days:"约 9 天（First Look）",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"maybe",tags:[],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/zip/98004?noListing=true",lat:47.5836115,lng:-122.1922854,approx:false,note:"",take:"4 卧 5 卫 3,715 sqft，卫浴配置豪华，约 9 天的新盘。但 $875/sqft 高于中位、链未核实，同价位有更稳的选择。先观望，若两周后降价再介入。"},
+{n:10,addr:"8619 NE 24th St",city:"Clyde Hill, WA 98004",price:3388000,mls:"",beds:"4",baths:"5",sqft:4723,lot:"未标注",year:"未标注",days:"未标注（已降价）",chain:"Clyde Hill 片区 → Chinook 中学 → Bellevue High（待复核）",chainKey:"bellevue",tier:"worth",tags:["需议价","已降价约 $47 万"],ver:0,url:"https://WWW.REALTY.COM/schools/WA/Clyde-Hill/clyde-hill-elementary-school-01099468",lat:47.6316545,lng:-122.2249500,approx:false,note:"由 $3,857,000 降价约 $47 万至现价（Orchard 旧挂牌可佐证）。",take:"卖家态度已经写在价格里：从 $385.7 万降到 $338.8 万，是全批最明确的让价信号。4,723 sqft、$717/sqft 低于中位，Clyde Hill 片区链通 Bellevue HS。挂牌信息缺年份/地块，约看时重点核房龄与维护记录，并顺着降价势头继续谈。"},
+{n:11,addr:"37 Tatoosh Key",city:"Bellevue, WA 98006 · Newport Shores",price:3495000,mls:"",beds:"5",baths:"3.5",sqft:3310,lot:"约 0.5 英亩",year:"未标注",days:"未标注",chain:"Newport Shores 社区（对口链待复核）",chainKey:"other",tier:"maybe",tags:["临水溢价"],ver:0,url:"https://www.homes.com/bellevue-wa/houses-for-sale/p2/",lat:47.5699695,lng:-122.1856788,approx:false,note:"60 英尺临 Coal Creek、自带泳池；数据来自 Homes.com（抓取较旧），需复核在售状态。",take:"$1,056/sqft 为临水、0.5 英亩地块和泳池买单。提醒一句：家里孩子还小，泳池意味着常年围栏与看护成本，买之前把安全改造算进账。且这套数据抓取较旧，在售状态必须先复核。"},
+{n:12,addr:"1020 107th Ave SE",city:"Bellevue, WA 98004 · Enatai",price:3695000,mls:"2594216",beds:"6",baths:"6",sqft:4760,lot:"未标注",year:"未标注",days:"约 15 天",chain:"Enatai 片区 → Chinook 中学 → Bellevue High（待复核）",chainKey:"bellevue",tier:"maybe",tags:["大户型"],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/enatai/neighborhood/152659",lat:47.6009555,lng:-122.1971634,approx:false,note:"",take:"Enatai、6 卧 6 卫 4,760 sqft 的大户型，$776/sqft 略低于中位，挂牌约 15 天。链按片区应走 Bellevue HS 线（待复核）。各方面均衡但没有一项突出，当第二梯队备选合适。"},
+{n:13,addr:"2423 129th Ave SE",city:"Bellevue, WA 98005 · Woodridge",price:3698000,mls:"",beds:"5",baths:"5.5",sqft:4654,lot:"未标注",year:"新建（AART Homes 定制）",days:"未标注（已降价 $150K）",chain:"Woodridge 社区 → Chinook 中学 → Bellevue High（待复核）",chainKey:"bellevue",tier:"worth",tags:["新建","已降价"],ver:0,url:"https://www.homes.com/bellevue-wa/houses-for-sale/p2/",lat:47.5886440,lng:-122.1684668,approx:false,note:"数据来自 Homes.com（抓取较旧）需复核在售与交付状态。",take:"Woodridge 的 AART 定制新建、链走 Bellevue HS 线，已先降 $15 万；新房意味着低维护、合当前规范，$795/sqft 贴近中位、算 fair。但来源数据较旧，在售与交付状态先复核再约。"},
+{n:14,addr:"2121 109th Ave SE",city:"Bellevue, WA 98004 · Enatai",price:3799950,mls:"2595318",beds:"5",baths:"约 5–6",sqft:4260,lot:"未标注",year:"未标注",days:"约 9–10 天",chain:"Enatai 片区 → Chinook 中学 → Bellevue High（待复核）",chainKey:"bellevue",tier:"maybe",tags:[],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/enatai/neighborhood/152659",lat:47.5913455,lng:-122.1955634,approx:false,note:"卫数两源不一致（RE/MAX 记 6、聚合源记 4.75），以详情页为准；2026-10-24 有开放日。",take:"Enatai 新盘（约 9–10 天），5 卧 4,260 sqft。$892/sqft 高于中位，且卫浴数两个来源不一致，细节以详情页为准。价格没给链和房龄让步，优先级靠后。"},
+{n:15,addr:"10444 SE 22nd St",city:"Bellevue, WA 98004",price:3998000,mls:"2583041",beds:"6",baths:"4",sqft:4312,lot:"未标注",year:"未标注",days:"约 40 天",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"maybe",tags:["需议价"],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/zip/98004?noListing=true",lat:47.5914280,lng:-122.1996988,approx:false,note:"",take:"6 卧 4 卫 4,312 sqft，挂牌约 40 天、$927/sqft 偏高——天数就是谈判筹码，想要就压着 $/sqft 往中位（$805）谈。学校链未标注，先查 locator 再出价。"},
+{n:16,addr:"10710 SE 16th St",city:"Bellevue, WA 98004 · Enatai",price:3999000,mls:"2596541",beds:"5",baths:"6",sqft:6040,lot:"0.28 英亩",year:"2022",days:"约 3–4 天（近 7 天新上）",chain:"Enatai Elementary（8/10）→ Chinook 中学 → Bellevue High",chainKey:"bellevue",tier:"top",tags:["性价比之选","需议价","大户型"],ver:1,url:"https://www.redfin.com/WA/Bellevue/10710-SE-16th-St-98004/home/510673",lat:47.5966702,lng:-122.1971560,approx:false,note:"主屋 + 独立客房（第二套起居单元）；近期多次降价（曾挂 $4,700,000 级），现价且低于税务评估价（挂牌宣传口径）；距 Bellevue High 约 0.5 英里。",take:"大房子的性价比王：6,040 sqft 是全批最大，$662/sqft 却比中位低 18%，还是 2022 年建、地块 0.28 英亩。从约 $470 万一路降到 $399.9 万、且挂牌宣传低于税务评估价，卖家在让步，仍可继续谈。Enatai 8/10 → Chinook → Bellevue HS 链扎实；主屋 + 独立客房单元，老人来长住都现成。建议排进第一批约看。"},
+{n:17,addr:"2832 109th Ave SE",city:"Bellevue, WA 98004 · Enatai",price:4125000,mls:"2593368",beds:"5",baths:"5",sqft:5125,lot:"未标注",year:"未标注",days:"约 16 天",chain:"Enatai 片区 → Chinook 中学 → Bellevue High（待复核）",chainKey:"bellevue",tier:"maybe",tags:[],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/enatai/neighborhood/152659",lat:47.5846240,lng:-122.1948990,approx:false,note:"聚合页标「New Listing」。",take:"Enatai、5 卧 5 卫 5,125 sqft，$805/sqft 正好踩在本批中位线上——不贵不便宜的定价，挂牌约 16 天。没有硬伤也没有惊喜，当 #16 的同片区备选一起看即可。"},
+{n:18,addr:"10668 SE 32nd St",city:"Bellevue, WA 98004",price:4298000,mls:"2591408",beds:"6",baths:"6",sqft:5130,lot:"未标注",year:"未标注",days:"约 20 天",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"maybe",tags:[],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/zip/98004?noListing=true",lat:47.5826885,lng:-122.1985945,approx:false,note:"",take:"6 卧 6 卫 5,130 sqft，$838/sqft 略高于中位，挂牌约 20 天。学校链未标注是主要减分项；同段有链更清楚的选择时，它排在后面。"},
+{n:19,addr:"10222 NE 30th Pl",city:"Bellevue, WA 98004",price:4495000,mls:"",beds:"5",baths:"5",sqft:5990,lot:"未标注",year:"未标注",days:"降价中",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"maybe",tags:["已降价"],ver:0,url:"https://WWW.REALTY.COM/schools/WA/Clyde-Hill/clyde-hill-elementary-school-01099468",lat:47.6382175,lng:-122.2035833,approx:false,note:"",take:"5,990 sqft 大面积把 $/sqft 压到 $750、低于中位，且正在降价中。问题是来源信息单薄、链未核实。若 locator 确认落在 Medina / Clyde Hill 的 Bellevue HS 链，这套的优先级应上调；先查链、再谈价。"},
+{n:20,addr:"10314 SE 25th St",city:"Bellevue, WA 98004",price:4498000,mls:"2581716",beds:"4",baths:"4",sqft:4370,lot:"未标注",year:"未标注",days:"约 43 天",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"anchor",tags:["需议价"],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/zip/98004?noListing=true",lat:47.5887515,lng:-122.2042386,approx:false,note:"",take:"$1,029/sqft 在高位、面积只有 4,370 sqft，挂牌约 43 天还没动——典型的定价偏高信号。用它做同片区的价格锚：看同段其他房时拿它比 $/sqft。真想买，等它降价或按中位 $/sqft 出价。"},
+{n:21,addr:"2042 77th Ave NE",city:"Medina, WA 98039",price:4700000,mls:"2596976",beds:"4",baths:"4",sqft:4822,lot:"0.37 英亩",year:"1980",days:"约 2–3 天（近 7 天新上）",chain:"Medina Elementary → Chinook 中学 → Bellevue High",chainKey:"bellevue",tier:"top",tags:["学校链最强","Medina 入门"],ver:1,url:"https://www.gatewayre.com/homes-for-sale/WA/Medina",lat:47.6297680,lng:-122.2369904,approx:false,note:"两 IDX 站（Gateway / Van Dorm）信息一致，标「NEW LISTING」；2026-10-25 有开放日。",take:"进 Medina 的门票：Medina Elementary → Chinook → Bellevue HS 是本批最硬的链之一，而 $470 万是 Medina 本轮唯一在 $500 万内的新盘，挂牌仅 2–3 天。$975/sqft 里大部分是地段钱；1980 年房龄意味着水管、屋顶、电气要按老房做尽调并预留整备预算。想锁定 Medina，就趁新盘窗口先看这套。"},
+{n:22,addr:"2009 102nd Pl SE",city:"Bellevue, WA 98004",price:4998000,mls:"2567608",beds:"5",baths:"6",sqft:5182,lot:"未标注",year:"未标注",days:"约 60+ 天",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"anchor",tags:["长挂牌"],ver:0,url:"https://www.remax.com/homes-for-sale/wa/bellevue/zip/98004?noListing=true",lat:47.5937240,lng:-122.2070986,approx:false,note:"",take:"挂牌 60+ 天是全批最久——市场已经用脚投票，这个价格（$964/sqft）偏高。它最大的价值是当锚：证明该段位定高了会有什么下场。若真看中，出价应明显低于挂牌，并让卖家先动。"},
+{n:23,addr:"10237 SE 6th St",city:"Bellevue, WA 98004",price:4999950,mls:"",beds:"5",baths:"4.75",sqft:4919,lot:"未标注",year:"未标注",days:"未标注",chain:"待复核（约看前按地址查 BSD locator）",chainKey:"other",tier:"anchor",tags:[],ver:0,url:"https://wymanrockwellpartners.com/west-bellevue/",lat:47.6042052,lng:-122.2034307,approx:false,note:"数据来自 Wyman-Rockwell 经纪列表页。",take:"$4,999,950 卡着 $500 万线，$1,016/sqft 属高位，信息只来自经纪列表页。在这个价位，链未核实、细节未核实的房子不值得抢；等它降价或补全信息后再评估。"}
+];
+var BH_TIER={top:{label:"⭐ 重点推荐",ord:0},worth:{label:"值得约看",ord:1},maybe:{label:"可看可不看",ord:2},anchor:{label:"价格锚点",ord:3}};
+function bhMoney(v){return "$"+v.toLocaleString("en-US")}
+function bhPpsf(h){return h.sqft?Math.round(h.price/h.sqft):null}
+function bhGet(n){for(var i=0;i<BH_HOMES.length;i++)if(BH_HOMES[i].n===n)return BH_HOMES[i];return null}
+function bhCard(h){
+ var p=bhPpsf(h),tags="";
+ h.tags.forEach(function(t){tags+='<span class="bh-tag'+(t.indexOf("⚠")===0?" warn":"")+'">'+t+"</span>"});
+ if(h.tier==="top")tags='<span class="bh-tag hot">⭐ 重点推荐</span>'+tags;
+ var ver=h.ver?'<span class="bh-ver">✔ 逐页核实</span>':'<span class="bh-ver w">⚠ 聚合页信息，约看前复核</span>';
+ return '<div class="bh-card" id="bh-card-'+h.n+'" onclick="bhDetail('+h.n+')">'
+ +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+bhMoney(h.price)+'</span><span style="color:#8fa3c8;font-size:.78em">No.'+h.n+" · "+BH_TIER[h.tier].label+"</span></div>"
+ +'<div style="color:#fff;font-weight:600;margin:2px 0">'+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+h.city+"</div>"
+ +'<div style="font-size:.84em;color:#ccc;margin:6px 0">'+h.beds+" 卧 / "+h.baths+" 卫 ｜ "+(h.sqft?h.sqft.toLocaleString("en-US")+" sqft":"面积未标注")+(p?" ｜ $"+p+"/sqft":"")+"<br>地块 "+h.lot+" ｜ "+h.year+" 年建 ｜ 挂牌 "+h.days+"</div>"
+ +'<div style="font-size:.8em;color:#9fd8ff">🎓 '+h.chain+"</div>"
+ +'<div style="margin-top:6px">'+tags+ver+"</div></div>";
+}
+function bhFiltered(){
+ var s=document.getElementById("bh-sort").value,fp=document.getElementById("bh-fprice").value,fc=document.getElementById("bh-fchain").value,fs=document.getElementById("bh-fstar").checked;
+ var arr=BH_HOMES.filter(function(h){
+  if(fs&&h.tier!=="top")return false;
+  if(fc!=="all"&&h.chainKey!==fc)return false;
+  if(fp==="b1"&&h.price>=2500000)return false;
+  if(fp==="b2"&&(h.price<2500000||h.price>=3500000))return false;
+  if(fp==="b3"&&h.price<3500000)return false;
+  return true});
+ if(s==="rec")arr.sort(function(a,b){return BH_TIER[a.tier].ord-BH_TIER[b.tier].ord||a.price-b.price});
+ if(s==="plo")arr.sort(function(a,b){return a.price-b.price});
+ if(s==="phi")arr.sort(function(a,b){return b.price-a.price});
+ if(s==="sqft")arr.sort(function(a,b){return (b.sqft||0)-(a.sqft||0)});
+ return arr;
+}
+function bhRender(){
+ var arr=bhFiltered(),el=document.getElementById("bh-list");
+ el.innerHTML=arr.length?arr.map(bhCard).join(""):'<p style="color:#aaa">没有符合当前筛选的房源，换个条件试试。</p>';
+ document.getElementById("bh-count").textContent="显示 "+arr.length+" / "+BH_HOMES.length+" 套";
+ if(window.bhSyncPins)window.bhSyncPins(arr.map(function(h){return h.n}));
+}
+function bhDetail(n){
+ var h=bhGet(n);if(!h)return;var p=bhPpsf(h);
+ var tags="";h.tags.forEach(function(t){tags+='<span class="bh-tag">'+t+"</span>"});
+ var html='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><div class="bh-price" style="font-size:1.5em">'+bhMoney(h.price)+"</div>"
+ +'<div style="color:#fff;font-weight:700;font-size:1.05em;margin-top:2px">No.'+h.n+" · "+h.addr+'</div><div style="color:#9fb6d8;font-size:.85em">'+h.city+"</div></div>"
+ +'<button onclick="bhClose()" style="background:#1d2c4d;color:#eee;border:1px solid #35507e;border-radius:8px;padding:6px 12px;cursor:pointer">✕ 关闭</button></div>'
+ +'<div style="margin:8px 0"><span class="bh-tag hot">'+BH_TIER[h.tier].label+"</span>"+tags+(h.ver?'<span class="bh-ver">✔ 逐页核实</span>':'<span class="bh-ver w">⚠ 聚合页信息，约看前复核</span>')+"</div>"
+ +'<div style="font-size:.9em;line-height:1.9">'
+ +'<span class="bh-kv">户型</span> '+h.beds+" 卧 / "+h.baths+" 卫<br>"
+ +'<span class="bh-kv">面积</span> '+(h.sqft?h.sqft.toLocaleString("en-US")+" sqft":"未标注")+(p?"（$"+p+"/sqft，本批中位 $805）":"")+"<br>"
+ +'<span class="bh-kv">地块</span> '+h.lot+"<br>"
+ +'<span class="bh-kv">建造</span> '+h.year+"<br>"
+ +'<span class="bh-kv">挂牌</span> '+h.days+(h.mls?"<br><span class='bh-kv'>MLS#</span> "+h.mls:"")+"<br>"
+ +'<span class="bh-kv">学校链</span> <span style="color:#9fd8ff">'+h.chain+"</span></div>"
+ +(h.note?'<div style="font-size:.86em;color:#bbb;line-height:1.7;margin-top:8px"><span class="bh-kv">备注</span> '+h.note+"</div>":"")
+ +'<div style="background:#132038;border:1px solid #2a4a7f;border-radius:10px;padding:11px 13px;margin-top:12px"><div style="color:#ffd93d;font-weight:700;margin-bottom:4px">🧭 小美点评</div><div style="font-size:.9em;line-height:1.8">'+h.take+"</div></div>"
+ +(h.approx?'<p style="color:#f0b35e;font-size:.8em;margin-top:8px">📍 地图位置为社区示意点，非精确门牌位置。</p>':"")
+ +'<div style="margin-top:14px"><a href="'+h.url+'" target="_blank" rel="noopener" style="color:#7cc4ff">查看原房源 ↗</a></div>'
+ +'<p style="color:#777;font-size:.75em;margin-top:10px">数据截至 2026-10-25，约看前请复核价格与在售状态。</p>';
+ document.getElementById("bh-modal").innerHTML=html;
+ document.getElementById("bh-modal-bg").style.display="flex";
+}
+function bhClose(){document.getElementById("bh-modal-bg").style.display="none"}
+function bhHighlight(n){
+ var c=document.getElementById("bh-card-"+n);
+ document.querySelectorAll(".bh-card.bh-hl").forEach(function(x){x.classList.remove("bh-hl")});
+ if(c){c.classList.add("bh-hl");c.scrollIntoView({behavior:"smooth",block:"center"})}
+}
+bhRender();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+ var map=null,markers={};
+ function init(){
+  if(map)return;
+  if(typeof L==="undefined"){var f=document.getElementById("bh-map-fallback");if(f)f.style.display="block";var m=document.getElementById("bh-map");if(m)m.style.display="none";return}
+  try{
+   map=L.map("bh-map",{scrollWheelZoom:false});
+   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}).addTo(map);
+   var bounds=[];
+   BH_HOMES.forEach(function(h){
+    var icon=L.divIcon({className:"",html:'<div class="bh-pin'+(h.tier==="top"?" top":"")+'">'+h.n+"</div>",iconSize:[26,26],iconAnchor:[13,13]});
+    var mk=L.marker([h.lat,h.lng],{icon:icon}).addTo(map);
+    mk.bindPopup('<div style="font-size:13px;line-height:1.5"><b>'+bhMoney(h.price)+'</b><br>'+h.addr+"<br>"+h.city+'<br><a href="javascript:void(0)" onclick="bhDetail('+h.n+')">看详情 →</a></div>');
+    mk.on("click",function(){bhHighlight(h.n)});
+    markers[h.n]=mk;bounds.push([h.lat,h.lng]);
+   });
+   if(bounds.length)map.fitBounds(bounds,{padding:[24,24]});
+   setTimeout(function(){if(map)map.invalidateSize()},300);
+  }catch(e){var f2=document.getElementById("bh-map-fallback");if(f2)f2.style.display="block"}
+ }
+ window.bhSyncPins=function(ns){
+  if(!map)return;
+  BH_HOMES.forEach(function(h){var mk=markers[h.n];if(!mk)return;var el=mk.getElement();if(el)el.style.display=(ns.indexOf(h.n)>=0)?"":"none"});
+ };
+ function maybeInit(){
+  var p=document.getElementById("tp-house");
+  if(p&&p.classList.contains("active"))init();
+ }
+ document.addEventListener("DOMContentLoaded",function(){setTimeout(maybeInit,400)});
+ var btn=document.querySelector('[data-tab="house"]');
+ if(btn)btn.addEventListener("click",function(){setTimeout(init,80)});
+ var mo=document.getElementById("tp-house");
+ if(mo&&window.MutationObserver){new MutationObserver(function(){if(mo.classList.contains("active"))init()}).observe(mo,{attributes:true,attributeFilter:["class"]})}
+})();
+</script>
 <div class="section">
 <h2>🏡 Bellevue 学区换房 · 市场总览</h2>
 <p style="color:#aaa;font-size:.85em;line-height:1.6;margin-bottom:12px">公开市场研究 · 首轮扫描 2026-10-25（数据源：Redfin / Compass / RE/MAX 等公开挂牌页）。筛选口径：Bellevue School District 辖区独栋、在售、挂牌价 ≥ $180 万、≥4 卧 ≥3 卫。本轮为抽样扫描（收录 29 套，非全量），约看前需逐套复核。</p>
