@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💳 信用卡优化器</title>
+<title>🏠 家庭财务中枢</title>
 <meta name="theme-color" content="#0f0f23">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -154,11 +154,12 @@
 <body>
 <div class="container">
 <div id="alertBanner" style="display:none"></div>
-<h1>💳 Daran 的信用卡优化器</h1>
-<p class="subtitle">一目了然的刷卡指南 | 房租 $7,000/月</p>
+<h1>🏠 Daran 的家庭财务中枢</h1>
+<p class="subtitle">刷卡推荐 · 账户与净资产 · 订阅 · FIRE · 换房 —— 一站式家庭财务台 | 房租 $7,000/月</p>
 <div class="auth-bar" id="authBar"><span id="authStatus">🔒 登录后看我的实测数据</span><span id="authBtnWrap"><button class="auth-btn" onclick="toggleLoginForm()">邮箱登录</button></span><div id="loginForm" style="display:none;width:100%;margin-top:6px"><input class="auth-input" id="loginEmail" type="email" placeholder="输入白名单邮箱" autocomplete="email"> <button class="auth-btn" onclick="sendMagicLink()">发送登录链接</button><span id="loginMsg" style="color:#9fd8ff;margin-left:8px"></span></div></div>
 <div class="share-wrap"><button class="share-btn" id="shareBtn" title="复制分享链接" aria-label="复制分享链接" onclick="shareSite()">🔗</button></div>
 <div style="position:fixed;right:18px;bottom:82px;z-index:9000"><button id="frBtn" title="强制刷新：清缓存并重新加载最新版本" aria-label="强制刷新" onclick="forceRefreshSite()" style="width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0">🔄</button></div>
+<div style="position:fixed;right:18px;bottom:146px;z-index:9000"><button id="authFab" title="登录（邮箱魔法链接）" aria-label="登录" onclick="authFabClick()" style="width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0">🔒</button></div>
 <div class="share-toast" id="shareToast">✅ 链接已复制，快去分享吧！</div>
 <nav class="tabbar">
 <button class="tab-btn active" data-tab="spend" onclick="goTab('spend')">🎯 刷卡</button>
@@ -507,7 +508,7 @@ renderRecs();
 <!-- Credits -->
 <div class="section credits-section">
 <h2>📅 Credits追踪</h2>
-<p id="creditIntro" style="font-size:0.78em;color:#9fd8ff;margin:2px 0 6px">以下为各卡 credit 规则（公开版）。蓝字实测状态属个人信息，存放在 Supabase，登录后按卡显示。</p><div id="creditLockNote" style="font-size:0.82em;color:#ffd93d;padding:2px 0 8px">🔒 实测状态已锁定 — 点页面顶部「邮箱登录」，用邮箱魔法链接登录后即可看到。</div>
+<p id="creditIntro" style="font-size:0.78em;color:#9fd8ff;margin:2px 0 6px">以下为各卡 credit 规则（公开版）。蓝字实测状态属个人信息，存放在 Supabase，登录后按卡显示。</p><div id="creditLockNote" style="font-size:0.82em;color:#ffd93d;padding:2px 0 8px">🔒 实测状态已锁定 — 点页面顶部「邮箱登录」或右下角 🔒 图标，用邮箱魔法链接登录后即可看到。</div>
 <div id="creditDash" style="display:none"></div>
 <div class="credit-item"><div><b>Uber Cash</b><br><span style="color:#888;font-size:0.8em">Gold+Plat</span></div><span style="color:#4ecdc4;font-weight:bold">$10+$15</span><span style="color:#ffd93d">每月</span></div>
 <div class="credit-item" data-card="Amex Gold" data-credit="Dining Credit"><div><b>Dining Credit</b><br><span style="color:#888;font-size:0.8em">Amex Gold</span></div><span style="color:#4ecdc4;font-weight:bold">$10</span><span style="color:#ffd93d">每月</span></div>
@@ -1031,6 +1032,8 @@ cb();
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
 async function forceRefreshSite(){var btn=document.getElementById('frBtn');if(btn){if(btn.disabled)return;btn.disabled=true;btn.textContent='⏳';btn.style.opacity='0.5'}try{if('serviceWorker' in navigator){var regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(function(r){return r.unregister()}))}if('caches' in window){var names=await caches.keys();await Promise.all(names.map(function(n){return caches.delete(n)}))}}catch(e){}var url=new URL(window.location.href);url.searchParams.set('_fr',String(Date.now()));window.location.href=url.toString()}
+window.syncAuthFab=function(user){var f=document.getElementById('authFab');if(!f)return;if(user){f.textContent='✅';f.title='已登录：'+user.email+'（点击回顶部账号栏）'}else{f.textContent='🔒';f.title='登录（邮箱魔法链接）'}};
+window.authFabClick=function(){var st=document.getElementById('authStatus');var loggedIn=st&&st.textContent.indexOf('✅')===0;var bar=document.getElementById('authBar');if(bar)bar.scrollIntoView({behavior:'smooth',block:'start'});if(!loggedIn){var lf=document.getElementById('loginForm');if(lf&&lf.style.display==='none'&&window.toggleLoginForm)window.toggleLoginForm();var em=document.getElementById('loginEmail');if(em)setTimeout(function(){try{em.focus()}catch(e){}},450)}};
 function shareSite(){var btn=document.getElementById('shareBtn'),toast=document.getElementById('shareToast');function done(){if(btn){btn.textContent='✅';btn.classList.add('copied');setTimeout(function(){btn.textContent='🔗';btn.classList.remove('copied')},2000)}if(toast){toast.classList.add('show');setTimeout(function(){toast.classList.remove('show')},2000)}}
 if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(SITE_URL).then(done).catch(function(){fallbackCopy()})}else{fallbackCopy()}
 function fallbackCopy(){var ta=document.createElement('textarea');ta.value=SITE_URL;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}document.body.removeChild(ta)}}
@@ -1575,11 +1578,13 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
   function renderUser(user){
     if (user) {
       $("authStatus").innerHTML = "✅ " + esc(user.email);
+      if (window.syncAuthFab) window.syncAuthFab(user);
       $("authBtnWrap").innerHTML = '<button class="auth-btn ghost" onclick="signOutCard()">退出</button>';
       var lf = $("loginForm"); if (lf) lf.style.display = "none";
       loadPersonal();
     } else {
       $("authStatus").textContent = "🔒 登录后看我的实测数据";
+      if (window.syncAuthFab) window.syncAuthFab(null);
     }
   }
   function loadPersonal(){
