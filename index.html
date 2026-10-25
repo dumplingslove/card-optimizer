@@ -999,14 +999,14 @@ renderRecs();
 <div style="color:#ffd93d;font-weight:700;margin-bottom:8px">📊 市场与趋势 · 近一年成交回溯（2025-10 → 2026-10）</div>
 <div style="background:#132c1e;border:1px solid #2f6e46;border-radius:8px;padding:9px 12px;font-size:.9em;line-height:1.7;color:#dff5e3;margin-bottom:12px">一句话：<b>你要的那种房（第一梯队学校链）转手快约 2.5 倍、单价贵约 18%，但不用加价</b>——近一年成交/挂牌比两组同在 0.96–0.97，出价锚就是挂牌价的 96–97%；买方最划算的季度是 <b>Q2</b>（卖家平均让价 4%），Q1 卖家最硬、几乎不让价。</div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px">
-<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">98 套</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">近一年成交样本<br>口径：Tier A 精确 82 套 + Tier B 县记录 16 套</div></div>
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">270 套</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">近一年成交样本<br>口径：Tier A 门户精确 82 套 + Tier B 县记录核实 188 套</div></div>
 <div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">0.975</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">中位成交 / 挂牌比<br>口径：有挂牌价的 50 套；卖家平均让价约 2.5%</div></div>
 <div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">9 天</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">中位挂牌天数（DOM）<br>口径：有 DOM 的 61 套 Tier A；页面天数，或被重挂洗低</div></div>
 <div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">$739<span style="font-size:.55em;color:#9fb6d8">/sqft</span></div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">中位成交单价<br>口径：Tier A；中位成交价 $2,977,500</div></div>
 </div>
 <div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 4px">📅 按季度：成交量 vs 成交/挂牌比</div>
 <div id="bh-qchart"></div>
-<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin:2px 0 12px">柱 = Tier A 成交量（括号内为含 Tier B 的总成交量）；线 = 中位成交/挂牌比（越低卖家让价越多）。Q3 仅 7 套 Tier A，读数仅供参考；Q4 尚无 Tier A 数据（仅 Tier B 6 套月度记录），不画柱、比值断线，标注「数据积累中」。</div>
+<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin:2px 0 12px">柱 = Tier A 成交量（括号内为含 Tier B 的总成交量）；线 = 中位成交/挂牌比（越低卖家让价越多）。Q3 的 Tier A 仍仅 7 套，DOM/比值读数仅供参考（成交量含县记录共 69 套）；Q4 尚无 Tier A 数据（仅 10 月上旬县记录 7 套、登记未齐），不画柱、比值断线，标注「数据积累中」。</div>
 <div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 6px">⚡ 卖得快 vs 卖得慢（有 DOM 的 Tier A 61 套）</div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px;margin-bottom:6px">
 <div style="background:#12260f;border:1px solid #2f6e46;border-radius:8px;padding:10px 12px;font-size:.85em;line-height:1.75;color:#dff5e3"><b>🚀 快销 · DOM ≤14 天（39 套，64%）</b><br>中位 DOM <b>4 天</b>；成交/挂牌比 <b>1.000</b>（n=15，原价成交、不靠降价）；单价为自身价格档中位的 <b>100.9%</b>——不是定价低才快，是定价贴市场就立刻被接走；有降价记录可查的 <b>0 套</b>。</div>
@@ -1018,16 +1018,16 @@ renderRecs();
 <div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin:2px 0 12px">第一梯队链 = Medina/Clyde Hill→Bellevue HS、Somerset/Newport Heights/Spiritridge→Newport HS、Bennett→Interlake HS（n=9）；对照组为学校已核实的其他 BSD 成交（n=18）。结论：抢手体现在<b>周转快</b>、不是加价——看中要快下手，但出价不必超过挂牌价。</div>
 <div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 6px">🔴 实时追踪 · 本站在售 23 套</div>
 <div id="bh-track"></div>
-<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin-top:10px">数据说明：① 本回溯共 98 套，未达 150 套目标，如实标注；Tier B（16 套）为县记录约数、无 DOM 与比值，只计成交量。② <b>DOM 口径局限</b>：页面 DOM 是当前一轮挂牌的天数；在售审计发现「撤牌重挂洗天数」普遍存在，成交样本同样可能被洗——慢销的真实占比与天数被系统性低估，DOM≥60 的 n=4 应理解为下限。③ Q3 样本薄（Tier A 7 套）、Q4 无 Tier A，两季读数仅供参考；2025Q4 样本偏密（数据源快照偏向 2025 年末），跨季比较已打折。④ 学校链结论只基于 27 套已核实 Tier A，另约 70 套学校未核实（估计约 5% 可能不在 BSD 内）。⑤ 在售台账 23 套的中位挂牌单价约 $805/sqft，比已成交中位 $739 高约 9%——在售的是「还没卖掉的」，别拿挂牌价当市场价。⑥ 降价史字段仅 7/98 有据，相关结论只作旁证。完整口径见回溯分析报告（2026-10-25）。</div>
+<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin-top:10px">数据说明：① 本回溯共 270 套（2026-10-25 扩样修订：以 King County Assessor 县成交记录逐条核实，补入 172 套 Tier B；其成交价/日期为县记录精确值、无 DOM 与比值，只计成交量）。县记录全口径核实：符合条件（Bellevue/Medina/Clyde Hill 独栋、$180–500 万、≥4 卧 ≥3 卫）的成交至少 268 套（县严格卫浴口径），按 MLS 卫浴算法加登记尾差估计真实总量约 285–355 套，本样本覆盖约八成至九成五。② <b>DOM 口径局限</b>：页面 DOM 是当前一轮挂牌的天数；在售审计发现「撤牌重挂洗天数」普遍存在，成交样本同样可能被洗——慢销的真实占比与天数被系统性低估，DOM≥60 的 n=4 应理解为下限。③ Q3 的 Tier A 仍薄（7 套，DOM/比值仅供参考），但含县记录的成交量已达 69 套；Q4 仅 10 月上旬登记 7 套、未齐。2025Q4 门户快照偏密的现象已由县记录补样稀释（该季总量 54 套）。④ 学校链结论只基于 27 套已核实 Tier A，其余 243 套未逐套核学校（县记录地址均在三市市界内；个别南 Bellevue 地址可能属 Issaquah 学区，已识别并剔除 1 例）。⑤ 在售台账 23 套的中位挂牌单价约 $805/sqft，比已成交中位 $739 高约 9%——在售的是「还没卖掉的」，别拿挂牌价当市场价。⑥ 降价史字段仅 7/82 套 Tier A 有据，相关结论只作旁证。完整口径见回溯分析报告（2026-10-25，含扩样修订节）。</div>
 </div>
 </div>
 <script>
 var BH_MARKET={quarters:[
-{q:"2025 Q4",volA:28,volT:28,ratio:0.970,dom:"10.5",tag:""},
-{q:"2026 Q1",volA:23,volT:28,ratio:0.989,dom:"6.5",tag:"卖方最硬"},
-{q:"2026 Q2",volA:24,volT:26,ratio:0.960,dom:"9",tag:"买方季"},
-{q:"2026 Q3",volA:7,volT:10,ratio:0.960,dom:"9",tag:"样本薄"},
-{q:"2026 Q4",volA:0,volT:6,ratio:null,dom:null,tag:"数据积累中"}],
+{q:"2025 Q4",volA:28,volT:54,ratio:0.970,dom:"10.5",tag:""},
+{q:"2026 Q1",volA:23,volT:55,ratio:0.989,dom:"6.5",tag:"卖方最硬"},
+{q:"2026 Q2",volA:24,volT:85,ratio:0.960,dom:"9",tag:"买方季"},
+{q:"2026 Q3",volA:7,volT:69,ratio:0.960,dom:"9",tag:"比值样本薄"},
+{q:"2026 Q4",volA:0,volT:7,ratio:null,dom:null,tag:"数据积累中"}],
 t1:{label:"第一梯队链（n=9）",dom:11.5,domN:8,pps:872,ratio:0.962,ratioN:4},
 oth:{label:"其他 BSD 已核实（n=18）",dom:29,domN:9,pps:738,ratio:0.971,ratioN:16}};
 var BH_TRACK={asOf:"2026-10-25",active:23,bands:[["$180–250 万",4],["$250–350 万",7],["$350–500 万",12]],drops:[],domTop:[{n:22,addr:"2009 102nd Pl SE",days:60},{n:20,addr:"10314 SE 25th St",days:43},{n:6,addr:"3240 112th Ave SE",days:41}]};
