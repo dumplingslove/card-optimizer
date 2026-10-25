@@ -1522,7 +1522,10 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     liabs.forEach(function(r){ totL += Number(r.value); if ((r.name || "").indexOf("房贷") >= 0) mtg += Number(r.value); else cardDebt += Number(r.value); });
     var net = totA - totL, finAssets = totA - reVal, finNet = finAssets - cardDebt, equity = reVal - mtg;
     var ltv = reVal ? mtg / reVal * 100 : 0, lev = totA ? totL / totA * 100 : 0;
-    $("nwSummary").innerHTML = "总资产 <b style='color:#fff'>" + money(totA) + "</b> ｜ 总负债 <b style='color:#ffb26b'>" + money(totL) + "</b>（占总资产 " + lev.toFixed(1) + "%）｜ <b style='color:#4ecdc4'>净资产 " + money(net) + "</b><br>"
+    var asOfMax = "";
+    rows.forEach(function(r){ var m = (r.as_of || "").match(/\d{4}-\d{2}-\d{2}/); if (m && m[0] > asOfMax) asOfMax = m[0]; });
+    $("nwSummary").innerHTML = (asOfMax ? "<b style='color:#fff;font-size:1.05em'>📋 个人资产负债表</b> <span style='color:#9fd8ff'>截至 " + asOfMax + "</span>（各行数据时点见行内标注）<br>" : "")
+      + "总资产 <b style='color:#fff'>" + money(totA) + "</b> ｜ 总负债 <b style='color:#ffb26b'>" + money(totL) + "</b>（占总资产 " + lev.toFixed(1) + "%）｜ <b style='color:#4ecdc4'>净资产 " + money(net) + "</b><br>"
       + "拆开看：金融净资产（金融资产 − 卡债）<b style='color:#fff'>" + money(finNet) + "</b> ＋ 房净值（评估总值 − 房贷）<b style='color:#fff'>" + money(equity) + "</b>；两套房贷款成数 LTV " + ltv.toFixed(1) + "%。";
     function rowHtml(r, color){
       var v = Number(r.value), p = totA ? v / totA * 100 : 0;
