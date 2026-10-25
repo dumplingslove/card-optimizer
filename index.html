@@ -158,6 +158,7 @@
 <p class="subtitle">一目了然的刷卡指南 | 房租 $7,000/月</p>
 <div class="auth-bar" id="authBar"><span id="authStatus">🔒 登录后看我的实测数据</span><span id="authBtnWrap"><button class="auth-btn" onclick="toggleLoginForm()">邮箱登录</button></span><div id="loginForm" style="display:none;width:100%;margin-top:6px"><input class="auth-input" id="loginEmail" type="email" placeholder="输入白名单邮箱" autocomplete="email"> <button class="auth-btn" onclick="sendMagicLink()">发送登录链接</button><span id="loginMsg" style="color:#9fd8ff;margin-left:8px"></span></div></div>
 <div class="share-wrap"><button class="share-btn" id="shareBtn" title="复制分享链接" aria-label="复制分享链接" onclick="shareSite()">🔗</button></div>
+<div style="position:fixed;right:18px;bottom:82px;z-index:9000"><button id="frBtn" title="强制刷新：清缓存并重新加载最新版本" aria-label="强制刷新" onclick="forceRefreshSite()" style="width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0">🔄</button></div>
 <div class="share-toast" id="shareToast">✅ 链接已复制，快去分享吧！</div>
 <nav class="tabbar">
 <button class="tab-btn active" data-tab="spend" onclick="goTab('spend')">🎯 刷卡</button>
@@ -1029,6 +1030,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
+async function forceRefreshSite(){var btn=document.getElementById('frBtn');if(btn){if(btn.disabled)return;btn.disabled=true;btn.textContent='⏳';btn.style.opacity='0.5'}try{if('serviceWorker' in navigator){var regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(function(r){return r.unregister()}))}if('caches' in window){var names=await caches.keys();await Promise.all(names.map(function(n){return caches.delete(n)}))}}catch(e){}var url=new URL(window.location.href);url.searchParams.set('_fr',String(Date.now()));window.location.href=url.toString()}
 function shareSite(){var btn=document.getElementById('shareBtn'),toast=document.getElementById('shareToast');function done(){if(btn){btn.textContent='✅';btn.classList.add('copied');setTimeout(function(){btn.textContent='🔗';btn.classList.remove('copied')},2000)}if(toast){toast.classList.add('show');setTimeout(function(){toast.classList.remove('show')},2000)}}
 if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(SITE_URL).then(done).catch(function(){fallbackCopy()})}else{fallbackCopy()}
 function fallbackCopy(){var ta=document.createElement('textarea');ta.value=SITE_URL;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){}document.body.removeChild(ta)}}
