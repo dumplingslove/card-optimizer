@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f0f23'/><text x='50' y='65' font-size='50' text-anchor='middle'>💳</text></svg>">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f23;color:#e0e0e0;min-height:100vh}.container{max-width:1000px;margin:0 auto;padding:16px}h1{text-align:center;font-size:1.8em;margin:16px 0;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.subtitle{text-align:center;color:#888;margin-bottom:20px;font-size:0.85em}.share-wrap{position:fixed;right:18px;bottom:18px;z-index:9000}.share-btn{width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0}.share-btn:hover{background:#667eea;color:#fff}.share-btn.copied{background:#1a3a2a;border-color:#4ecdc4;color:#4ecdc4}.share-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);background:#16213e;border:1px solid #4ecdc4;color:#4ecdc4;padding:12px 24px;border-radius:12px;font-size:0.9em;opacity:0;pointer-events:none;transition:all 0.25s;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,0.5)}.share-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}.section{background:#1a1a2e;border-radius:14px;padding:18px;margin-bottom:16px;border:1px solid #333}.section h2{margin-bottom:12px;font-size:1.15em}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f23;color:#e0e0e0;min-height:100vh}.container{max-width:1000px;margin:0 auto;padding:12px 16px 16px}h1{text-align:center;font-size:1.8em;margin:8px 0 6px;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.subtitle{text-align:center;color:#888;margin-bottom:12px;font-size:0.85em}.share-wrap{position:fixed;right:18px;bottom:18px;z-index:9000}.share-btn{width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0}.share-btn:hover{background:#667eea;color:#fff}.share-btn.copied{background:#1a3a2a;border-color:#4ecdc4;color:#4ecdc4}.share-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.9);background:#16213e;border:1px solid #4ecdc4;color:#4ecdc4;padding:12px 24px;border-radius:12px;font-size:0.9em;opacity:0;pointer-events:none;transition:all 0.25s;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,0.5)}.share-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}.section{background:#1a1a2e;border-radius:14px;padding:18px;margin-bottom:16px;border:1px solid #333}.section h2{margin-bottom:12px;font-size:1.15em}
 .warn-banner{background:linear-gradient(135deg,#5c1a1a,#1a1a2e);border:1px solid #ff6b6b;border-radius:14px;padding:14px;margin-bottom:16px}.warn-banner h2{color:#ff6b6b;font-size:1em;margin-bottom:8px}.warn-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #333;font-size:0.85em}.warn-item:last-child{border:none}.warn-item .wn{color:#fff;font-weight:bold}.warn-item .wa{color:#ffd93d}.warn-item .wd{color:#ff6b6b;font-weight:bold}
 .rec-section h2{color:#667eea}
 .group-header{padding:10px 12px;background:#16213e;border-radius:8px;margin:10px 0 4px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border:1px solid #333}.group-header:hover{border-color:#667eea}.group-header h3{color:#667eea;font-size:0.9em}.group-header .garrow{color:#667eea;transition:transform 0.2s}.group-header.open .garrow{transform:rotate(90deg)}.group-body{display:none}.group-header.open+.group-body{display:block}
@@ -102,16 +102,20 @@
 
 /* FIRE 新首屏（mfv）沿用现有深色卡片风，无新增类名依赖；保留钩子便于后续微调 */
 @media(max-width:768px){.fire-grid{grid-template-columns:1fr 1fr}.fire-stats{grid-template-columns:1fr}}
-.tabbar{position:sticky;top:0;z-index:50;background:rgba(15,15,35,.96);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;padding:10px 2px;margin-bottom:14px;border-bottom:1px solid #2a2a4a;scrollbar-width:none}
+.navstick{position:sticky;top:0;z-index:1200;background:rgba(15,15,35,.97);backdrop-filter:blur(8px);border-bottom:1px solid #2a2a4a;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:4px 0 5px;margin-bottom:12px}
+.tabbar{display:flex;gap:6px;overflow-x:auto;padding:0 2px;scrollbar-width:none}
 .tabbar::-webkit-scrollbar{display:none}
-.tab-btn{flex:1;min-width:88px;white-space:nowrap;background:#1a1a2e;border:1px solid #333;color:#aaa;border-radius:10px;padding:9px 6px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
+.tab-btn{flex:1;min-width:88px;white-space:nowrap;background:#1a1a2e;border:1px solid #333;color:#aaa;border-radius:10px;padding:6px 6px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
 .tab-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:#667eea;font-weight:bold}
 .tab-btn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff6b6b;margin-left:5px;vertical-align:middle;animation:chblink 1.6s infinite}
 .tab-page{display:none}
 .tab-page.active{display:block;animation:fadein .18s ease}
-.subbar{position:sticky;top:57px;z-index:40;background:rgba(15,15,35,.96);backdrop-filter:blur(8px);display:flex;gap:6px;overflow-x:auto;padding:8px 2px;margin-bottom:12px;border-bottom:1px solid #2a2a4a;scrollbar-width:none}
+.subslot{display:none;margin-top:4px}
+.subslot.on{display:block}
+.subbar{display:flex;gap:6px;overflow-x:auto;padding:0 2px;scrollbar-width:none}
 .subbar::-webkit-scrollbar{display:none}
-.sub-btn{flex:1;min-width:96px;white-space:nowrap;background:#16213e;border:1px solid #2a3a5f;color:#9fb6d8;border-radius:20px;padding:7px 10px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
+.sub-btn{flex:1;min-width:96px;white-space:nowrap;background:#16213e;border:1px solid #2a3a5f;color:#9fb6d8;border-radius:20px;padding:5px 10px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
+@media(max-width:480px){.tab-btn{min-width:70px;padding:6px 3px;font-size:.8em}.sub-btn{min-width:0;padding:5px 6px;font-size:.82em}}
 .sub-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:#667eea;font-weight:bold}
 #tp-house[data-sub="view"] [data-subpage]:not([data-subpage="view"]),#tp-house[data-sub="market"] [data-subpage]:not([data-subpage="market"]),#tp-house[data-sub="school"] [data-subpage]:not([data-subpage="school"]),#tp-fire[data-sub="home"] [data-subpage]:not([data-subpage="home"]),#tp-fire[data-sub="balance"] [data-subpage]:not([data-subpage="balance"]),#tp-fire[data-sub="plan"] [data-subpage]:not([data-subpage="plan"]){display:none!important}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -166,6 +170,7 @@
 <div style="position:fixed;right:18px;bottom:146px;z-index:9000"><button id="authFab" title="登录（邮箱魔法链接）" aria-label="登录" onclick="authFabClick()" style="width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0">🔒</button></div>
 <div id="authPanel" style="display:none;position:fixed;right:18px;bottom:210px;z-index:9001;width:min(320px,calc(100vw - 36px));background:#16213e;border:1px solid #667eea;border-radius:12px;padding:12px;box-shadow:0 8px 28px rgba(0,0,0,0.55);font-size:0.85em"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span id="authStatus">🔒 登录后看我的实测数据</span><span id="authBtnWrap"><button class="auth-btn" onclick="toggleLoginForm()">邮箱登录</button></span></div><div id="loginForm" style="display:none;width:100%;margin-top:8px"><input class="auth-input" id="loginEmail" type="email" placeholder="输入白名单邮箱" autocomplete="email" style="width:100%;box-sizing:border-box;margin-bottom:8px"><button class="auth-btn" onclick="sendMagicLink()">发送登录链接</button><div id="loginMsg" style="color:#9fd8ff;margin-top:6px"></div></div></div>
 <div class="share-toast" id="shareToast">✅ 链接已复制，快去分享吧！</div>
+<div class="navstick" id="navstick">
 <nav class="tabbar">
 <button class="tab-btn active" data-tab="spend" onclick="goTab('spend')">🎯 刷卡</button>
 <button class="tab-btn" data-tab="home" onclick="goTab('home')">🏠 总览</button>
@@ -176,6 +181,9 @@
 <button class="tab-btn" data-tab="fire" onclick="goTab('fire')">🔥 FIRE</button>
 <button class="tab-btn" data-tab="house" onclick="goTab('house')">🏡 换房</button>
 </nav>
+<div class="subslot" id="subslot-house"></div>
+<div class="subslot" id="subslot-fire"></div>
+</div>
 
 
 <div class="tab-page" id="tp-home">
@@ -1476,7 +1484,7 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
   var c=SUBS[tab];if(!c)return;if(c.list.indexOf(sub)<0)sub=c.def;
   var tp=document.getElementById("tp-"+tab);if(!tp)return;
   tp.setAttribute("data-sub",sub);
-  tp.querySelectorAll(".sub-btn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-sub")===sub)});
+  document.querySelectorAll('.subbar[data-bartab="'+tab+'"] .sub-btn').forEach(function(b){b.classList.toggle("active",b.getAttribute("data-sub")===sub)});
   try{localStorage.setItem("co_sub_"+tab,sub)}catch(e){}
   if(!(opts&&opts.noHash)&&history.replaceState)history.replaceState(null,"",window.__subHash(tab));
   if(tab==="house"&&sub==="view"){var kick=function(){try{window.dispatchEvent(new Event("resize"))}catch(e){}};setTimeout(kick,80);setTimeout(kick,450)}
@@ -1495,18 +1503,21 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
   });
  }
  function buildBar(tab){
-  var tp=document.getElementById("tp-"+tab);if(!tp||tp.querySelector(".subbar"))return;
-  var bar=document.createElement("div");bar.className="subbar";
+  var tp=document.getElementById("tp-"+tab);if(!tp)return;
+  var slot=document.getElementById("subslot-"+tab);if(!slot||slot.querySelector(".subbar"))return;
+  var bar=document.createElement("div");bar.className="subbar";bar.setAttribute("data-bartab",tab);
   SUBS[tab].list.forEach(function(s){var b=document.createElement("button");b.className="sub-btn";b.setAttribute("data-sub",s);b.textContent=LABELS[tab][s];b.onclick=function(){window.goSub(tab,s)};bar.appendChild(b)});
-  if(tab==="fire"){var r=document.getElementById("myfire-root");if(r&&r.parentNode===tp){tp.insertBefore(bar,r);return}}
-  tp.insertBefore(bar,tp.firstChild);
+  slot.appendChild(bar);
  }
+ function syncSlots(t){["house","fire"].forEach(function(k){var s=document.getElementById("subslot-"+k);if(s)s.classList.toggle("on",t===k)})}
+ if(window.setTab&&!window.__navWrapped){window.__navWrapped=true;var _origSetTab=window.setTab;window.setTab=function(t,scroll){_origSetTab(t,scroll);syncSlots(t)}}
  function route(){
   var h=((firstRoute?INIT_HASH:(location.hash||""))).replace(/^#/,"");firstRoute=false;
   var parts=h.split("/"),tab=parts[0];
   if(!tab||!document.getElementById("tp-"+tab))return;
   var active=document.querySelector(".tab-page.active");
   if((!active||active.id!=="tp-"+tab)&&window.setTab)setTab(tab,false);
+  syncSlots(tab);
   var c=SUBS[tab];if(!c)return;
   var sub=(parts[1]&&c.list.indexOf(parts[1])>=0)?parts[1]:c.def;
   window.goSub(tab,sub,{noHash:true});
