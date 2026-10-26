@@ -105,9 +105,10 @@
 .navstick{position:sticky;top:0;z-index:1200;background:rgba(15,15,35,.97);backdrop-filter:blur(8px);border-bottom:1px solid #2a2a4a;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:4px 0 5px;margin-bottom:12px}
 .tabbar{display:flex;gap:6px;overflow-x:auto;padding:0 2px;scrollbar-width:none}
 .tabbar::-webkit-scrollbar{display:none}
-.tab-btn{flex:1;min-width:88px;white-space:nowrap;background:#1a1a2e;border:1px solid #333;color:#aaa;border-radius:10px;padding:6px 6px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
+.tab-btn{flex:1;min-width:88px;white-space:nowrap;background:#1a1a2e;border:1px solid #333;color:#aaa;border-radius:10px;padding:7px 6px;font-size:.92em;cursor:pointer;transition:all .15s;font-family:inherit}
 .tab-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:#667eea;font-weight:bold}
 .tab-btn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff6b6b;margin-left:5px;vertical-align:middle;animation:chblink 1.6s infinite}
+.sub-btn .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff6b6b;margin-left:5px;vertical-align:middle;animation:chblink 1.6s infinite}
 .tab-page{display:none}
 .tab-page.active{display:block;animation:fadein .18s ease}
 .subslot{display:none;margin-top:4px}
@@ -173,15 +174,11 @@
 <div class="share-toast" id="frToast" style="border-color:#667eea;color:#cfe3ff;white-space:nowrap"></div>
 <div class="navstick" id="navstick">
 <nav class="tabbar">
-<button class="tab-btn active" data-tab="spend" onclick="goTab('spend')">🎯 刷卡</button>
-<button class="tab-btn" data-tab="home" onclick="goTab('home')">🏠 总览</button>
-<button class="tab-btn" data-tab="cards" onclick="goTab('cards')">💳 卡片</button>
-<button class="tab-btn" data-tab="redeem" onclick="goTab('redeem')">🎁 兑换</button>
-<button class="tab-btn" data-tab="new" onclick="goTab('new')">💡 新卡</button>
-<button class="tab-btn" data-tab="updates" onclick="goTab('updates')">📢 动态</button>
-<button class="tab-btn" data-tab="fire" onclick="goTab('fire')">🔥 FIRE</button>
-<button class="tab-btn" data-tab="house" onclick="goTab('house')">🏡 换房</button>
+<button class="tab-btn active" data-group="cards" onclick="goGroup('cards')">💳 信用卡</button>
+<button class="tab-btn" data-tab="fire" data-group="fire" onclick="goTab('fire')">🔥 FIRE</button>
+<button class="tab-btn" data-tab="house" data-group="house" onclick="goTab('house')">🏡 换房</button>
 </nav>
+<div class="subslot" id="subslot-cards"></div>
 <div class="subslot" id="subslot-house"></div>
 <div class="subslot" id="subslot-fire"></div>
 </div>
@@ -1462,24 +1459,27 @@ bhRender();
 </div>
 
 <script>
-function setTab(t,scroll){document.querySelectorAll('.tab-page').forEach(function(p){p.classList.toggle('active',p.id==='tp-'+t)});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});try{localStorage.setItem('co_tab',t)}catch(e){}if(history.replaceState)history.replaceState(null,'',window.__subHash?window.__subHash(t):'#'+t);var ab=document.querySelector('.tab-btn.active'),bar=document.querySelector('.tabbar');if(ab&&bar){bar.scrollLeft=ab.offsetLeft-bar.clientWidth/2+ab.clientWidth/2}if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
+var CC_PAGES=['spend','home','cards','redeem','new','updates'];
+function ccGroup(t){return CC_PAGES.indexOf(t)>=0?'cards':t}
+function setTab(t,scroll){document.querySelectorAll('.tab-page').forEach(function(p){p.classList.toggle('active',p.id==='tp-'+t)});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',(b.dataset.group||b.dataset.tab)===ccGroup(t))});try{localStorage.setItem('co_tab',t)}catch(e){}if(history.replaceState)history.replaceState(null,'',window.__subHash?window.__subHash(t):'#'+t);var ab=document.querySelector('.tab-btn.active'),bar=document.querySelector('.tabbar');if(ab&&bar){bar.scrollLeft=ab.offsetLeft-bar.clientWidth/2+ab.clientWidth/2}if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
 function goTab(t){setTab(t,true)}
-document.addEventListener('DOMContentLoaded',function(){var t=(location.hash||'').slice(1);if(!document.getElementById('tp-'+t)){try{t=localStorage.getItem('co_tab')||'spend'}catch(e){t='spend'}}if(!document.getElementById('tp-'+t))t='spend';setTab(t,false);if(document.querySelector('#tp-updates .ch-tag.new')){var b=document.querySelector('[data-tab="updates"]');if(b&&!b.querySelector('.dot')){var d=document.createElement('span');d.className='dot';b.appendChild(d)}}
+document.addEventListener('DOMContentLoaded',function(){var t=(location.hash||'').slice(1);if(!document.getElementById('tp-'+t)){try{t=localStorage.getItem('co_tab')||'spend'}catch(e){t='spend'}}if(!document.getElementById('tp-'+t))t='spend';setTab(t,false);if(window.__refreshDots)window.__refreshDots()
 var chu=document.getElementById('ch-updated'),sl=document.getElementById('st-last');if(chu&&sl)sl.textContent=chu.textContent;
 var scc=document.getElementById('st-count');if(scc)scc.textContent=document.querySelectorAll('#tp-updates .change-item').length;
 var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.getDay())%7;if(df===0&&nwd.getHours()>=10)df=7;var dd=new Date(nwd);dd.setDate(nwd.getDate()+df);var wkn=['周日','周一','周二','周三','周四','周五','周六'];snx.textContent=(df===0?'今天 ':((dd.getMonth()+1)+'月'+dd.getDate()+'日 '))+wkn[dd.getDay()]+' ~09:13';}
 });
 </script>
 <script>
-/* ===== 二级菜单（换房 house / FIRE fire）===== */
+/* ===== 二级菜单（信用卡 cards / FIRE fire / 换房 house）===== */
 (function(){
  var INIT_HASH=location.hash||"";
  var SUBS={house:{def:"view",list:["view","market","school"]},fire:{def:"home",list:["home","balance","plan"]}};
  var LABELS={house:{view:"🗺️ 看房",market:"📊 市场趋势",school:"🎓 学区与测算"},fire:{home:"🏠 总览",balance:"📋 资产负债表",plan:"🧮 退休测算"}};
  var firstRoute=true;
+ var CC_LABELS={spend:"🎯 刷卡",home:"🏠 总览",cards:"💳 卡片",redeem:"🎁 兑换",new:"💡 新卡",updates:"📢 动态"};
  function stored(tab){try{return localStorage.getItem("co_sub_"+tab)}catch(e){return null}}
  function cur(tab){var tp=document.getElementById("tp-"+tab);return tp?tp.getAttribute("data-sub"):null}
- window.__subHash=function(t){var c=SUBS[t];if(!c)return "#"+t;var s=cur(t)||stored(t)||c.def;return s===c.def?"#"+t:"#"+t+"/"+s};
+ window.__subHash=function(t){if(CC_PAGES.indexOf(t)>=0)return "#cards/"+t;var c=SUBS[t];if(!c)return "#"+t;var s=cur(t)||stored(t)||c.def;return s===c.def?"#"+t:"#"+t+"/"+s};
  window.goSub=function(tab,sub,opts){
   var c=SUBS[tab];if(!c)return;if(c.list.indexOf(sub)<0)sub=c.def;
   var tp=document.getElementById("tp-"+tab);if(!tp)return;
@@ -1502,6 +1502,28 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
    ch.setAttribute("data-subpage",sub);
   });
  }
+ function buildCardsBar(){
+  var slot=document.getElementById("subslot-cards");if(!slot||slot.querySelector(".subbar"))return;
+  var bar=document.createElement("div");bar.className="subbar";bar.setAttribute("data-bartab","cards");
+  CC_PAGES.forEach(function(s){var b=document.createElement("button");b.className="sub-btn";b.setAttribute("data-sub",s);b.textContent=CC_LABELS[s];b.onclick=function(){window.setTab(s,false)};bar.appendChild(b)});
+  slot.appendChild(bar);
+ }
+ function refreshDots(){
+  var hasNew=!!document.querySelector("#tp-updates .ch-tag.new");
+  var act=document.querySelector(".tab-page.active");var curP=act?act.id.replace(/^tp-/,""):"";
+  function setDot(el,on){if(!el)return;var d=el.querySelector(".dot");if(on&&!d){d=document.createElement("span");d.className="dot";el.appendChild(d)}else if(!on&&d){d.remove()}}
+  setDot(document.querySelector('.tab-btn[data-group="cards"]'),hasNew&&curP!=="updates");
+  setDot(document.querySelector('.subbar[data-bartab="cards"] .sub-btn[data-sub="updates"]'),hasNew);
+ }
+ window.__refreshDots=refreshDots;
+ window.goGroup=function(g){
+  if(g!=="cards"){window.goTab(g);return}
+  var act=document.querySelector(".tab-page.active");var curP=act?act.id.replace(/^tp-/,""):"";
+  var target="spend";
+  if(CC_PAGES.indexOf(curP)>=0)target=curP;
+  else{var st=stored("cards");if(st&&CC_PAGES.indexOf(st)>=0)target=st;else{var st2=null;try{st2=localStorage.getItem("co_tab")}catch(e){}if(st2&&CC_PAGES.indexOf(st2)>=0)target=st2}}
+  window.setTab(target,true);
+ };
  function buildBar(tab){
   var tp=document.getElementById("tp-"+tab);if(!tp)return;
   var slot=document.getElementById("subslot-"+tab);if(!slot||slot.querySelector(".subbar"))return;
@@ -1509,12 +1531,25 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
   SUBS[tab].list.forEach(function(s){var b=document.createElement("button");b.className="sub-btn";b.setAttribute("data-sub",s);b.textContent=LABELS[tab][s];b.onclick=function(){window.goSub(tab,s)};bar.appendChild(b)});
   slot.appendChild(bar);
  }
- function syncSlots(t){["house","fire"].forEach(function(k){var s=document.getElementById("subslot-"+k);if(s)s.classList.toggle("on",t===k)})}
+ function syncSlots(t){["house","fire"].forEach(function(k){var s=document.getElementById("subslot-"+k);if(s)s.classList.toggle("on",t===k)});var cs=document.getElementById("subslot-cards");if(cs)cs.classList.toggle("on",CC_PAGES.indexOf(t)>=0);if(CC_PAGES.indexOf(t)>=0){try{localStorage.setItem("co_sub_cards",t)}catch(e){}}document.querySelectorAll('.subbar[data-bartab="cards"] .sub-btn').forEach(function(b){b.classList.toggle("active",b.getAttribute("data-sub")===t)});refreshDots()}
  if(window.setTab&&!window.__navWrapped){window.__navWrapped=true;var _origSetTab=window.setTab;window.setTab=function(t,scroll){_origSetTab(t,scroll);syncSlots(t)}}
+ function activatePage(p){
+  var active=document.querySelector(".tab-page.active");
+  if((!active||active.id!=="tp-"+p)&&window.setTab)setTab(p,false);
+  syncSlots(p);
+  if(history.replaceState)history.replaceState(null,"",window.__subHash(p));
+ }
  function route(){
   var h=((firstRoute?INIT_HASH:(location.hash||""))).replace(/^#/,"");firstRoute=false;
   var parts=h.split("/"),tab=parts[0];
-  if(!tab||!document.getElementById("tp-"+tab))return;
+  if(!tab)return;
+  if(tab==="cards"){
+   if(parts[1])activatePage(CC_PAGES.indexOf(parts[1])>=0?parts[1]:"spend");
+   else activatePage("cards");
+   return;
+  }
+  if(CC_PAGES.indexOf(tab)>=0){activatePage(tab);return}
+  if(!document.getElementById("tp-"+tab))return;
   var active=document.querySelector(".tab-page.active");
   if((!active||active.id!=="tp-"+tab)&&window.setTab)setTab(tab,false);
   syncSlots(tab);
@@ -1525,9 +1560,11 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
  }
  function syncBalanceLock(user){var n=document.getElementById("fire-balance-lock");if(n)n.style.display=user?"none":""}
  document.addEventListener("DOMContentLoaded",function(){
-  buildBar("house");buildBar("fire");tagFireRoot();
+  buildCardsBar();buildBar("house");buildBar("fire");tagFireRoot();
   ["house","fire"].forEach(function(tab){var tp=document.getElementById("tp-"+tab);if(tp&&!tp.getAttribute("data-sub"))window.goSub(tab,stored(tab)||SUBS[tab].def,{noHash:true})});
   route();
+  var _ap=document.querySelector(".tab-page.active");if(_ap)syncSlots(_ap.id.replace(/^tp-/,""));
+  refreshDots();
   var root=document.getElementById("myfire-root");
   if(root&&window.MutationObserver)new MutationObserver(tagFireRoot).observe(root,{childList:true});
   setTimeout(tagFireRoot,1200);
@@ -1544,7 +1581,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-26 03:10 UTC';
+var BUILD_TS='2026-10-26 03:15 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
