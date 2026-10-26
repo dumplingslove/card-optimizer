@@ -169,7 +169,7 @@
 <div class="share-wrap"><button class="share-btn" id="shareBtn" title="复制分享链接" aria-label="复制分享链接" onclick="shareSite()">🔗</button></div>
 <div style="position:fixed;right:18px;bottom:82px;z-index:9000"><button id="frBtn" title="强制刷新：清缓存并重新加载最新版本" aria-label="强制刷新" onclick="forceRefreshSite()" style="width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0">🔄</button></div>
 <div style="position:fixed;right:18px;bottom:146px;z-index:9000"><button id="authFab" title="登录（邮箱魔法链接）" aria-label="登录" onclick="authFabClick()" style="width:52px;height:52px;border-radius:50%;background:#16213e;border:1px solid #667eea;color:#8f9bff;font-size:1.35em;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:0">🔒</button></div>
-<div id="authPanel" style="display:none;position:fixed;right:18px;bottom:210px;z-index:9001;width:min(320px,calc(100vw - 36px));background:#16213e;border:1px solid #667eea;border-radius:12px;padding:12px;box-shadow:0 8px 28px rgba(0,0,0,0.55);font-size:0.85em"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span id="authStatus">🔒 登录后看我的实测数据</span><span id="authBtnWrap"><button class="auth-btn" onclick="toggleLoginForm()">邮箱登录</button></span></div><div id="loginForm" style="display:none;width:100%;margin-top:8px"><input class="auth-input" id="loginEmail" type="email" placeholder="输入白名单邮箱" autocomplete="email" style="width:100%;box-sizing:border-box;margin-bottom:8px"><button class="auth-btn" onclick="sendMagicLink()">发送登录链接</button><div id="loginMsg" style="color:#9fd8ff;margin-top:6px"></div></div><div id="buildStamp" style="margin-top:9px;padding-top:8px;border-top:1px solid #2a3350;color:#778;font-size:0.85em">版本 …</div></div>
+<div id="authPanel" style="display:none;position:fixed;right:18px;bottom:210px;z-index:9001;width:min(320px,calc(100vw - 36px));background:#16213e;border:1px solid #667eea;border-radius:12px;padding:12px;box-shadow:0 8px 28px rgba(0,0,0,0.55);font-size:0.85em"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span id="authStatus">🔒 登录后看我的实测数据</span><span id="authBtnWrap"><button class="auth-btn" onclick="toggleLoginForm()">邮箱登录</button></span></div><div id="loginForm" style="display:none;width:100%;margin-top:8px"><input class="auth-input" id="loginEmail" type="email" placeholder="输入白名单邮箱" autocomplete="email" style="width:100%;box-sizing:border-box;margin-bottom:8px"><button class="auth-btn" onclick="sendMagicLink()">发送登录链接</button><div id="loginMsg" style="color:#9fd8ff;margin-top:6px"></div><div style="margin-top:10px;border-top:1px solid #2a3350;padding-top:8px"><div style="color:#9fb4d8;font-size:0.92em;line-height:1.55">📱 在 iPad／手机桌面 App 里登录：<b>不要点开</b>邮件里的链接（点开只会登录浏览器，App 里还是未登录，这是苹果的隔离机制）。在邮件里<b>长按链接→拷贝</b>，回来粘贴到这里：</div><textarea id="pasteLink" class="auth-input" rows="3" placeholder="把拷贝的登录链接粘贴到这里" style="width:100%;box-sizing:border-box;margin-top:6px;font-size:0.85em"></textarea><button class="auth-btn" onclick="pasteLinkLogin()" style="margin-top:6px">用粘贴的链接登录</button><div id="pasteMsg" style="color:#9fd8ff;margin-top:6px"></div><div style="color:#778;font-size:0.88em;margin-top:4px;line-height:1.5">链接一次性：一封只能给一个设备用一次；在别处点开过或用过都会作废，这个设备请重新发送一封、只用最新那封。</div></div></div><div id="buildStamp" style="margin-top:9px;padding-top:8px;border-top:1px solid #2a3350;color:#778;font-size:0.85em">版本 …</div></div>
 <div class="share-toast" id="shareToast">✅ 链接已复制，快去分享吧！</div>
 <div class="share-toast" id="frToast" style="border-color:#667eea;color:#cfe3ff;white-space:nowrap"></div>
 <div class="navstick" id="navstick">
@@ -1595,7 +1595,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-26 03:47 UTC';
+var BUILD_TS='2026-10-26 04:23 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -1917,10 +1917,36 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: window.location.origin + window.location.pathname } })
       .then(function(res){
         if (res.error) { msg.textContent = "发送失败：" + res.error.message; }
-        else { msg.textContent = "✅ 登录链接已发到 " + email + "，去邮箱点链接即可（链接会跳回本站并自动登录）。"; }
+        else { msg.textContent = "✅ 登录链接已发到 " + email + "。浏览器里：去邮箱点链接即可登录；iPad／桌面 App 里：不要点开，长按链接→拷贝，回到这里粘贴到下方框里登录。"; }
       });
   };
   window.signOutCard = function(){ sb.auth.signOut().then(function(){ window.location.hash = ""; window.location.reload(); }); };
+  window.pasteLinkLogin = function(){
+    var raw = ($("pasteLink").value || "").trim();
+    var msg = $("pasteMsg");
+    if (!raw) { msg.textContent = "先把拷贝的登录链接粘贴进来"; return; }
+    var url;
+    try { url = new URL(raw); } catch(e) { msg.textContent = "这不像一个完整链接——请在邮件里长按登录链接、选「拷贝」，再回来粘贴"; return; }
+    msg.textContent = "登录中…";
+    var done = function(res){
+      if (res && res.error) {
+        var m = res.error.message || "";
+        msg.textContent = /expired|invalid|already/i.test(m) ? "这个链接已失效或被用过了：链接一次性，在任何地方点开过或用过都会作废。这个设备请重新发送一封新邮件，收到后只长按拷贝、不要点开。" : ("登录失败：" + m);
+      } else {
+        msg.textContent = "✅ 登录成功！";
+        var p = document.getElementById("authPanel"); if (p) setTimeout(function(){ p.style.display = "none"; }, 900);
+      }
+    };
+    var q = url.searchParams;
+    var th = q.get("token") || q.get("token_hash");
+    if (th) { sb.auth.verifyOtp({ token_hash: th, type: q.get("type") || "magiclink" }).then(done); return; }
+    var code = q.get("code");
+    if (code) { sb.auth.exchangeCodeForSession(code).then(done); return; }
+    var hash = new URLSearchParams(url.hash.replace(/^#/, ""));
+    var at = hash.get("access_token"), rt = hash.get("refresh_token");
+    if (at && rt) { sb.auth.setSession({ access_token: at, refresh_token: rt }).then(done); return; }
+    msg.textContent = "链接里没找到登录凭证，可能拷贝不完整，请重新拷贝邮件里的登录链接";
+  };
   function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
   function money(v){ if (v == null) return "—"; return "$" + Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
   var ACCT = null, CASH = null, CREDIT_ROWS = null;
