@@ -985,8 +985,6 @@ renderRecs();
 <div id="myNetWorth" style="display:none;margin-top:16px;border-top:1px solid #333;padding-top:12px"><h3 style="color:#4ecdc4;font-size:1em;margin-bottom:2px">🏠 净资产构成（登录实测）</h3><div id="nwSummary" style="font-size:0.9em;color:#ccc;line-height:1.7;margin-bottom:8px"></div><div id="nwAssets"></div><div id="nwLiabs"></div><p id="nwMeta" style="font-size:0.75em;color:#888;margin-top:6px"></p></div>
 </div>
 </div>
-
-</div>
 <div class="tab-page" id="tp-house">
 <div class="section" id="bh-module">
 <div data-subpage="view">
@@ -1461,6 +1459,7 @@ bhRender();
 <div id="house-body" style="display:none"></div>
 </div>
 </div>
+</div>
 
 <script>
 function setTab(t,scroll){document.querySelectorAll('.tab-page').forEach(function(p){p.classList.toggle('active',p.id==='tp-'+t)});document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.toggle('active',b.dataset.tab===t)});try{localStorage.setItem('co_tab',t)}catch(e){}if(history.replaceState)history.replaceState(null,'',window.__subHash?window.__subHash(t):'#'+t);var ab=document.querySelector('.tab-btn.active'),bar=document.querySelector('.tabbar');if(ab&&bar){bar.scrollLeft=ab.offsetLeft-bar.clientWidth/2+ab.clientWidth/2}if(scroll)window.scrollTo({top:0,behavior:'smooth'})}
@@ -1545,7 +1544,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-26 03:06 UTC';
+var BUILD_TS='2026-10-26 03:10 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
