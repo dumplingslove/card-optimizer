@@ -384,9 +384,14 @@ var REC_CATS = [
       { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
       { n: "Bilt Palladium", s: "Bilt 2x(≈5%+凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "Amex Platinum", s: "Plat 5x(仅机票,关前)", cur: "MR", m: 5, rate: "5x MR≈10%" } ] },
-  { g: 2, icon: "🌏", name: "境外餐饮", ccat: "dining", why: "💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x", alts: "Atmos 3x | Bilt 2x(凑比例)",
+  { g: 2, icon: "🌏", name: "境外餐饮", ccat: "dining",
+    why: function() {
+      if (rotOn("chase", "dining")) { var R = REC_ROTATION.chase; return "💡 Flex 2026-09-20改版后免境外手续费:" + REC_ROTATION.qLabel + "境外餐饮=常驻3x+季度" + (R.cats.dining - 1) + "x=" + (R.cats.dining + 2) + "x UR≈14%,境外最强;与超市共用$" + R.cap.toLocaleString() + "/卡额度," + R.activateBy + "前激活可追溯。⚠️老Freedom仍收3%境外手续费,境外别刷它。不收Chase/额度用完→Gold 4x MR≈8%(无FTF)。"; }
+      return "💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x。Flex常驻3x且免境外手续费可备选;老Freedom有3%境外手续费别带。";
+    },
     candidates: [
       { n: "Amex Gold", cur: "MR", m: 4, rate: "4x MR≈8%" },
+      { n: "Freedom Flex", s: "Freedom Flex 轮转", cur: "UR", m: 3, rate: "3x UR≈6%", rot: ["chase", "dining"] },
       { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
   { g: 2, icon: "🚇", name: "公交/地铁",
@@ -1827,7 +1832,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-26 07:02 UTC';
+var BUILD_TS='2026-10-26 14:04 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
