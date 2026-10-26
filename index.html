@@ -870,6 +870,7 @@ renderRecs();
 <p id="f-assump" style="color:#888;font-size:.78em;line-height:1.6;margin-top:12px"></p>
 </div>
 <div data-subpage="plan">
+<div id="mf-slider-demo"></div>
 <div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
 <h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🏠 演示 persona 家庭结构（完整模型 · 均为虚构数字）</h3>
 <p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0">双职工两位成人可各自设退休年龄（如 55 / 57 岁）、各自收入与 401(k) 供款+雇主 match；账户分 Taxable / Traditional / Roth / HSA / 529 五类；两套房两笔贷款（自住房 + 出租房，出租净现金流 = 租金×(1−空置) − 运营成本 − 贷款月供，可设卖出年份）；一个孩子 + 可开关的二孩情景；年支出拆 Must（必要）/ Like（享受）两层，如演示年支出 $60,000 = Must $42,000 + Like $18,000，大额支出（换车、父母支持、旅行）单列。上面的快速计算器是这套完整模型的简化版；私人版才保存真实数字，本页不保存任何输入。</p>
@@ -1594,7 +1595,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-26 03:21 UTC';
+var BUILD_TS='2026-10-26 03:47 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -2476,6 +2477,19 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
 #myfire-root button{background:#1d2f4d;color:#e8eefc;border:1px solid #3a5a8a;border-radius:6px;padding:4px 10px;cursor:pointer;margin:2px}
 #myfire-root button:hover{background:#274a7a}
 #myfire-root h4{margin:14px 0 4px}
+
+.mfsl-wrap{background:#16213e;border:1px solid #2c3e55;border-radius:10px;padding:14px 16px;margin:14px 0}
+.mfsl-wrap input[type=range]{width:100%;height:42px;accent-color:#4ecdc4;cursor:pointer;margin:2px 0}
+.mfsl-chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 2px}
+.mfsl-chip{background:#1d2f4d;color:#e8eefc;border:1px solid #3a5a8a;border-radius:999px;padding:7px 12px;cursor:pointer;font-size:.88em}
+.mfsl-chip:hover{background:#274a7a}
+.mfsl-chip-off{color:#8a93a8;font-size:.88em;padding:7px 2px}
+.mfsl-cards{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.mfsl-card{border:1px solid #2c3e55;border-radius:8px;padding:10px 12px;background:#101a30}
+.mfsl-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.mfsl-stat{border:1px solid #3a4a6b;border-radius:8px;padding:8px 12px;min-width:128px;background:#141f38}
+.mfsl-stat .lb{color:#aaa;font-size:.78em}
+.mfsl-stat .vl{font-size:1.12em;margin-top:2px}
 </style>
 <script>
 (function(){
@@ -4425,6 +4439,7 @@ function mfRenderAll(){
     + "<input type='file' id='mf-import-file' accept='.json,application/json' style='display:none'>"
     + "<div style='color:#888;font-size:.82em;line-height:1.65'>导出 = 把整套数字下载成一个文件，备份到你自己电脑；导入 = 用备份文件整套恢复（会覆盖现在的数字，导入成功后会自动保存到云端）。换设备、或者改数字之前想留个底，才用得上。</div></div></details>";
   h += "<div id='mf-results'></div>";
+  h += "<div id='mf-slider' data-subpage='plan'></div>";
   /* MC */
   h += "<details open style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🎲 Monte Carlo 与压力测试</summary>"
     + "<div style='margin:8px 0;line-height:2'>分布 <select id='mf-mc-dist'><option value='lognormal'" + (A.mcDistribution === "lognormal" ? " selected" : "") + ">对数正态</option><option value='normal'" + (A.mcDistribution === "normal" ? " selected" : "") + ">正态</option></select>"
@@ -4462,8 +4477,195 @@ function mfRenderAll(){
   mfRenderAlloc();
   mfRenderScenarios();
   mfRenderForms();
+  try { mfSliderMount("real"); } catch (e){}
   if (MF.mc){ var out = document.getElementById("mf-mc-out"); if (out) out.innerHTML = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (MF.mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(MF.mc.p10) + "</td><td>" + mf$(MF.mc.p50) + "</td><td>" + mf$(MF.mc.p90) + "</td></tr></table></div>"; }
 }
+
+
+/* ================= 退休年龄滑轨（FIRE > 退休测算 顶部；与总览同一引擎、同一三档定义） =================
+   玩法：拖动两人共同的退休年龄（35–65），每档年龄的三档达标率沿用总览口径——
+   达标率 = 现在家底 ÷ 该档目标；目标：刚好够 = 该年龄克隆的引擎精确求解 FI，
+   够用 = 年支出 ÷ 4%，有厚垫子 = 年支出 ÷ 3.5%。过/不过按档定义判：
+   刚好够 = 确定性模拟撑到 95 岁；够用/垫子 = 在撑得住的前提下、退休那年家底过目标线
+   （嵌套口径，保证三档最早年龄单调）。MC 用档案自身假设（次数/σ/种子/分布）。
+   全部克隆计算，绝不写回 MF.state、不触发保存。 */
+var MF_SLIDER_DEMO = {"accounts":[{"annualContributionCents":0,"balanceCents":2500000,"id":1,"includeInInvestable":true,"labelLast4":"••4821","nickname":"联名支票账户（示例）","notes":"虚构账户","ownerClientKey":null,"type":"cash"},{"annualContributionCents":0,"balanceCents":4000000,"id":2,"includeInInvestable":true,"labelLast4":"••9032","nickname":"高息储蓄（示例）","notes":"应急金，虚构账户","ownerClientKey":null,"type":"cash"},{"annualContributionCents":2400000,"balanceCents":18500000,"id":3,"includeInInvestable":true,"labelLast4":"••7715","nickname":"券商投资账户（示例）","notes":"虚构账户","ownerClientKey":"person-1","type":"taxable"},{"annualContributionCents":2350000,"balanceCents":32000000,"id":4,"includeInInvestable":true,"labelLast4":"••2260","nickname":"401(k)（示例）","notes":"虚构账户","ownerClientKey":"person-1","type":"traditional"},{"annualContributionCents":2350000,"balanceCents":21000000,"id":5,"includeInInvestable":true,"labelLast4":"••6118","nickname":"401(k)（示例）","notes":"虚构账户","ownerClientKey":"person-2","type":"traditional"},{"annualContributionCents":700000,"balanceCents":6500000,"id":6,"includeInInvestable":true,"labelLast4":"••3354","nickname":"Roth IRA（示例）","notes":"虚构账户","ownerClientKey":"person-2","type":"roth"},{"annualContributionCents":600000,"balanceCents":1800000,"id":7,"includeInInvestable":false,"labelLast4":"••8840","nickname":"529 教育储蓄（示例）","notes":"专款专用，默认不计入可投资资产；虚构账户","ownerClientKey":null,"type":"529"},{"annualContributionCents":300000,"balanceCents":850000,"id":8,"includeInInvestable":true,"labelLast4":"••5520","nickname":"HSA（示例）","notes":"虚构账户","ownerClientKey":null,"type":"hsa"}],"assumptions":{"acaAnnualPerPersonCents":960000,"allocConcentrationLimitBps":1000,"allocCurrentBondBps":1500,"allocCurrentCashBps":500,"allocCurrentStockBps":8000,"allocEmployerStockCents":18000000,"allocRebalanceBandBps":500,"employerHealthcareAnnualCents":600000,"guardrailCutBps":2500,"guardrailEnabled":false,"guardrailRestoreBps":2000,"guardrailTriggerBps":2000,"inflationBps":250,"mcDistribution":"lognormal","mcRuns":500,"mcSeed":20261013,"mcSigmaBps":1200,"medicareSupplementAnnualCents":240000,"nominalReturnBps":700,"notes":"示例假设：名义回报 7%、通胀 2.5%","partTimeIncomeCents":2000000,"pathPriority":"safest_fewest","retirementAvgTaxBps":1500,"rothBracketCapCents":9000000,"swr1Bps":325,"swr2Bps":350,"swr3Bps":400},"events":[{"amountCents":12000000,"id":1,"kind":"expense","name":"孩子大学教育（示例）","notes":"Phase 0 仅记录，尚未计入引擎推演","year":2040}],"household":{"annualSavingsCents":6000000,"annualSpendingCents":9600000,"baseYear":2026,"childCost0To2Cents":2000000,"childCost13To17Cents":1500000,"childCost3To5Cents":1600000,"childCost6To12Cents":1200000,"childEducationCents":4000000,"id":1,"isExample":true,"name":"示例家庭","plannedRetirementAge":60,"secondChildBirthYear":null,"secondChildEnabled":false,"secondChildScaleBps":10000,"spendingLikeCents":0,"spendingMustCents":9600000,"updatedAt":"2026-10-12T20:59:56.776Z"},"loans":[{"annualRateBps":615,"balanceCents":58000000,"computedMonthlyPaymentCents":353352,"id":1,"monthlyPaymentCents":353000,"name":"自住房贷（示例）","notes":"虚构贷款","propertyClientKey":"property-1","termMonths":360},{"annualRateBps":685,"balanceCents":34000000,"computedMonthlyPaymentCents":222788,"id":2,"monthlyPaymentCents":223000,"name":"出租房房贷（示例）","notes":"虚构贷款","propertyClientKey":"property-2","termMonths":360}],"persons":[{"annual401kCents":0,"annualIncomeCents":16500000,"annualMatchCents":0,"birthYear":1988,"clientKey":"person-1","downshiftHasHealthcare":false,"downshiftPctBps":5000,"downshiftRetireAge":null,"downshiftStartAge":null,"id":1,"incomeGrowthBps":0,"name":"Alex（示例）","notes":"虚构人物，仅用于演示","retirementAge":60,"role":"adult","ssClaimAge":67,"ssMonthlyAtFraCents":280000},{"annual401kCents":0,"annualIncomeCents":14000000,"annualMatchCents":0,"birthYear":1990,"clientKey":"person-2","downshiftHasHealthcare":false,"downshiftPctBps":5000,"downshiftRetireAge":null,"downshiftStartAge":null,"id":2,"incomeGrowthBps":0,"name":"Blair（示例）","notes":"虚构人物，仅用于演示","retirementAge":60,"role":"adult","ssClaimAge":67,"ssMonthlyAtFraCents":220000},{"annual401kCents":0,"annualIncomeCents":0,"annualMatchCents":0,"birthYear":2022,"clientKey":"person-3","downshiftHasHealthcare":false,"downshiftPctBps":5000,"downshiftRetireAge":null,"downshiftStartAge":null,"id":3,"incomeGrowthBps":0,"name":"小宝（示例）","notes":"虚构人物，仅用于演示","retirementAge":60,"role":"child","ssClaimAge":67,"ssMonthlyAtFraCents":0}],"properties":[{"clientKey":"property-1","id":1,"kind":"primary","monthlyCostsCents":85000,"monthlyRentCents":0,"name":"自住房（示例）","notes":"虚构房产","rentGrowthBps":0,"sellYear":null,"vacancyBps":0,"valueCents":95000000,"valueGrowthBps":0},{"clientKey":"property-2","id":2,"kind":"rental","monthlyCostsCents":60000,"monthlyRentCents":260000,"name":"出租公寓（示例）","notes":"虚构房产","rentGrowthBps":200,"sellYear":null,"vacancyBps":500,"valueCents":52000000,"valueGrowthBps":200}],"scenarios":[{"annualSavingsCents":null,"annualSpendingCents":null,"description":"使用基准假设，不做任何覆盖","id":1,"inflationBps":null,"isActive":true,"name":"基准情景（示例）","nominalReturnBps":null,"notes":"","plannedRetirementAge":null,"retireAgeP1":null,"retireAgeP2":null,"secondChildEnabledOverride":null,"sellRentalYearOverride":null,"spendingScaleBps":null},{"annualSavingsCents":null,"annualSpendingCents":10500000,"description":"回报更低、通胀更高、支出更高","id":2,"inflationBps":320,"isActive":false,"name":"保守情景（示例）","nominalReturnBps":550,"notes":"","plannedRetirementAge":null,"retireAgeP1":null,"retireAgeP2":null,"secondChildEnabledOverride":null,"sellRentalYearOverride":null,"spendingScaleBps":null},{"annualSavingsCents":7500000,"annualSpendingCents":null,"description":"计划 55 岁退休，储蓄提高","id":3,"inflationBps":null,"isActive":false,"name":"提前退休（示例）","nominalReturnBps":null,"notes":"","plannedRetirementAge":55,"retireAgeP1":null,"retireAgeP2":null,"secondChildEnabledOverride":null,"sellRentalYearOverride":null,"spendingScaleBps":null}]};
+var MFSL_MIN = 35, MFSL_MAX = 65;
+var mfslInst = {};
+function mfslWan(v){ if (v == null || !isFinite(v)) return "—"; var w = Math.round(v / 100) / 100; return "$" + w.toLocaleString("en-US") + " 万"; }
+function mfslHash(s){ var h = 5381; for (var i = 0; i < s.length; i++){ h = ((h << 5) + h + s.charCodeAt(i)) | 0; } return h; }
+function mfslFingerprint(st){ try { return mfslHash(JSON.stringify(st)) + ":" + mfInvestable(st); } catch (e){ return "x"; } }
+function mfslCloneAt(base, age){
+  var st = mfClone(base);
+  st.persons.forEach(function(p){ if (p.role === "adult") p.retirementAge = age; });
+  st.household.plannedRetirementAge = age;
+  return st;
+}
+function mfslSweep(base){
+  var inv = mfInvestable(base);
+  var out = {};
+  for (var a = MFSL_MIN; a <= MFSL_MAX; a++){
+    var res = mfCompute(mfslCloneAt(base, a));
+    var spend = res.eff.spendMust + res.eff.spendLike;
+    var B = null;
+    for (var i = 0; i < res.main.rows.length; i++){ if (res.main.rows[i].phase === "退休"){ B = res.main.rows[i].start; break; } }
+    if (B == null) B = inv;
+    var t40 = spend / 0.04, t35 = spend / 0.035;
+    var failed = !!res.main.failed;
+    out[a] = { age: a, fi: res.fi, spend: spend, failed: failed, failYear: res.main.failYear, B: B, end: res.endBalance,
+      t40: t40, t35: t35,
+      pctFI: (res.fi && res.fi > 0) ? inv / res.fi * 100 : null,
+      pct40: inv / t40 * 100, pct35: inv / t35 * 100,
+      passFI: !failed, pass40: !failed && B >= t40, pass35: !failed && B >= t35 };
+  }
+  return out;
+}
+function mfslMc(base, age){
+  var A = base.assumptions;
+  var eff = effectiveInputs(mfslCloneAt(base, age), null); eff.flags = defaultFlags();
+  return mcRun(eff, { seed: A.mcSeed, runs: A.mcRuns, sigmaBps: A.mcSigmaBps, dist: A.mcDistribution, streamMode: "shared" });
+}
+function mfslEarliest(sweep, key){
+  for (var a = MFSL_MIN; a <= MFSL_MAX; a++){ if (sweep[a] && sweep[a][key]) return a; }
+  return null;
+}
+function mfslVerdict(d, mc){
+  var s;
+  if (d.failed){
+    s = d.age + " 岁双退：精确模拟撑不到 95 岁——" + (d.failYear || "中途") + " 年就断粮了，「刚好够」这关先过不了，其余两档连带不过。";
+  } else if (!d.pass35){
+    var names = !d.pass40 ? "「够用」和「有厚垫子」" : "「有厚垫子」";
+    var target = !d.pass40 ? d.t40 : d.t35;
+    s = d.age + " 岁双退：精确模拟能撑到 95 岁" + (d.pass40 ? "、「够用」也过" : "") + "，但" + names + "还差约 " + mfslWan(Math.max(0, target - d.B)) + "（退休那年的家底离这档的目标线还差这么多）。";
+  } else {
+    s = d.age + " 岁双退：三档全过。";
+    if (mc) s += "就算赶上运气差的市场，最差的十分之一到最后还剩 " + mfslWan(mc.p10) + "。";
+  }
+  if (mc && (d.failed || !d.pass35)) s += " Monte Carlo 成功率 " + (mc.passRate * 100).toFixed(1) + "%。";
+  return s;
+}
+function mfslCard(name, plain, pct, pass, basis){
+  return "<div class='mfsl-card'><div style='display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px'><span><b>" + name + "</b> <span style='color:#aaa;font-size:.85em'>" + mfEsc(plain) + "</span></span>"
+    + "<span style='white-space:nowrap'>" + (pass ? "✅ 过" : "❌ 不过") + " · 达标率 <b>" + (pct == null ? "—" : pct.toFixed(1) + "%") + "</b></span></div>"
+    + "<div style='color:#888;font-size:.82em;margin-top:3px'>" + basis + "</div></div>";
+}
+function mfslStat(lb, vl){
+  return "<div class='mfsl-stat'><div class='lb'>" + lb + "</div><div class='vl'><b>" + vl + "</b></div></div>";
+}
+function mfSliderMount(key){
+  var el = document.getElementById(key === "real" ? "mf-slider" : "mf-slider-demo");
+  if (!el) return;
+  var base = key === "real" ? MF.state : MF_SLIDER_DEMO;
+  if (!base) return;
+  var fp = mfslFingerprint(base);
+  var inst = mfslInst[key];
+  if (!inst || inst.fp !== fp){
+    var planned = base.household.plannedRetirementAge || 60;
+    inst = mfslInst[key] = { key: key, fp: fp, base: base, sweep: null, mc: {}, mcToken: 0, mcTimer: null,
+      age: Math.max(MFSL_MIN, Math.min(MFSL_MAX, planned)) };
+  }
+  inst.el = el;
+  mfslSkeleton(inst);
+  if (inst.sweep){ mfslPaint(inst); }
+  else {
+    setTimeout(function(){
+      try { inst.sweep = mfslSweep(inst.base); } catch (e){ inst.sweep = null; var st = document.getElementById(inst.p + "status"); if (st) st.textContent = "计算出错：" + e.message; return; }
+      mfslPaint(inst);
+    }, 30);
+  }
+}
+function mfslSkeleton(inst){
+  var P = inst.p = "mfsl-" + inst.key + "-";
+  var demo = inst.key === "demo";
+  inst.el.innerHTML = "<div class='mfsl-wrap'>"
+    + "<h3 style='margin:0 0 6px;color:#ffd93d;font-size:1.02em'>🎚️ 退休年龄滑轨：两个人一起早退几年，到底行不行？</h3>"
+    + "<p style='color:#aaa;font-size:.85em;line-height:1.65;margin:0 0 4px'>" + (demo ? "演示数据（虚构 persona）· " : "") + "拖动两人共同的退休年龄，下面三档口径（和总览同一套定义、同一个引擎）和 Monte Carlo 都按这个年龄重算。只是试算，不会改动" + (demo ? "演示" : "你的") + "计划数字。</p>"
+    + "<div class='mfsl-chips' id='" + P + "chips'><span style='color:#888'>最早能退：计算中…</span></div>"
+    + "<div style='display:flex;align-items:baseline;gap:10px;margin-top:6px'><span id='" + P + "age' style='font-size:2em;font-weight:bold;color:#4ecdc4'>" + inst.age + " 岁</span><span id='" + P + "agesub' style='color:#aaa;font-size:.88em'></span></div>"
+    + "<input type='range' id='" + P + "range' min='" + MFSL_MIN + "' max='" + MFSL_MAX + "' step='1' value='" + inst.age + "' aria-label='两人共同退休年龄'>"
+    + "<div style='display:flex;justify-content:space-between;color:#888;font-size:.78em'><span>35 岁 · 越早越难</span><span>65 岁 · 越晚越稳</span></div>"
+    + "<div id='" + P + "status' style='color:#888;font-size:.85em;margin-top:4px'>计算中…</div>"
+    + "<div class='mfsl-cards' id='" + P + "cards'></div>"
+    + "<div class='mfsl-stats' id='" + P + "stats'></div>"
+    + "<p id='" + P + "verdict' style='line-height:1.75;margin:12px 0 2px;font-size:1.02em'></p>"
+    + "<p style='color:#888;font-size:.78em;line-height:1.6;margin:6px 0 0'>口径：达标率 = 现在家底 ÷ 该档目标（同总览）；「过」按档判——刚好够 = 精确模拟撑到 95 岁，够用 / 有厚垫子 = 在撑得住的前提下、退休那年家底分别过年支出 ÷ 4% / ÷ 3.5% 的目标线。Monte Carlo 用档案里的假设参数（次数 / σ / 种子）。</p>"
+    + "</div>";
+  var rg = document.getElementById(P + "range");
+  if (rg) rg.addEventListener("input", function(){ mfslSetAge(inst, parseInt(rg.value, 10) || inst.age); });
+}
+function mfslSetAge(inst, a){
+  inst.age = Math.max(MFSL_MIN, Math.min(MFSL_MAX, a));
+  var rg = document.getElementById(inst.p + "range"); if (rg && parseInt(rg.value, 10) !== inst.age) rg.value = inst.age;
+  mfslPaint(inst);
+}
+function mfslPaint(inst){
+  var P = inst.p, sw = inst.sweep;
+  var stEl = document.getElementById(P + "status");
+  if (!sw){ if (stEl) stEl.textContent = "计算中…"; return; }
+  if (stEl) stEl.textContent = "";
+  var d = sw[inst.age];
+  var inv = mfInvestable(inst.base);
+  var adults = mfAdults(inst.base);
+  var yrs = []; adults.forEach(function(p){ var y = p.birthYear + inst.age; if (yrs.indexOf(y) < 0) yrs.push(y); });
+  var ageEl = document.getElementById(P + "age"); if (ageEl) ageEl.textContent = inst.age + " 岁";
+  var subEl = document.getElementById(P + "agesub"); if (subEl) subEl.textContent = "双退 · " + yrs.join(" / ") + " 年起先后停工";
+  /* 最早可退 chips */
+  var tiers = [["刚好够", "passFI"], ["够用", "pass40"], ["有厚垫子", "pass35"]];
+  var ch = "<span style='color:#aaa;font-size:.88em;padding:7px 0'>最早能退（点一下跳过去）：</span>";
+  tiers.forEach(function(t){
+    var e = mfslEarliest(sw, t[1]);
+    if (e != null) ch += "<button type='button' class='mfsl-chip' data-mfsl-age='" + e + "'>" + t[0] + " · 最早 " + e + " 岁</button>";
+    else ch += "<span class='mfsl-chip-off'>" + t[0] + " · 65 岁内还差</span>";
+  });
+  var chipsEl = document.getElementById(P + "chips");
+  if (chipsEl){
+    chipsEl.innerHTML = ch;
+    chipsEl.querySelectorAll("[data-mfsl-age]").forEach(function(b){
+      b.addEventListener("click", function(){ mfslSetAge(inst, parseInt(b.getAttribute("data-mfsl-age"), 10)); });
+    });
+  }
+  /* 三档卡片 */
+  function swrBasis(target){
+    if (d.failed) return "目标 " + mf$(target) + " · 退休那年家底 " + mf$(d.B) + "——但精确模拟已断粮，此档连带不过";
+    var gap = target - d.B;
+    return "目标 " + mf$(target) + " · 退休那年家底 " + mf$(d.B) + (gap > 0 ? " · 还差 " + mf$(gap) : " · 已过线");
+  }
+  var cards = "";
+  cards += mfslCard("刚好够 · 精确模拟", "按你们真实花法精确算到 95 岁（每年取 " + mf$(d.spend) + "）：够花，但花完见底、没余量", d.pctFI, d.passFI,
+    "目标 " + mf$(d.fi) + "（这个年龄下精确模拟求解）· 现在家底 " + mf$(inv) + (d.failed ? " · ⚠️ 全模拟 " + (d.failYear || "") + " 年断粮" : " · 全模拟可撑到 95 岁"));
+  cards += mfslCard("够用 · 美国主流标准", "本金可以轻微动用；这标准原按退休后花 30 年设计，你们要花 50 多年，垫子偏薄（取钱规矩：每年最多取 4%）", d.pct40, d.pass40, swrBasis(d.t40));
+  cards += mfslCard("有厚垫子", "本金基本不动、只花增值：碰上大跌、活到 100 岁、想给孩子留钱，都还有余地（取钱规矩：每年最多取 3.5%）", d.pct35, d.pass35, swrBasis(d.t35));
+  var cardsEl = document.getElementById(P + "cards"); if (cardsEl) cardsEl.innerHTML = cards;
+  mfslPaintMc(inst, null);
+  mfslScheduleMc(inst);
+}
+function mfslPaintMc(inst, mc){
+  var P = inst.p, d = inst.sweep[inst.age];
+  var statsEl = document.getElementById(P + "stats");
+  if (statsEl){
+    statsEl.innerHTML = mfslStat("Monte Carlo 成功率", mc ? (mc.passRate * 100).toFixed(1) + "%" : "计算中…")
+      + mfslStat("P10 期末（运气差的十分之一）", mc ? mf$(mc.p10) : "计算中…")
+      + mfslStat("确定性期末（按平均回报）", mf$(d.end));
+  }
+  var vEl = document.getElementById(P + "verdict");
+  if (vEl) vEl.innerHTML = "<b>" + mfEsc(mfslVerdict(d, mc)) + "</b>";
+}
+function mfslScheduleMc(inst){
+  if (inst.mcTimer) clearTimeout(inst.mcTimer);
+  var age = inst.age;
+  if (inst.mc[age]){ mfslPaintMc(inst, inst.mc[age]); return; }
+  var token = ++inst.mcToken;
+  inst.mcTimer = setTimeout(function(){
+    setTimeout(function(){
+      if (token !== inst.mcToken || inst.age !== age) return;
+      var mc = null;
+      try { mc = mfslMc(inst.base, age); } catch (e){}
+      if (token !== inst.mcToken || inst.age !== age) return;
+      if (mc){ inst.mc[age] = mc; mfslPaintMc(inst, mc); }
+    }, 10);
+  }, 200);
+}
+document.addEventListener("DOMContentLoaded", function(){ try { mfSliderMount("demo"); } catch (e){} });
 
 /* ================= 场景管理 ================= */
 function mfScenarioSummary(sc){
