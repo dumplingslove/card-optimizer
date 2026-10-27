@@ -1105,10 +1105,10 @@ function bhSpark(h){
   var T=BH_MARKET.t1,O=BH_MARKET.oth;
   function row(label,v1,v2,fmt,note){
    var mx=Math.max(v1,v2);
-   function bar(v,c){return '<div style="background:#1d2c4d;border-radius:5px;height:16px;position:relative;min-width:120px"><div style="background:'+c+';height:16px;border-radius:5px;width:'+Math.max(6,v/mx*100)+'%"></div></div>'}
+   function bar(v,c){return '<div style="background:#1d2c4d;border-radius:5px;height:16px;position:relative;min-width:0"><div style="background:'+c+';height:16px;border-radius:5px;width:'+Math.max(6,v/mx*100)+'%"></div></div>'}
    return '<div style="margin-bottom:9px"><div style="font-size:.84em;color:#fff;margin-bottom:3px">'+label+' <span style="color:#8fa3c8;font-size:.86em">'+note+"</span></div>"
-   +'<div style="display:grid;grid-template-columns:136px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#ffb35c"><span>'+T.label.replace("（n=","（组 n=")+'</span>'+bar(v1,"#d97706")+"<b>"+fmt(v1)+"</b></div>"
-   +'<div style="display:grid;grid-template-columns:136px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#9fb6d8;margin-top:3px"><span>'+O.label.replace("（n=","（组 n=")+'</span>'+bar(v2,"#2b6cb0")+"<b>"+fmt(v2)+"</b></div></div>";
+   +'<div style="display:grid;grid-template-columns:136px minmax(0,1fr) 86px;gap:8px;align-items:center;font-size:.8em;color:#ffb35c"><span>'+T.label.replace("（n=","（组 n=")+'</span>'+bar(v1,"#d97706")+"<b>"+fmt(v1)+"</b></div>"
+   +'<div style="display:grid;grid-template-columns:136px minmax(0,1fr) 86px;gap:8px;align-items:center;font-size:.8em;color:#9fb6d8;margin-top:3px"><span>'+O.label.replace("（n=","（组 n=")+'</span>'+bar(v2,"#2b6cb0")+"<b>"+fmt(v2)+"</b></div></div>";
   }
   tb.innerHTML=
    row("中位挂牌天数 DOM（越短越抢手）",T.dom,O.dom,function(v){return v+" 天"},"（该指标 n="+T.domN+" / n="+O.domN+")")
@@ -1120,10 +1120,10 @@ function bhSpark(h){
   var F={label:"🚀 快销 · DOM ≤14 天",n:"39 套（64%）",dom:4,ratio:1.000,ppsr:100.9},S={label:"🐌 滞销 · DOM ≥60 天",n:"4 套（7%）",dom:124,ratio:0.966,ppsr:95.8};
   function frow(label,v1,v2,fmt){
    var mx=Math.max(v1,v2);
-   function bar(v,c){return '<div style="background:#1d2c4d;border-radius:5px;height:16px;position:relative;min-width:120px"><div style="background:'+c+';height:16px;border-radius:5px;width:'+Math.max(6,v/mx*100)+'%"></div></div>'}
+   function bar(v,c){return '<div style="background:#1d2c4d;border-radius:5px;height:16px;position:relative;min-width:0"><div style="background:'+c+';height:16px;border-radius:5px;width:'+Math.max(6,v/mx*100)+'%"></div></div>'}
    return '<div style="margin-bottom:9px"><div style="font-size:.84em;color:#fff;margin-bottom:3px">'+label+"</div>"
-   +'<div style="display:grid;grid-template-columns:150px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#8ff0c8"><span>'+F.label+"</span>"+bar(v1,"#2f9e5f")+"<b>"+fmt(v1)+"</b></div>"
-   +'<div style="display:grid;grid-template-columns:150px 1fr 86px;gap:8px;align-items:center;font-size:.8em;color:#ff9d9d;margin-top:3px"><span>'+S.label+"</span>"+bar(v2,"#b03a48")+"<b>"+fmt(v2)+"</b></div></div>";
+   +'<div style="display:grid;grid-template-columns:150px minmax(0,1fr) 86px;gap:8px;align-items:center;font-size:.8em;color:#8ff0c8"><span>'+F.label+"</span>"+bar(v1,"#2f9e5f")+"<b>"+fmt(v1)+"</b></div>"
+   +'<div style="display:grid;grid-template-columns:150px minmax(0,1fr) 86px;gap:8px;align-items:center;font-size:.8em;color:#ff9d9d;margin-top:3px"><span>'+S.label+"</span>"+bar(v2,"#b03a48")+"<b>"+fmt(v2)+"</b></div></div>";
   }
   fsx.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"><span class="bh-chip rf-ok">'+F.label+" · "+F.n+' · 有降价记录 0 套</span><span class="bh-chip rf-bad">'+S.label+" · "+S.n+' · 3/3 都降过价</span></div>'
   +frow("中位挂牌天数 DOM",F.dom,S.dom,function(v){return v+" 天"})
@@ -1878,7 +1878,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-27 19:38 UTC';
+var BUILD_TS='2026-10-27 21:39 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -2780,6 +2780,9 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
 <style>
 .mf-tb{border-collapse:collapse;width:100%;font-size:.82em;margin:6px 0}
 .mf-tb th,.mf-tb td{border:1px solid #2c3e55;padding:4px 6px;text-align:right;white-space:nowrap}
+.mf-tb-fit{max-width:100%}
+.mf-tb-fit th,.mf-tb-fit td{white-space:normal;word-break:break-word}
+.mf-tb-fit td:first-child,.mf-tb-fit td:nth-child(2){white-space:nowrap}
 .mf-tb th{background:#16213e;color:#cfe3ff;text-align:right}
 .mf-tb td:first-child,.mf-tb th:first-child{text-align:left}
 #myfire-root input,#myfire-root select{background:#0f1830;color:#e8eefc;border:1px solid #345;border-radius:5px;padding:3px 6px}
@@ -5604,7 +5607,7 @@ function mfcsPaintAssump(inst){
     ["13–17 岁（高中）", MFCS_FLOW[13], "估算 — 公立同上，量级沿用现档案口径"],
     ["18–21 岁（大学）", 0, "不另加 — 大学靠 529 付（见下），这里再加一笔学费流就是双算"]
   ];
-  var tbl = "<table class='mf-tb' style='margin:6px 0'><tr><th>年龄段</th><th>每年多花</th><th>依据</th></tr>"
+  var tbl = "<table class='mf-tb mf-tb-fit' style='margin:6px 0'><tr><th>年龄段</th><th>每年多花</th><th>依据</th></tr>"
     + rows.map(function(r){ return "<tr><td style='white-space:nowrap'>" + r[0] + "</td><td style='white-space:nowrap'>" + (r[1] ? mf$(r[1]) : "$0") + "</td><td>" + r[2] + "</td></tr>"; }).join("") + "</table>";
   aEl.innerHTML = "<b style='color:#aaa'>模拟假设（逐条明写，不藏）：</b><br>"
     + "· <b>只加增量</b>：你们现在的年支出基线里已经有 Dylan 此刻的花费，二胎只加多养一个娃多出来的部分，不重复算。<br>"
