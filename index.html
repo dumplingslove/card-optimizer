@@ -877,6 +877,7 @@ renderRecs();
 <div data-subpage="plan">
 <div id="mf-slider-demo"></div>
 <div id="mf-housesim-demo"></div>
+<div id="mf-childsim-demo"></div>
 <div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
 <h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🏠 演示 persona 家庭结构（完整模型 · 均为虚构数字）</h3>
 <p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0">双职工两位成人可各自设退休年龄（如 55 / 57 岁）、各自收入与 401(k) 供款+雇主 match；账户分 Taxable / Traditional / Roth / HSA / 529 五类；两套房两笔贷款（自住房 + 出租房，出租净现金流 = 租金×(1−空置) − 运营成本 − 贷款月供，可设卖出年份）；一个孩子 + 可开关的二孩情景；年支出拆 Must（必要）/ Like（享受）两层，如演示年支出 $60,000 = Must $42,000 + Like $18,000，大额支出（换车、父母支持、旅行）单列。上面的快速计算器是这套完整模型的简化版；私人版才保存真实数字，本页不保存任何输入。</p>
@@ -1877,7 +1878,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-27 17:01 UTC';
+var BUILD_TS='2026-10-27 19:38 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -4749,6 +4750,7 @@ function mfRenderAll(){
   h += "<div id='mf-results'></div>";
   h += "<div id='mf-slider' data-subpage='plan'></div>";
   h += "<div id='mf-housesim' data-subpage='plan'></div>";
+  h += "<div id='mf-childsim' data-subpage='plan'></div>";
   /* MC */
   h += "<details open style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🎲 Monte Carlo 与压力测试</summary>"
     + "<div style='margin:8px 0;line-height:2'>分布 <select id='mf-mc-dist'><option value='lognormal'" + (A.mcDistribution === "lognormal" ? " selected" : "") + ">对数正态</option><option value='normal'" + (A.mcDistribution === "normal" ? " selected" : "") + ">正态</option></select>"
@@ -4788,6 +4790,7 @@ function mfRenderAll(){
   mfRenderForms();
   try { mfSliderMount("real"); } catch (e){}
   try { mfhsMount("real"); } catch (e){}
+  try { mfcsMount("real"); } catch (e){}
   if (MF.mc){ var out = document.getElementById("mf-mc-out"); if (out) out.innerHTML = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (MF.mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(MF.mc.p10) + "</td><td>" + mf$(MF.mc.p50) + "</td><td>" + mf$(MF.mc.p90) + "</td></tr></table></div>"; }
 }
 
@@ -4982,6 +4985,7 @@ function mfslPaint(inst){
   mfslPaintMc(inst, null);
   mfslScheduleMc(inst);
   try { if (typeof mfhsSync === "function") mfhsSync(inst); } catch (e){}
+  try { if (typeof mfcsSync === "function") mfcsSync(inst); } catch (e){}
 }
 function mfslPaintMc(inst, mc){
   var P = inst.p, d = mfslGet(inst, inst.a1, inst.a2);
@@ -5010,7 +5014,7 @@ function mfslScheduleMc(inst){
     }, 10);
   }, 200);
 }
-document.addEventListener("DOMContentLoaded", function(){ try { mfSliderMount("demo"); } catch (e){} try { mfhsMount("demo"); } catch (e){} });
+document.addEventListener("DOMContentLoaded", function(){ try { mfSliderMount("demo"); } catch (e){} try { mfhsMount("demo"); } catch (e){} try { mfcsMount("demo"); } catch (e){} });
 
 
 /* ================= 换房 × 退休年龄模拟器（FIRE > 退休测算，紧挨滑轨 v2 下方） =================
@@ -5330,6 +5334,293 @@ function mfhsPaintAssump(inst){
     + "· 每月住房支出按引擎口径（本息 + 税保维护）算；与银行对账单的 escrow 口径（含缺口分摊）略有差异。<br>"
     + "· 换房时点按「现在就切换」近似（定版口径是 2027 年成交，约有 1 年漂移）；矩阵与主输出都用档案设定的 " + inst.base.assumptions.mcRuns + " 次模拟、与上方滑轨同口径同种子。";
 }
+
+
+/* ================= 二胎 × 退休年龄模拟器（紧挨换房模拟器下方，与换房模拟同层可叠加） =================
+   口径：增量成本流 + 529 供款流，逐年以 expense events 注入克隆档案（不动原档案、
+   不写回 fire_profile）。成本模板来自 Dylan 实测（见假设区），参数为取整口径。
+   底本 = 换房模拟器当前档位/路径变换后的档案（mfhsTb），换房选择变化时跟随重算。 */
+var MFCS_YEARS = [2027, 2028, 2029, 2030];
+var MFCS_AGES = [40, 45, 50, 55, 60];
+var MFCS_FLOW = { 0: 6000, 1: 20000, 2: 37000, 3: 37000, 4: 37000, 5: 37000, 6: 12000, 7: 12000, 8: 12000, 9: 12000, 10: 12000, 11: 12000, 12: 12000, 13: 15000, 14: 15000, 15: 15000, 16: 15000, 17: 15000 };
+var MFCS_529 = 33333;
+var mfcsInst = {};
+function mfcsHouseKey(key){
+  var hs = mfhsInst[key];
+  return hs && hs.el ? (hs.path + "|" + hs.tier) : "raw";
+}
+function mfcsHouseState(inst){
+  var hs = mfhsInst[inst.key];
+  if (hs && hs.el){ try { return mfhsTb(hs, hs.path, hs.tier).state; } catch (e){} }
+  return inst.base;
+}
+function mfcsHouseLabel(key){
+  var hs = mfhsInst[key];
+  if (!hs || !hs.el || !hs.tier) return "不换房";
+  return "路径 " + hs.path + " · 买 " + mfhsTierLabel(hs.tier);
+}
+function mfcsTransform(base, on, year){
+  var st = mfClone(base);
+  var cf = { on: !!on, year: year, flowTotal: 0, c529: 0 };
+  if (!on) return { state: st, cf: cf };
+  if (!st.events) st.events = [];
+  for (var age = 0; age <= 17; age++){
+    var flow = MFCS_FLOW[age] || 0, c529 = age <= 2 ? MFCS_529 : 0;
+    cf.flowTotal += flow; cf.c529 += c529;
+    st.events.push({ id: 9200 + age, kind: "expense", name: "二胎增量成本（模拟）", year: year + age, amountCents: Math.round((flow + c529) * 100) });
+  }
+  return { state: st, cf: cf };
+}
+function mfcsComboLabel(inst){
+  var ad = mfslAdults(inst.base);
+  var who = inst.a1 === inst.a2 ? ("两人 " + inst.a1 + " 岁退") : ((ad[0] ? ad[0].name : "第一位") + " " + inst.a1 + " 岁退、" + (ad[1] ? ad[1].name : "第二位") + " " + inst.a2 + " 岁退");
+  return mfcsHouseLabel(inst.key) + " · " + (inst.on ? ("要二胎（" + inst.year + " 年生）") : "不要二胎") + " · " + who;
+}
+function mfcsMount(key){
+  var el = document.getElementById(key === "real" ? "mf-childsim" : "mf-childsim-demo");
+  if (!el) return;
+  var base = key === "real" ? (typeof MF !== "undefined" ? MF.state : null) : MF_SLIDER_DEMO;
+  if (!base) return;
+  var fp = mfslFingerprint(base);
+  var inst = mfcsInst[key];
+  if (!inst || inst.fp !== fp){
+    var sl = mfslInst[key];
+    var ad = mfslAdults(base), planned = base.household.plannedRetirementAge || 60;
+    var clamp = function(v){ return Math.max(MFSL_MIN, Math.min(MFSL_MAX, v || planned)); };
+    inst = mfcsInst[key] = { key: key, fp: fp, base: base, on: true, year: 2028,
+      a1: sl ? sl.a1 : clamp(ad[0] && ad[0].retirementAge), a2: sl ? sl.a2 : clamp(ad[1] && ad[1].retirementAge),
+      hk: mfcsHouseKey(key), tb: {}, det: {}, mc: {}, mcToken: 0, mcTimer: null, matrix: {}, matrixToken: 0 };
+  }
+  inst.el = el;
+  mfcsSkeleton(inst);
+  mfcsPaintMain(inst);
+  mfcsPaintMatrix(inst);
+}
+function mfcsSync(sl){
+  var inst = mfcsInst[sl.key];
+  if (!inst || !inst.el) return;
+  if (inst.a1 !== sl.a1 || inst.a2 !== sl.a2){ inst.a1 = sl.a1; inst.a2 = sl.a2; mfcsPaintMain(inst); }
+}
+function mfcsSyncHouse(key){
+  var inst = mfcsInst[key];
+  if (!inst || !inst.el) return;
+  var hk = mfcsHouseKey(key);
+  if (inst.hk !== hk){ inst.hk = hk; mfcsPaintMain(inst); mfcsPaintMatrix(inst); }
+}
+function mfcsSkeleton(inst){
+  var P = inst.p = "mfcs-" + inst.key + "-";
+  var demo = inst.key === "demo";
+  inst.el.innerHTML = "<div class='mfsl-wrap'>"
+    + "<h3 style='margin:0 0 6px;color:#ffd93d;font-size:1.02em'>👶 二胎 × 退休年龄模拟：多养一个娃，要晚退几年？</h3>"
+    + "<p style='color:#aaa;font-size:.85em;line-height:1.65;margin:0 0 4px'>" + (demo ? "演示数据（虚构 persona）· " : "") + "先在上方滑轨定退休年龄，再开二胎开关、选出生年，成功率立刻重算。成本照 Dylan 的真实花法估（下方逐条明写）。这个模拟器的底本跟着上方换房模拟器的当前选择走——买房和二胎可以叠在一起看。只是模拟，不会改动" + (demo ? "演示" : "你的") + "计划数字，也不会保存。</p>"
+    + "<div style='display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px'><span style='color:#aaa;font-size:.88em'>要不要二胎：</span><span class='mfsl-chips' style='margin:0' id='" + P + "ons'></span></div>"
+    + "<div style='display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px'><span style='color:#aaa;font-size:.88em'>出生年：</span><span class='mfsl-chips' style='margin:0' id='" + P + "years'></span></div>"
+    + "<div id='" + P + "main'></div>"
+    + "<h4 style='margin:16px 0 6px;color:#cfe3ff;font-size:.98em'>对照表：两人同龄退休 × 二胎开/关，成功率并排看（点格子 = 滑轨跳到那个年龄，并把开关拨到那一列）</h4>"
+    + "<div id='" + P + "matrix' style='overflow-x:auto'></div>"
+    + "<p id='" + P + "matrixnote' style='color:#888;font-size:.78em;line-height:1.6;margin:6px 0 0'></p>"
+    + "<div id='" + P + "assump' style='color:#888;font-size:.8em;line-height:1.75;margin:12px 0 0'></div>"
+    + "</div>";
+  mfcsPaintControls(inst);
+  mfcsPaintAssump(inst);
+}
+function mfcsPaintControls(inst){
+  var P = inst.p;
+  var oEl = document.getElementById(P + "ons");
+  if (oEl){
+    oEl.innerHTML = [[false, "不要二胎"], [true, "要二胎"]].map(function(pr){
+      var on = inst.on === pr[0];
+      return "<button type='button' class='mfsl-chip' data-mfcs-on='" + (pr[0] ? "1" : "0") + "' style='" + (on ? "background:#274a7a;border-color:#ffd93d;font-weight:bold" : "") + "'>" + pr[1] + "</button>";
+    }).join("");
+    oEl.querySelectorAll("[data-mfcs-on]").forEach(function(b){
+      b.addEventListener("click", function(){
+        inst.on = b.getAttribute("data-mfcs-on") === "1";
+        mfcsPaintControls(inst); mfcsPaintMain(inst); mfcsPaintMatrix(inst);
+      });
+    });
+  }
+  var yEl = document.getElementById(P + "years");
+  if (yEl){
+    yEl.innerHTML = MFCS_YEARS.map(function(y){
+      var on = inst.year === y;
+      return "<button type='button' class='mfsl-chip' data-mfcs-year='" + y + "' style='" + (on ? "background:#274a7a;border-color:#ffd93d;font-weight:bold" : "") + (inst.on ? "" : ";opacity:.45") + "'>" + y + " 年</button>";
+    }).join("");
+    yEl.querySelectorAll("[data-mfcs-year]").forEach(function(b){
+      b.addEventListener("click", function(){
+        inst.year = parseInt(b.getAttribute("data-mfcs-year"), 10);
+        if (!inst.on) inst.on = true;
+        mfcsPaintControls(inst); mfcsPaintMain(inst); mfcsPaintMatrix(inst);
+      });
+    });
+  }
+}
+function mfcsTb(inst, on, year){
+  var k = inst.hk + "|" + (on ? "1" : "0") + "|" + year;
+  if (!inst.tb[k]) inst.tb[k] = mfcsTransform(mfcsHouseState(inst), on, year);
+  return inst.tb[k];
+}
+function mfcsPaintMain(inst){
+  var mainEl = document.getElementById(inst.p + "main");
+  if (!mainEl) return;
+  var tb = mfcsTb(inst, inst.on, inst.year), cf = tb.cf;
+  var dk = inst.hk + "|" + (inst.on ? "1" : "0") + "|" + inst.year + "|" + inst.a1 + "," + inst.a2;
+  var d = inst.det[dk];
+  if (!d){ d = inst.det[dk] = mfslComputePair(tb.state, inst.a1, inst.a2); }
+  var gapTxt = function(need){ var g = need - d.B; return g > 0 ? " · 还差 " + mf$(g) : " · 已过线 " + mf$(d.B - need); };
+  var cards = "";
+  cards += mfslCard("刚好够 · 精确模拟", "按你们真实花法精确算到 95 岁：够花，但花完见底、没余量", d.pctFI, d.passFI,
+    "退休时预计攒到 " + mf$(d.B) + " · 需要 " + mf$(d.fi) + gapTxt(d.fi) + (d.failed ? " · ⚠️ 全模拟 " + (d.failYear || "") + " 年断粮" : " · 全模拟可撑到 95 岁"));
+  cards += mfslCard("够用 · 美国主流标准", "本金可以轻微动用；取钱规矩：每年最多取 4%", d.pct40, d.pass40,
+    "退休时预计攒到 " + mf$(d.B) + " · 需要 " + mf$(d.t40) + gapTxt(d.t40));
+  cards += mfslCard("有厚垫子", "本金基本不动、只花增值；取钱规矩：每年最多取 3.5%", d.pct35, d.pass35,
+    "退休时预计攒到 " + mf$(d.B) + " · 需要 " + mf$(d.t35) + gapTxt(d.t35));
+  var costLine = !cf.on
+    ? "当前按不要二胎算：家庭年支出基线里已经有 Dylan 现在的花费，这里不加任何增量。打开开关、选出生年，就能看多一个娃的影响。"
+    : ("二胎增量：" + inst.year + " 年出生，出生后 18 年里每年多花一笔（0 岁约 " + mf$(MFCS_FLOW[0]) + "、学前 2–5 岁约 " + mf$(MFCS_FLOW[3]) + "/年是大头——照 Dylan 在 IFS 的真实月付推的），再加出生头三年每年存 " + mf$(MFCS_529) + " 进二胎的 529（合计约 " + mf$(cf.c529) + "，存进去就不算可投资资产）。一生增量合计约 " + mf$(cf.flowTotal + cf.c529) + "（今天购买力）。");
+  mainEl.innerHTML = "<p style='color:#cfe3ff;margin:10px 0 2px'>当前组合：<b>" + mfEsc(mfcsComboLabel(inst)) + "</b></p>"
+    + "<div style='display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin:6px 0 2px'><span style='color:#aaa;font-size:.9em'>Monte Carlo 成功率</span>"
+    + "<span id='" + inst.p + "mc' style='font-size:2.3em;font-weight:bold;color:#4ecdc4'>计算中…</span>"
+    + "<span id='" + inst.p + "mcsub' style='color:#888;font-size:.85em'></span></div>"
+    + "<div class='mfsl-cards'>" + cards + "</div>"
+    + "<div class='mfsl-stats' id='" + inst.p + "stats'></div>"
+    + "<p style='line-height:1.75;margin:10px 0 0'>" + mfEsc(costLine) + "</p>"
+    + "<p id='" + inst.p + "verdict' style='line-height:1.75;margin:6px 0 0'></p>";
+  mfcsPaintMc(inst, null);
+  mfcsScheduleMc(inst);
+}
+function mfcsPaintMc(inst, mc){
+  var P = inst.p, dk = inst.hk + "|" + (inst.on ? "1" : "0") + "|" + inst.year + "|" + inst.a1 + "," + inst.a2;
+  var d = inst.det[dk]; if (!d) return;
+  var mcEl = document.getElementById(P + "mc");
+  if (mcEl) mcEl.textContent = mc ? (mc.passRate * 100).toFixed(1) + "%" : "计算中…";
+  var subEl = document.getElementById(P + "mcsub");
+  if (subEl) subEl.textContent = mc ? ("（" + inst.base.assumptions.mcRuns + " 次模拟 · 同种子可复现）") : "";
+  var statsEl = document.getElementById(P + "stats");
+  if (statsEl){
+    statsEl.innerHTML = mfslStat("P10 期末（运气差的十分之一）", mc ? mf$(mc.p10) : "计算中…")
+      + mfslStat("确定性期末（按平均回报）", mf$(d.end));
+  }
+  var vEl = document.getElementById(P + "verdict");
+  if (vEl){
+    var s = "";
+    if (mc){
+      var offKey = inst.hk + "|0|" + inst.year + "|" + inst.a1 + "," + inst.a2;
+      var offMc = inst.mc[offKey], offDet = inst.det[offKey];
+      var delta = "";
+      if (inst.on && offMc && offDet){
+        var dMc = (mc.passRate - offMc.passRate) * 100, dEnd = d.end - offDet.end;
+        delta = "与不要二胎相比：成功率 " + (dMc <= 0 ? "" : "+") + dMc.toFixed(1) + " 个百分点、期末 " + (dEnd <= 0 ? "少" : "多") + " 约 " + mfslWan(Math.abs(dEnd)) + "。";
+      }
+      if (d.failed) s = mfcsComboLabel(inst) + "：精确模拟撑不到 95 岁（" + (d.failYear || "中途") + " 年断粮），成功率只有 " + (mc.passRate * 100).toFixed(1) + "%——这个组合得先动退休年龄。" + delta;
+      else if (!d.pass35) s = mfcsComboLabel(inst) + "：能撑到 95 岁，成功率 " + (mc.passRate * 100).toFixed(1) + "%；但退休时家底还没过「" + (!d.pass40 ? "够用" : "有厚垫子") + "」线，垫子偏薄。" + delta;
+      else s = mfcsComboLabel(inst) + "：三档全过，成功率 " + (mc.passRate * 100).toFixed(1) + "%；就算赶上运气差的市场，最差的十分之一到最后还剩 " + mfslWan(mc.p10) + "。" + delta;
+    }
+    vEl.innerHTML = s ? "<b>" + mfEsc(s) + "</b>" : "";
+  }
+}
+function mfcsScheduleMc(inst){
+  if (inst.mcTimer) clearTimeout(inst.mcTimer);
+  var on = inst.on, year = inst.year, a1 = inst.a1, a2 = inst.a2, hk = inst.hk;
+  var k = hk + "|" + (on ? "1" : "0") + "|" + year + "|" + a1 + "," + a2;
+  var offK = hk + "|0|" + year + "|" + a1 + "," + a2;
+  var token = ++inst.mcToken;
+  var stale = function(){ return token !== inst.mcToken || inst.on !== on || inst.year !== year || inst.a1 !== a1 || inst.a2 !== a2 || inst.hk !== hk; };
+  inst.mcTimer = setTimeout(function(){
+    setTimeout(function(){
+      if (stale()) return;
+      try {
+        if (!inst.det[k]) inst.det[k] = mfslComputePair(mfcsTb(inst, on, year).state, a1, a2);
+        if (on && !inst.det[offK]) inst.det[offK] = mfslComputePair(mfcsTb(inst, false, year).state, a1, a2);
+        if (!inst.mc[k]) inst.mc[k] = mfslMc(mfcsTb(inst, on, year).state, a1, a2);
+        if (on && !inst.mc[offK]) inst.mc[offK] = mfslMc(mfcsTb(inst, false, year).state, a1, a2);
+      } catch (e){}
+      if (stale()) return;
+      if (inst.mc[k]) mfcsPaintMc(inst, inst.mc[k]);
+    }, 10);
+  }, 200);
+}
+function mfcsPaintMatrix(inst){
+  var mEl = document.getElementById(inst.p + "matrix");
+  var nEl = document.getElementById(inst.p + "matrixnote");
+  if (!mEl) return;
+  var token = ++inst.matrixToken;
+  var year = inst.year, hk = inst.hk;
+  var mRuns = inst.base.assumptions.mcRuns;
+  var h = "<table class='mf-tb'><tr><th>两人同龄退休</th><th>不要二胎</th><th>要二胎（" + year + " 年生）</th></tr>";
+  MFCS_AGES.forEach(function(a){
+    h += "<tr><td style='padding:7px 9px;white-space:nowrap'><b>" + a + " 岁</b></td>";
+    [false, true].forEach(function(on){
+      var sel = inst.on === on && inst.a1 === a && inst.a2 === a;
+      h += "<td data-mfcs-cell='" + (on ? "1" : "0") + "|" + a + "' style='padding:7px 9px;text-align:center;cursor:pointer;border:1px solid #2c3e55" + (sel ? ";outline:2px solid #ffd93d" : "") + "'>计算中…</td>";
+    });
+    h += "</tr>";
+  });
+  h += "</table>";
+  mEl.innerHTML = h;
+  mEl.querySelectorAll("[data-mfcs-cell]").forEach(function(td){
+    td.addEventListener("click", function(){
+      var parts = td.getAttribute("data-mfcs-cell").split("|");
+      inst.on = parts[0] === "1";
+      var sl = mfslInst[inst.key];
+      mfcsPaintControls(inst);
+      if (sl) mfslSetPair(sl, parseInt(parts[1], 10), parseInt(parts[1], 10));
+      inst.a1 = inst.a2 = parseInt(parts[1], 10);
+      mfcsPaintMain(inst);
+      mfcsPaintMatrix(inst);
+    });
+  });
+  var queue = [];
+  MFCS_AGES.forEach(function(a){ queue.push([false, a]); queue.push([true, a]); });
+  var done = 0;
+  function step(){
+    if (token !== inst.matrixToken || inst.year !== year || inst.hk !== hk) return;
+    var n = 0;
+    while (queue.length && n < 2){
+      var item = queue.shift(); n++;
+      var on = item[0], a = item[1], ck = hk + "|" + (on ? "1" : "0") + "|" + year + "|" + a;
+      var rate = inst.matrix[ck];
+      if (rate == null){
+        try { rate = inst.matrix[ck] = mfslMc(mfcsTb(inst, on, year).state, a, a).passRate; }
+        catch (e){ rate = inst.matrix[ck] = -1; }
+      }
+      var td = mEl.querySelector("[data-mfcs-cell='" + (on ? "1" : "0") + "|" + a + "']");
+      if (td){ td.textContent = rate >= 0 ? (rate * 100).toFixed(1) + "%" : "算不出"; td.style.cssText += ";" + mfhsCellColor(rate >= 0 ? rate : null); }
+      done++;
+    }
+    if (nEl && token === inst.matrixToken)
+      nEl.textContent = (queue.length ? ("对照表计算中… " + done + "/10（每格 " + mRuns + " 次 Monte Carlo）") : ("对照表按当前换房选择（" + mfcsHouseLabel(inst.key) + "）与出生年 " + year + " 算，每格 " + mRuns + " 次 Monte Carlo，与主输出同口径同种子，数字可直接对照。颜色：绿色 ≥95% · 黄色 85%–95% · 红色 <85%。"));
+    if (queue.length) setTimeout(step, 0);
+  }
+  setTimeout(step, 30);
+}
+function mfcsPaintAssump(inst){
+  var aEl = document.getElementById(inst.p + "assump");
+  if (!aEl) return;
+  var rows = [
+    ["0 岁", MFCS_FLOW[0], "估算 — Dylan 0–1.5 岁没有任何付费托育（家里人带），可辨识的只有儿科自付、少量童装课程，按这个量级估"],
+    ["1 岁", MFCS_FLOW[1], "实测推导 — Dylan 约 1.5 岁进 IFS（Bellevue 的 International Friends School），这一年算半年托育 + 课程"],
+    ["2–5 岁（学前）", MFCS_FLOW[3], "实测 — IFS 月付 $2,964（学费 $2,877 + 费用 $88，2026 年 7 月起连续 4 个月实付分毫不差）× 12 ≈ $35,600，再加课程/医疗/用品约 $1,400"],
+    ["6–12 岁（小学+初中）", MFCS_FLOW[6], "估算 — 按计划走 Bellevue 公立，学费约 $0；这是用品、活动、课程的量级，沿用你们现档案里 Dylan 的同段口径"],
+    ["13–17 岁（高中）", MFCS_FLOW[13], "估算 — 公立同上，量级沿用现档案口径"],
+    ["18–21 岁（大学）", 0, "不另加 — 大学靠 529 付（见下），这里再加一笔学费流就是双算"]
+  ];
+  var tbl = "<table class='mf-tb' style='margin:6px 0'><tr><th>年龄段</th><th>每年多花</th><th>依据</th></tr>"
+    + rows.map(function(r){ return "<tr><td style='white-space:nowrap'>" + r[0] + "</td><td style='white-space:nowrap'>" + (r[1] ? mf$(r[1]) : "$0") + "</td><td>" + r[2] + "</td></tr>"; }).join("") + "</table>";
+  aEl.innerHTML = "<b style='color:#aaa'>模拟假设（逐条明写，不藏）：</b><br>"
+    + "· <b>只加增量</b>：你们现在的年支出基线里已经有 Dylan 此刻的花费，二胎只加多养一个娃多出来的部分，不重复算。<br>"
+    + "· <b>成本照 Dylan 估</b>：模板来自 Dylan 出生以来的真实流水（银行/信用卡流水 2024 年 10 月 → 2026 年 10 月 + 529 供款记录，2026-10-27 测算），参数取整呈现：" + tbl
+    + "· <b>529 单独一条线</b>：出生头三年每年存 " + mf$(MFCS_529) + "，合计约 " + mf$(MFCS_529 * 3) + "，在约 3 岁前到位——这是照 Dylan 的结果复制的（他账上约 $100,000 在 2.25 岁时已到位；流水里能看到的供款节奏约 $25,000–28,000/年，其余来自未连接账户与增长）。存进 529 的钱和 Dylan 的一样不算可投资资产，等于提前把大学钱锁走；所以上面 18–21 岁不再加学费流。<br>"
+    + "· <b>医疗</b>：儿科自付实测每年只有几十美元，已经含在各段杂项量级里；家庭保险费里孩子的增量流水拆不出来、没单列，所以总成本可能略偏低估，心里留个每月一两百的量级。<br>"
+    + "· <b>学费按今天价格</b>：全程实际美元口径，等于假设 IFS 学费不涨实际价；十几年后真涨了，学前那段会更贵。<br>"
+    + "· <b>和换房模拟叠加</b>：本模拟的底本就是上方换房模拟器当前选的档位和路径，换房那边一改，这里跟着重算；对照表和主输出都标明了当前换房选择。两个模拟器都只是克隆测算，不改档案、不保存。<br>"
+    + "· 成本参数截至 2026-10-27；矩阵与主输出都用档案设定的 " + inst.base.assumptions.mcRuns + " 次模拟、与上方滑轨同口径同种子。";
+}
+/* 换房选择变化 → 二胎模拟跟随重算（钩子带 try/catch，异常绝不反伤换房模拟器） */
+var mfhsPaintMainOrigCs = mfhsPaintMain;
+mfhsPaintMain = function(inst){
+  mfhsPaintMainOrigCs(inst);
+  try { mfcsSyncHouse(inst.key); } catch (e){}
+};
 
 
 /* ================= 场景管理 ================= */
