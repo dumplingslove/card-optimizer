@@ -1286,7 +1286,7 @@ a.bh-chip{text-decoration:none;cursor:pointer}
 <span id="bh-count" style="color:#9fb6d8;font-size:.82em"></span>
 </div>
 <div id="bh-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
-<p style="color:#888;font-size:.78em;line-height:1.6;margin-top:10px">房源数据截至 2026-10-26，来自公开挂牌页（Redfin / Compass / RE/MAX / Homes.com 等）；编号与地图针一一对应。约看前请复核价格与在售状态。</p>
+<p style="color:#888;font-size:.78em;line-height:1.6;margin-top:10px">房源数据截至 2026-10-27，来自公开挂牌页（Redfin / Compass / RE/MAX / Homes.com 等）；编号与地图针一一对应。约看前请复核价格与在售状态。</p>
 </div>
 </div>
 <div class="bh-modal-bg" id="bh-modal-bg" onclick="if(event.target===this)bhClose()">
@@ -1448,6 +1448,17 @@ function bhSumTab(h){
  row("定位",loc);
  return rows?'<div class="bh-tb bh-sumtab">'+rows+"</div>":"";
 }
+function bhOhText(s){
+ if(!s)return "";
+ var mons={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+ var yr=(typeof BH_TRACK!=="undefined"&&BH_TRACK.asOf)?parseInt(BH_TRACK.asOf.slice(0,4),10):new Date().getFullYear();
+ var mo=null,dy=null,m=s.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})(?:st|nd|rd|th)?/i);
+ if(m){mo=mons[m[1].charAt(0).toUpperCase()+m[1].slice(1,3).toLowerCase()];dy=parseInt(m[2],10);}
+ else{m=s.match(/(\d{1,2})\/(\d{1,2})/);if(m){mo=parseInt(m[1],10)-1;dy=parseInt(m[2],10);}}
+ if(mo===null||mo===undefined||dy===null)return s;
+ var now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate()),d=new Date(yr,mo,dy);
+ return d<today?s+"（已结束）":s;
+}
 function bhCard(h){
  var p=bhPpsf(h),bd=BH_BADGE[h.tier];
  var badge=bd?'<span class="bh-badge '+bd[1]+'">'+bd[0]+"</span>":"";
@@ -1461,7 +1472,7 @@ function bhCard(h){
  var age=h.year?("建于 "+h.year+" 年"):"";
  if(h.renov)age=(age?age+" · ":"")+h.renov;
  row("房龄",age);
- row("开放日",h.open_house||"");
+ row("开放日",bhOhText(h.open_house||""));
  return '<div class="bh-card" id="bh-card-'+h.n+'" onclick="bhDetail('+h.n+')">'
  +(h.photos&&h.photos.length?'<div class="bh-phwrap"><img class="bh-photo" id="bh-ph-'+h.n+'" src="'+h.photos[0]+'" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'">'
   +badge
@@ -1522,7 +1533,7 @@ function bhDetail(n){
  +'<span class="bh-kv">地块</span> '+h.lot+"<br>"
  +'<span class="bh-kv">房龄</span> '+h.year+"<br>"
  +(h.renov?'<span class="bh-kv">翻新</span> '+h.renov+"<br>":"")
- +(h.open_house?'<span class="bh-kv">开放日</span> '+h.open_house+"<br>":"")
+ +(h.open_house?'<span class="bh-kv">开放日</span> '+bhOhText(h.open_house)+"<br>":"")
  +'<span class="bh-kv">挂牌</span> '+h.days+(h.cum_dom?"<br><span class='bh-kv'>累计挂牌</span> "+h.cum_dom+" 天"+(h.dom_note?"（"+h.dom_note+"）":""):"")+(h.mls?"<br><span class='bh-kv'>MLS#</span> "+h.mls:"")+"<br>"
  +(typeof bhSpark==="function"?bhSpark(h):"")
  +"</div>"
@@ -1534,7 +1545,7 @@ function bhDetail(n){
 +(h.bd?'<div style="background:#132038;border:1px solid #2a4a7f;border-radius:10px;padding:11px 13px;margin-top:12px"><div style="color:#9fd8ff;font-weight:700;margin-bottom:4px">🏗️ 建商与口碑</div><div style="font-size:.9em;line-height:1.8">'+(h.bd.n?("<b>"+h.bd.n+"</b>（"+h.bd.t+"）"):("建商未知（"+h.bd.t+"）"))+"</div>"+bhBdScale(h.bd)+'<div style="font-size:.85em;color:#bbb;line-height:1.7;margin-top:4px">'+h.bd.note+'</div>'+(h.bd.src&&h.bd.src.length?'<div style="font-size:.75em;margin-top:5px;color:#777">来源：'+h.bd.src.map(function(u,i){return '<a href="'+u+'" target="_blank" rel="noopener" style="color:#7cc4ff">['+(i+1)+"]</a>"}).join(" ")+"</div>":"")+"</div>":"")
 +(h.approx?'<p style="color:#f0b35e;font-size:.8em;margin-top:8px">📍 地图位置为社区示意点，非精确门牌位置。</p>':"")
  +'<div style="margin-top:14px"><a href="'+h.url+'" target="_blank" rel="noopener" style="color:#7cc4ff">查看原房源 ↗</a></div>'
- +'<p style="color:#777;font-size:.75em;margin-top:10px">数据截至 2026-10-25，约看前请复核价格与在售状态。</p>';
+ +'<p style="color:#777;font-size:.75em;margin-top:10px">数据截至 '+(typeof BH_TRACK!=="undefined"&&BH_TRACK.asOf?BH_TRACK.asOf:"2026-10-27")+'，约看前请复核价格与在售状态。</p>';
  document.getElementById("bh-modal").innerHTML=html;
  document.getElementById("bh-modal-bg").style.display="flex";
 }
@@ -1833,7 +1844,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-27 09:07 UTC';
+var BUILD_TS='2026-10-27 11:06 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
