@@ -876,6 +876,7 @@ renderRecs();
 </div>
 <div data-subpage="plan">
 <div id="mf-slider-demo"></div>
+<div id="mf-housesim-demo"></div>
 <div style="background:#16213e;border-radius:10px;padding:12px;margin-top:12px">
 <h3 style="margin:0 0 8px;color:#ffd93d;font-size:.95em">🏠 演示 persona 家庭结构（完整模型 · 均为虚构数字）</h3>
 <p style="color:#aaa;font-size:.8em;line-height:1.7;margin:0">双职工两位成人可各自设退休年龄（如 55 / 57 岁）、各自收入与 401(k) 供款+雇主 match；账户分 Taxable / Traditional / Roth / HSA / 529 五类；两套房两笔贷款（自住房 + 出租房，出租净现金流 = 租金×(1−空置) − 运营成本 − 贷款月供，可设卖出年份）；一个孩子 + 可开关的二孩情景；年支出拆 Must（必要）/ Like（享受）两层，如演示年支出 $60,000 = Must $42,000 + Like $18,000，大额支出（换车、父母支持、旅行）单列。上面的快速计算器是这套完整模型的简化版；私人版才保存真实数字，本页不保存任何输入。</p>
@@ -1864,7 +1865,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-27 08:33 UTC';
+var BUILD_TS='2026-10-27 08:45 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -4735,6 +4736,7 @@ function mfRenderAll(){
     + "<div style='color:#888;font-size:.82em;line-height:1.65'>导出 = 把整套数字下载成一个文件，备份到你自己电脑；导入 = 用备份文件整套恢复（会覆盖现在的数字，导入成功后会自动保存到云端）。换设备、或者改数字之前想留个底，才用得上。</div></div></details>";
   h += "<div id='mf-results'></div>";
   h += "<div id='mf-slider' data-subpage='plan'></div>";
+  h += "<div id='mf-housesim' data-subpage='plan'></div>";
   /* MC */
   h += "<details open style='margin-top:14px'><summary style='cursor:pointer;color:#ffd93d;font-size:1.05em'>🎲 Monte Carlo 与压力测试</summary>"
     + "<div style='margin:8px 0;line-height:2'>分布 <select id='mf-mc-dist'><option value='lognormal'" + (A.mcDistribution === "lognormal" ? " selected" : "") + ">对数正态</option><option value='normal'" + (A.mcDistribution === "normal" ? " selected" : "") + ">正态</option></select>"
@@ -4773,6 +4775,7 @@ function mfRenderAll(){
   mfRenderScenarios();
   mfRenderForms();
   try { mfSliderMount("real"); } catch (e){}
+  try { mfhsMount("real"); } catch (e){}
   if (MF.mc){ var out = document.getElementById("mf-mc-out"); if (out) out.innerHTML = "<div style='overflow-x:auto'><table class='mf-tb'><tr><th>通过率</th><th>P10 期末</th><th>P50 期末</th><th>P90 期末</th></tr><tr><td><b>" + (MF.mc.passRate * 100).toFixed(1) + "%</b></td><td>" + mf$(MF.mc.p10) + "</td><td>" + mf$(MF.mc.p50) + "</td><td>" + mf$(MF.mc.p90) + "</td></tr></table></div>"; }
 }
 
@@ -4966,6 +4969,7 @@ function mfslPaint(inst){
   var cardsEl = document.getElementById(P + "cards"); if (cardsEl) cardsEl.innerHTML = cards;
   mfslPaintMc(inst, null);
   mfslScheduleMc(inst);
+  try { if (typeof mfhsSync === "function") mfhsSync(inst); } catch (e){}
 }
 function mfslPaintMc(inst, mc){
   var P = inst.p, d = mfslGet(inst, inst.a1, inst.a2);
@@ -4994,7 +4998,326 @@ function mfslScheduleMc(inst){
     }, 10);
   }, 200);
 }
-document.addEventListener("DOMContentLoaded", function(){ try { mfSliderMount("demo"); } catch (e){} });
+document.addEventListener("DOMContentLoaded", function(){ try { mfSliderMount("demo"); } catch (e){} try { mfhsMount("demo"); } catch (e){} });
+
+
+/* ================= 换房 × 退休年龄模拟器（FIRE > 退休测算，紧挨滑轨 v2 下方） =================
+   玩法：选买房档位（不换房 / $300–500 万）+ 路径（A 卖自住 / B 自住转租），退休年龄跟随上方滑轨；
+   主输出与滑轨同一引擎、同一口径（达标率 = 退休时预计攒到 ÷ 需要；MC 用档案参数全量次数）。
+   对照矩阵：行=档位、列=两人同龄退休 40/45/50/55/60，格子 = MC 成功率（与主输出同次数同种子，表下注明）。
+   模拟口径与 2026-10-25 定版测算（bellevue-fire-impact）严格一致：
+     首付 20%、新贷款=房价×80%、30 年固定 6.6%；新房持有成本=房价 1.55%/年（税 0.85+保 0.2+维护 0.5）；
+     A：自住房按现值×0.94 扣现有房贷卖出，净得先付首付、余款留现金账户（id=1 口径，与定版脚本一致）；
+     B：自住房转出租（租金 $5,000/月、实际 0% 增长、空置 0%），首付从投资账户（id=2 口径）出；
+     Seattle 出租房不动；卖房所得税未计（假设区明写）。
+   全部克隆计算：绝不写回 MF.state / fire_profile，无保存/代入按钮。 */
+var MFHS_TIERS = [0, 3000000, 3500000, 4000000, 4500000, 5000000];
+var MFHS_AGES = [40, 45, 50, 55, 60];
+var mfhsInst = {};
+function mfhsFindPrimary(st){
+  var pi = -1;
+  for (var i = 0; i < st.properties.length; i++){ if (st.properties[i].kind === "primary"){ pi = i; break; } }
+  if (pi < 0) pi = 0;
+  var prim = st.properties[pi], li = -1;
+  for (var j = 0; j < st.loans.length; j++){ if (st.loans[j].propertyClientKey === prim.clientKey){ li = j; break; } }
+  return { pi: pi, prim: prim, li: li, loan: li >= 0 ? st.loans[li] : null };
+}
+function mfhsTransform(base, path, price){
+  var st = mfClone(base);
+  var f0 = mfhsFindPrimary(st), prim0 = f0.prim;
+  var curPI = f0.loan ? f0.loan.monthlyPaymentCents / 100 : 0;
+  var curCosts = prim0.monthlyCostsCents / 100;
+  var saleNet = prim0.valueCents / 100 * 0.94 - (f0.loan ? f0.loan.balanceCents / 100 : 0);
+  var cf = { price: price || 0, path: path, curPI: curPI, curCosts: curCosts, curMo: curPI + curCosts,
+    saleNet: saleNet, primValue: prim0.valueCents / 100, down: 0, loan: 0, newPI: 0, newCostsMo: 0,
+    fromSale: 0, topUp: 0, leftover: 0, rent: 0, totalMo: curPI + curCosts };
+  if (!price) return { state: st, cf: cf };
+  var down = price * 0.2, loanAmt = price - down;
+  var newPI = loanPmt(loanAmt, 0.066, 360), newCostsMo = price * 0.0155 / 12;
+  cf.down = down; cf.loan = loanAmt; cf.newPI = newPI; cf.newCostsMo = newCostsMo;
+  function newProp(id, key){
+    return { id: id, kind: "primary", name: "自住房（Bellevue 学区·模拟）",
+      notes: "模拟假设：持有成本=房产税 0.85%/年+保险 0.2%/年+维护 0.5%/年=房价 1.55%/年",
+      sellYear: null, clientKey: key, vacancyBps: 0, valueCents: Math.round(price * 100),
+      rentGrowthBps: 0, valueGrowthBps: 0, monthlyRentCents: 0, monthlyCostsCents: Math.round(newCostsMo * 100) };
+  }
+  function newLoan(id, key){
+    return { id: id, name: "新房贷（Bellevue·模拟）",
+      notes: "模拟假设：30 年固定，利率 6.6%（2026-10 jumbo 量级假设，非实时报价）",
+      termMonths: 360, balanceCents: Math.round(loanAmt * 100), annualRateBps: 660,
+      propertyClientKey: key, monthlyPaymentCents: Math.round(newPI * 100), computedMonthlyPaymentCents: Math.round(newPI * 100) };
+  }
+  var acctCash = null, acctInvest = null, k;
+  for (k = 0; k < st.accounts.length; k++){ if (st.accounts[k].id === 1) acctCash = st.accounts[k]; if (st.accounts[k].id === 2) acctInvest = st.accounts[k]; }
+  if (!acctCash) for (k = 0; k < st.accounts.length; k++){ if (st.accounts[k].type === "cash"){ acctCash = st.accounts[k]; break; } }
+  if (!acctInvest){ var best = -1; for (k = 0; k < st.accounts.length; k++){ var a = st.accounts[k]; if (a.includeInInvestable && a.type !== "529" && a.balanceCents > best){ best = a.balanceCents; acctInvest = a; } } }
+  if (path === "A"){
+    var fromSale = Math.min(down, saleNet), topUp = Math.max(0, down - saleNet), leftover = saleNet - fromSale;
+    if (acctCash) acctCash.balanceCents += Math.round(leftover * 100);
+    if (topUp > 0 && acctInvest) acctInvest.balanceCents -= Math.round(topUp * 100);
+    cf.fromSale = fromSale; cf.topUp = topUp; cf.leftover = leftover;
+    st.properties[f0.pi] = newProp(prim0.id, prim0.clientKey);
+    st.loans = st.loans.filter(function(l){ return l.propertyClientKey !== prim0.clientKey; });
+    st.loans.push(newLoan(f0.loan ? f0.loan.id : 9001, prim0.clientKey));
+    cf.totalMo = newPI + newCostsMo;
+  } else {
+    var prim = st.properties[f0.pi];
+    prim.kind = "rental"; prim.name = (prim.name || "自住房") + "（转出租·模拟）";
+    prim.monthlyRentCents = 500000; prim.vacancyBps = 0; prim.rentGrowthBps = 0; prim.valueGrowthBps = 200;
+    prim.notes = "模拟假设：原自住房转出租，租金 $5,000/月（同类独栋市场区间中值估计）；租金实际 0% 增长、空置 0%；持有成本沿用现口径";
+    if (acctInvest) acctInvest.balanceCents -= Math.round(down * 100);
+    var maxPid = 0, maxLid = 0;
+    st.properties.forEach(function(p){ if ((p.id || 0) > maxPid) maxPid = p.id; });
+    st.loans.forEach(function(l){ if ((l.id || 0) > maxLid) maxLid = l.id; });
+    st.properties.push(newProp(maxPid + 1, "property-hs"));
+    st.loans.push(newLoan(maxLid + 1, "property-hs"));
+    cf.rent = 5000;
+    cf.totalMo = newPI + newCostsMo + curPI + curCosts - 5000;
+  }
+  return { state: st, cf: cf };
+}
+function mfhsMc(base, a1, a2, runs){
+  var A = base.assumptions;
+  var eff = effectiveInputs(mfslClonePair(base, a1, a2), null); eff.flags = defaultFlags();
+  return mcRun(eff, { seed: A.mcSeed, runs: runs, sigmaBps: A.mcSigmaBps, dist: A.mcDistribution, streamMode: "shared" });
+}
+function mfhsTierLabel(t){ return t === 0 ? "不换房" : "$" + (t / 10000) + " 万"; }
+function mfhsComboLabel(inst){
+  var ad = mfslAdults(inst.base);
+  var who = inst.a1 === inst.a2 ? ("两人 " + inst.a1 + " 岁退") : ((ad[0] ? ad[0].name : "第一位") + " " + inst.a1 + " 岁退、" + (ad[1] ? ad[1].name : "第二位") + " " + inst.a2 + " 岁退");
+  return (inst.tier === 0 ? "不换房" : ("路径 " + inst.path + " · 买 " + mfhsTierLabel(inst.tier))) + " · " + who;
+}
+function mfhsMount(key){
+  var el = document.getElementById(key === "real" ? "mf-housesim" : "mf-housesim-demo");
+  if (!el) return;
+  var base = key === "real" ? (typeof MF !== "undefined" ? MF.state : null) : MF_SLIDER_DEMO;
+  if (!base) return;
+  var fp = mfslFingerprint(base);
+  var inst = mfhsInst[key];
+  if (!inst || inst.fp !== fp){
+    var sl = mfslInst[key];
+    var ad = mfslAdults(base), planned = base.household.plannedRetirementAge || 60;
+    var clamp = function(v){ return Math.max(MFSL_MIN, Math.min(MFSL_MAX, v || planned)); };
+    inst = mfhsInst[key] = { key: key, fp: fp, base: base, path: "A", tier: 4000000,
+      a1: sl ? sl.a1 : clamp(ad[0] && ad[0].retirementAge), a2: sl ? sl.a2 : clamp(ad[1] && ad[1].retirementAge),
+      tb: {}, det: {}, mc: {}, mcToken: 0, mcTimer: null, matrix: {}, matrixPath: null, matrixToken: 0 };
+  }
+  inst.el = el;
+  mfhsSkeleton(inst);
+  mfhsPaintMain(inst);
+  mfhsPaintMatrix(inst);
+}
+function mfhsSync(sl){
+  var inst = mfhsInst[sl.key];
+  if (!inst || !inst.el) return;
+  if (inst.a1 !== sl.a1 || inst.a2 !== sl.a2){ inst.a1 = sl.a1; inst.a2 = sl.a2; mfhsPaintMain(inst); }
+}
+function mfhsSkeleton(inst){
+  var P = inst.p = "mfhs-" + inst.key + "-";
+  var demo = inst.key === "demo";
+  inst.el.innerHTML = "<div class='mfsl-wrap'>"
+    + "<h3 style='margin:0 0 6px;color:#ffd93d;font-size:1.02em'>🏠 换房 × 退休年龄模拟：买多大的房、晚退几年，成功率怎么变？</h3>"
+    + "<p style='color:#aaa;font-size:.85em;line-height:1.65;margin:0 0 4px'>" + (demo ? "演示数据（虚构 persona）· " : "") + "先在上方滑轨定退休年龄，再在下面选买房档位和路径（卖掉自住，还是自住转租），成功率立刻重算。只是模拟，不会改动" + (demo ? "演示" : "你的") + "计划数字，也不会保存。</p>"
+    + "<div style='display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px'><span style='color:#aaa;font-size:.88em'>买房档位：</span><span class='mfsl-chips' style='margin:0' id='" + P + "tiers'></span></div>"
+    + "<div style='display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px'><span style='color:#aaa;font-size:.88em'>换房路径：</span><span class='mfsl-chips' style='margin:0' id='" + P + "paths'></span></div>"
+    + "<div id='" + P + "main'></div>"
+    + "<h4 style='margin:16px 0 6px;color:#cfe3ff;font-size:.98em'>对照矩阵：每个档位 × 两人同龄退休，成功率一张表看完（点格子 = 选这个档位、两根滑轨一起跳到那个年龄）</h4>"
+    + "<div id='" + P + "matrix' style='overflow-x:auto'></div>"
+    + "<p id='" + P + "matrixnote' style='color:#888;font-size:.78em;line-height:1.6;margin:6px 0 0'></p>"
+    + "<div id='" + P + "assump' style='color:#888;font-size:.8em;line-height:1.75;margin:12px 0 0'></div>"
+    + "</div>";
+  mfhsPaintControls(inst);
+  mfhsPaintAssump(inst);
+}
+function mfhsPaintControls(inst){
+  var P = inst.p;
+  var tEl = document.getElementById(P + "tiers");
+  if (tEl){
+    tEl.innerHTML = MFHS_TIERS.map(function(t){
+      var on = inst.tier === t;
+      return "<button type='button' class='mfsl-chip' data-mfhs-tier='" + t + "' style='" + (on ? "background:#274a7a;border-color:#ffd93d;font-weight:bold" : "") + "'>" + mfhsTierLabel(t) + "</button>";
+    }).join("");
+    tEl.querySelectorAll("[data-mfhs-tier]").forEach(function(b){
+      b.addEventListener("click", function(){
+        inst.tier = parseInt(b.getAttribute("data-mfhs-tier"), 10);
+        mfhsPaintControls(inst); mfhsPaintMain(inst); mfhsPaintMatrix(inst);
+      });
+    });
+  }
+  var pEl = document.getElementById(P + "paths");
+  if (pEl){
+    var dis = inst.tier === 0;
+    pEl.innerHTML = [["A", "路径 A · 卖掉自住"], ["B", "路径 B · 自住转租"]].map(function(pr){
+      var on = inst.path === pr[0];
+      return "<button type='button' class='mfsl-chip' data-mfhs-path='" + pr[0] + "' style='" + (on ? "background:#274a7a;border-color:#ffd93d;font-weight:bold" : "") + (dis ? ";opacity:.45" : "") + "'>" + pr[1] + "</button>";
+    }).join("") + (dis ? "<span style='color:#888;font-size:.85em'>不换房时不用选路径；矩阵仍按所选路径算，方便你先挑路径再挑档位。</span>" : "");
+    pEl.querySelectorAll("[data-mfhs-path]").forEach(function(b){
+      b.addEventListener("click", function(){
+        inst.path = b.getAttribute("data-mfhs-path");
+        mfhsPaintControls(inst); mfhsPaintMain(inst); mfhsPaintMatrix(inst);
+      });
+    });
+  }
+}
+function mfhsTb(inst, path, tier){
+  var k = path + "|" + tier;
+  if (!inst.tb[k]) inst.tb[k] = mfhsTransform(inst.base, path, tier);
+  return inst.tb[k];
+}
+function mfhsPaintMain(inst){
+  var mainEl = document.getElementById(inst.p + "main");
+  if (!mainEl) return;
+  var tb = mfhsTb(inst, inst.path, inst.tier), cf = tb.cf;
+  var dk = inst.path + "|" + inst.tier + "|" + inst.a1 + "," + inst.a2;
+  var d = inst.det[dk];
+  if (!d){ d = inst.det[dk] = mfslComputePair(tb.state, inst.a1, inst.a2); }
+  var gapTxt = function(need){ var g = need - d.B; return g > 0 ? " · 还差 " + mf$(g) : " · 已过线 " + mf$(d.B - need); };
+  var cards = "";
+  cards += mfslCard("刚好够 · 精确模拟", "按你们真实花法精确算到 95 岁：够花，但花完见底、没余量", d.pctFI, d.passFI,
+    "退休时预计攒到 " + mf$(d.B) + " · 需要 " + mf$(d.fi) + gapTxt(d.fi) + (d.failed ? " · ⚠️ 全模拟 " + (d.failYear || "") + " 年断粮" : " · 全模拟可撑到 95 岁"));
+  cards += mfslCard("够用 · 美国主流标准", "本金可以轻微动用；取钱规矩：每年最多取 4%", d.pct40, d.pass40,
+    "退休时预计攒到 " + mf$(d.B) + " · 需要 " + mf$(d.t40) + gapTxt(d.t40));
+  cards += mfslCard("有厚垫子", "本金基本不动、只花增值；取钱规矩：每年最多取 3.5%", d.pct35, d.pass35,
+    "退休时预计攒到 " + mf$(d.B) + " · 需要 " + mf$(d.t35) + gapTxt(d.t35));
+  var houseLine;
+  if (inst.tier === 0){
+    houseLine = "每月住房支出不变：本息 " + mf$(cf.curPI) + " + 税保维护 " + mf$(cf.curCosts) + " ≈ " + mf$(cf.curMo) + "（引擎口径）。";
+  } else if (inst.path === "A"){
+    houseLine = "卖掉自住后：首付 " + mf$(cf.down) + "（卖房净得 " + mf$(cf.saleNet) + " 先付" + (cf.topUp > 0 ? "，还差 " + mf$(cf.topUp) + " 从投资里补" : "，余 " + mf$(cf.leftover) + " 留现金") + "），新贷款 " + mf$(cf.loan) + " @6.6%，每月本息 " + mf$(cf.newPI) + " + 税保维护 " + mf$(cf.newCostsMo) + " ≈ " + mf$(cf.totalMo) + "，每月住房多支出约 " + mf$(cf.totalMo - cf.curMo) + "。";
+  } else {
+    houseLine = "自住转租后：首付 " + mf$(cf.down) + " 全从投资出，新贷款 " + mf$(cf.loan) + " @6.6%；两套房一起算，每月净住房支出 ≈ " + mf$(cf.totalMo) + "（新房本息 " + mf$(cf.newPI) + " + 税保维护 " + mf$(cf.newCostsMo) + " + 老房本息 " + mf$(cf.curPI) + " + 老房税保 " + mf$(cf.curCosts) + " − 租金 " + mf$(cf.rent) + "），每月多支出约 " + mf$(cf.totalMo - cf.curMo) + "。";
+  }
+  mainEl.innerHTML = "<p style='color:#cfe3ff;margin:10px 0 2px'>当前组合：<b>" + mfEsc(mfhsComboLabel(inst)) + "</b></p>"
+    + "<div style='display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin:6px 0 2px'><span style='color:#aaa;font-size:.9em'>Monte Carlo 成功率</span>"
+    + "<span id='" + inst.p + "mc' style='font-size:2.3em;font-weight:bold;color:#4ecdc4'>计算中…</span>"
+    + "<span id='" + inst.p + "mcsub' style='color:#888;font-size:.85em'></span></div>"
+    + "<div class='mfsl-cards'>" + cards + "</div>"
+    + "<div class='mfsl-stats' id='" + inst.p + "stats'></div>"
+    + "<p style='line-height:1.75;margin:10px 0 0'>" + mfEsc(houseLine) + "</p>"
+    + "<p id='" + inst.p + "verdict' style='line-height:1.75;margin:6px 0 0'></p>";
+  mfhsPaintMc(inst, null);
+  mfhsScheduleMc(inst);
+}
+function mfhsPaintMc(inst, mc){
+  var P = inst.p, dk = inst.path + "|" + inst.tier + "|" + inst.a1 + "," + inst.a2;
+  var d = inst.det[dk]; if (!d) return;
+  var mcEl = document.getElementById(P + "mc");
+  if (mcEl) mcEl.textContent = mc ? (mc.passRate * 100).toFixed(1) + "%" : "计算中…";
+  var subEl = document.getElementById(P + "mcsub");
+  if (subEl) subEl.textContent = mc ? ("（" + inst.base.assumptions.mcRuns + " 次模拟 · 同种子可复现）") : "";
+  var statsEl = document.getElementById(P + "stats");
+  if (statsEl){
+    statsEl.innerHTML = mfslStat("P10 期末（运气差的十分之一）", mc ? mf$(mc.p10) : "计算中…")
+      + mfslStat("确定性期末（按平均回报）", mf$(d.end));
+  }
+  var vEl = document.getElementById(P + "verdict");
+  if (vEl){
+    var s;
+    if (!mc) s = "";
+    else if (d.failed) s = mfhsComboLabel(inst) + "：精确模拟撑不到 95 岁（" + (d.failYear || "中途") + " 年断粮），成功率只有 " + (mc.passRate * 100).toFixed(1) + "%——这个组合得先动退休年龄或档位。";
+    else if (!d.pass35) s = mfhsComboLabel(inst) + "：能撑到 95 岁，成功率 " + (mc.passRate * 100).toFixed(1) + "%；但退休时家底还没过「" + (!d.pass40 ? "够用" : "有厚垫子") + "」线，垫子偏薄。";
+    else s = mfhsComboLabel(inst) + "：三档全过，成功率 " + (mc.passRate * 100).toFixed(1) + "%；就算赶上运气差的市场，最差的十分之一到最后还剩 " + mfslWan(mc.p10) + "。";
+    vEl.innerHTML = s ? "<b>" + mfEsc(s) + "</b>" : "";
+  }
+}
+function mfhsScheduleMc(inst){
+  if (inst.mcTimer) clearTimeout(inst.mcTimer);
+  var path = inst.path, tier = inst.tier, a1 = inst.a1, a2 = inst.a2;
+  var k = path + "|" + tier + "|" + a1 + "," + a2;
+  if (inst.mc[k]){ mfhsPaintMc(inst, inst.mc[k]); return; }
+  var token = ++inst.mcToken;
+  inst.mcTimer = setTimeout(function(){
+    setTimeout(function(){
+      if (token !== inst.mcToken || inst.path !== path || inst.tier !== tier || inst.a1 !== a1 || inst.a2 !== a2) return;
+      var mc = null;
+      try { mc = mfslMc(mfhsTb(inst, path, tier).state, a1, a2); } catch (e){}
+      if (token !== inst.mcToken || inst.path !== path || inst.tier !== tier || inst.a1 !== a1 || inst.a2 !== a2) return;
+      if (mc){ inst.mc[k] = mc; mfhsPaintMc(inst, mc); }
+    }, 10);
+  }, 200);
+}
+function mfhsCellColor(rate){
+  if (rate == null) return "";
+  if (rate >= 0.95) return "background:#14532d;color:#d9fbe9";
+  if (rate >= 0.85) return "background:#6b4e12;color:#ffedb3";
+  return "background:#7f1d1d;color:#ffd9d9";
+}
+function mfhsPaintMatrix(inst){
+  var mEl = document.getElementById(inst.p + "matrix");
+  var nEl = document.getElementById(inst.p + "matrixnote");
+  if (!mEl) return;
+  var path = inst.path;
+  if (inst.matrixPath !== path){ inst.matrix = {}; inst.matrixPath = path; inst.matrixToken++; }
+  var token = inst.matrixToken;
+  var mRuns = (inst.base.assumptions && inst.base.assumptions.mcRuns) || 500;
+  var h = "<table style='border-collapse:collapse;min-width:560px;width:100%'><tr><th style='text-align:left;padding:7px 9px;color:#aaa;font-weight:normal'>档位 \\ 两人同龄退休</th>";
+  MFHS_AGES.forEach(function(a){ h += "<th style='padding:7px 9px;color:#aaa;font-weight:normal'>" + a + " 岁</th>"; });
+  h += "</tr>";
+  MFHS_TIERS.forEach(function(t){
+    var sel = inst.tier === t;
+    h += "<tr" + (sel ? " style='outline:2px solid #ffd93d'" : "") + "><td style='padding:7px 9px;white-space:nowrap'><b>" + mfhsTierLabel(t) + "</b>" + (sel ? " <span style='color:#ffd93d;font-size:.85em'>◀ 当前</span>" : "") + "</td>";
+    MFHS_AGES.forEach(function(a){
+      h += "<td data-mfhs-cell='" + t + "|" + a + "' style='padding:7px 9px;text-align:center;cursor:pointer;border:1px solid #2c3e55'>计算中…</td>";
+    });
+    h += "</tr>";
+  });
+  h += "</table>";
+  mEl.innerHTML = h;
+  if (nEl) nEl.textContent = "矩阵按路径 " + path + " 算，每格 " + mRuns + " 次 Monte Carlo，与主输出同口径同种子，数字可直接对照。颜色：绿色 ≥95% · 黄色 85%–95% · 红色 <85%。";
+  mEl.querySelectorAll("[data-mfhs-cell]").forEach(function(td){
+    td.addEventListener("click", function(){
+      var parts = td.getAttribute("data-mfhs-cell").split("|");
+      inst.tier = parseInt(parts[0], 10);
+      var age = parseInt(parts[1], 10);
+      mfhsPaintControls(inst);
+      var sl = mfslInst[inst.key];
+      if (sl) mfslSetPair(sl, age, age);
+      mfhsPaintMain(inst);
+      mfhsPaintMatrix(inst);
+    });
+  });
+  var queue = [];
+  MFHS_TIERS.forEach(function(t){ MFHS_AGES.forEach(function(a){ queue.push([t, a]); }); });
+  var done = 0;
+  function step(){
+    if (token !== inst.matrixToken || inst.matrixPath !== path) return;
+    var n = 0;
+    while (queue.length && n < 2){
+      var item = queue.shift(); n++;
+      var t = item[0], a = item[1], ck = t + "|" + a;
+      var rate = inst.matrix[ck];
+      if (rate == null){
+        try { rate = inst.matrix[ck] = mfhsMc(mfhsTb(inst, path, t).state, a, a, mRuns).passRate; }
+        catch (e){ rate = inst.matrix[ck] = -1; }
+      }
+      var td = mEl.querySelector("[data-mfhs-cell='" + t + "|" + a + "']");
+      if (td){ td.textContent = rate >= 0 ? (rate * 100).toFixed(1) + "%" : "算不出"; td.style.cssText += ";" + mfhsCellColor(rate >= 0 ? rate : null); }
+      done++;
+    }
+    if (nEl && token === inst.matrixToken && inst.matrixPath === path)
+      nEl.textContent = (queue.length ? ("矩阵计算中… " + done + "/30（路径 " + path + " · 每格 " + mRuns + " 次 Monte Carlo）") : ("矩阵按路径 " + path + " 算，每格 " + mRuns + " 次 Monte Carlo，与主输出同口径同种子，数字可直接对照。颜色：绿色 ≥95% · 黄色 85%–95% · 红色 <85%。"));
+    if (queue.length) setTimeout(step, 0);
+  }
+  setTimeout(step, 30);
+}
+function mfhsPaintAssump(inst){
+  var aEl = document.getElementById(inst.p + "assump");
+  if (!aEl) return;
+  var f0 = mfhsFindPrimary(inst.base);
+  var prim = f0.prim, loan = f0.loan;
+  var saleNet = prim.valueCents / 100 * 0.94 - (loan ? loan.balanceCents / 100 : 0);
+  var curPI = loan ? loan.monthlyPaymentCents / 100 : 0, curCosts = prim.monthlyCostsCents / 100;
+  aEl.innerHTML = "<b style='color:#aaa'>模拟假设（逐条明写，不藏）：</b><br>"
+    + "· 首付统一 20%，新贷款 = 房价 × 80%，30 年固定，利率 6.6%——这是 2026 年 10 月的 jumbo 贷款量级假设，不是实时报价。<br>"
+    + "· 路径 A：自住房按现值 " + mf$(prim.valueCents / 100) + " 卖出，扣 6% 交易摩擦、还清现有房贷 " + mf$(loan ? loan.balanceCents / 100 : 0) + "，净得约 " + mf$(saleNet) + "；先付首付，各档首付都小于净得，余款留现金、仍算可投资资产；自住房贷就此结清。<br>"
+    + "· 路径 B：自住房不卖、转出租，租金估 $5,000/月（同类独栋市场区间中值，是估计值不是实测挂牌）；租金实际 0% 增长、空置率 0%——空置按 0% 算对单套房偏乐观，心里要打折；老房每月本息 " + mf$(curPI) + " + 税保 " + mf$(curCosts) + " 继续付。<br>"
+    + "· 新房持有成本 = 房价的 1.55%/年（房产税 0.85% + 保险 0.2% + 维护 0.5%），按月折进支出。<br>"
+    + "· Seattle 出租房两条路径都不动（租金实际 0% 增长是档案现口径）。<br>"
+    + "· 卖房所得税未计：自住房免税额之外的应税利得、出租房折旧回收都没算，真成交前要另行测算。<br>"
+    + "· 期末资产只算投资组合，不含任何房产残值——路径 B 多留下的那套房不在期末数字里，所以 B 的期末看着低，真实身家差距没那么大。<br>"
+    + "· 每月住房支出按引擎口径（本息 + 税保维护）算；与银行对账单的 escrow 口径（含缺口分摊）略有差异。<br>"
+    + "· 换房时点按「现在就切换」近似（定版口径是 2027 年成交，约有 1 年漂移）；矩阵与主输出都用档案设定的 " + inst.base.assumptions.mcRuns + " 次模拟、与上方滑轨同口径同种子。";
+}
 
 
 /* ================= 场景管理 ================= */
