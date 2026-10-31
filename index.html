@@ -997,25 +997,10 @@ renderRecs();
 <div data-subpage="view">
 <h2>🗺️ 看房地图 · 本站跟踪的在售房源</h2>
 <div style="background:#132038;border:1px solid #2a4a7f;border-radius:10px;padding:12px 14px;margin-bottom:12px">
-<div style="color:#ffd93d;font-weight:700;margin-bottom:6px">🧭 小美导读：避雷重裁后，本批只剩 1 套 ⭐</div>
-<div style="font-size:.88em;line-height:1.7;color:#ddd">
-<div>本版按避雷 / 建商尽调全面重裁：归因未查清封顶「可关注 · 待查因」，建商有硬伤记录降档，定价型红旗改定位「谈判目标」。</div>
-<div class="bh-dline">
-<div class="bh-dl-box" style="background:#0d2b1a;border:1px solid #2f6e46"><div style="color:#8ff0c8;font-weight:700">⬆ 升级线 ≥ $280 万</div><div class="big">25 套</div><div style="font-size:.85em;color:#cfe8d6">⭐ 只从这里出 · 或 ≥2,827 sqft 且 1989 年后建才算真升级</div></div>
-<div class="bh-dl-box" style="background:#232733;border:1px solid #3d4356"><div style="color:#cfd8ea;font-weight:700">🎟 学区入场券 &lt; $280 万</div><div class="big">5 套</div><div style="font-size:.85em;color:#aab3c2">换学区、房子平移甚至更老 · 只观察 / 谈判，不进推荐</div></div>
-</div>
-<div style="font-size:.85em;color:#9fb6d8;margin:-2px 0 8px">监测面 $180 万起全量盯盘捡漏（两线合计 33 套）；工具条可勾「只看升级线」，卡片定位 chip 逐套标明。</div>
-<div>⭐ <b style="color:#fff">#7 · 2325 88th Ave NE — $2,950,000</b>：避雷干净，长持无降价，强链明确。<a href="javascript:void(0)" onclick="bhDetail(7)" style="color:#7cc4ff">看详情 →</a></div>
-<div style="margin-top:7px">🏆 <b style="color:#fff">#24 · 4825 134th Pl SE — $2,690,000</b>：台账首套三级全直升最佳链（Somerset→Tyee→Newport，通达分 97），$671/sqft 低于同档中位约两成；属入场券线、1981 年老房、cause 待查，暂列「可关注 · 待查因」。<a href="javascript:void(0)" onclick="bhDetail(24)" style="color:#7cc4ff">看详情 →</a></div>
-<div style="margin-top:7px">🎯 <b style="color:#fff">谈判目标（值得约看）</b> · 红旗均为定价型，点开看砍价锚</div>
-<div class="bh-chips" style="margin-top:4px"><a class="bh-chip neg" href="javascript:void(0)" onclick="bhDetail(1)">#1 · 12156 SE 15th St · $180万</a><a class="bh-chip neg" href="javascript:void(0)" onclick="bhDetail(10)">#10 · 8619 NE 24th St · $338.8万</a><a class="bh-chip neg" href="javascript:void(0)" onclick="bhDetail(13)">#13 · 2423 129th Ave SE · $349.8万</a><a class="bh-chip neg" href="javascript:void(0)" onclick="bhDetail(18)">#18 · 10668 SE 32nd St · $429.8万</a><a class="bh-chip neg" href="javascript:void(0)" onclick="bhDetail(20)">#20 · 10314 SE 25th St · $449.8万</a><a class="bh-chip neg" href="javascript:void(0)" onclick="bhDetail(30)">#30 · 5753 152nd Ave SE · $209.5万</a></div>
-<div style="margin-top:7px">
-<div>↘ 前 ⭐ 降档 · <a href="javascript:void(0)" onclick="bhDetail(2)" style="color:#7cc4ff">#2</a> 可关注·待查因 · 建商有硬伤记录 · 曾 Pending 未成交</div>
-<div>↘ <a href="javascript:void(0)" onclick="bhDetail(16)" style="color:#7cc4ff">#16</a> 可关注·待查因 · 客房许可未核 · 建商未披露</div>
-<div>↘ <a href="javascript:void(0)" onclick="bhDetail(21)" style="color:#7cc4ff">#21</a> 可关注·待查因 · 累计挂牌 241 天</div>
-</div>
-<div style="margin-top:7px">⛔ <b style="color:#fff">不推 1 套</b>：<a href="javascript:void(0)" onclick="bhDetail(11)" style="color:#7cc4ff">#11</a> · 37 Tatoosh Key · Coal Creek 洪泛区命中 · 已 Pending</div>
-<div style="color:#9fb6d8;margin-top:6px">📊 在售 31 · 在售中位 $776/sqft · 成交中位 $739/sqft · 在售高 5%</div>
+<div style="color:#ffd93d;font-weight:700;margin-bottom:6px">🧭 小美导读 · 一眼看全批（点下面图标直接筛）</div>
+<div id="bh-stats" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+<div id="bh-picks" style="font-size:.88em;line-height:1.7;color:#ddd"></div>
+<div style="font-size:.85em;color:#9fb6d8;margin-top:4px">⬆ 升级线 ≥ $280 万 <span id="bh-up-n"></span> 套 · 🎟 入场券 <span id="bh-tk-n"></span> 套 · 监测面 $180 万起 · 在售中位 $776/sqft · 成交中位 $739/sqft</div>
 </div>
 </div>
 </div>
@@ -1155,7 +1140,18 @@ function bhSpark(h){
 
 <div data-subpage="view">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<div id="bh-map" style="height:480px;border-radius:10px;overflow:hidden;background:#0d1526;border:1px solid #2a3a5f"></div>
+<div id="bh-mapwrap" style="position:sticky;top:0;z-index:200">
+<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0e1830;border:1px solid #2a4a7f;border-bottom:none;border-radius:10px 10px 0 0;padding:7px 10px">
+<span style="font-weight:700;font-size:.9em">🗺️ 地图 · 已置顶</span>
+<span style="color:#8fa3c8;font-size:.76em">往下滑也一直在顶部</span>
+<span style="flex:1"></span>
+<button id="bh-map-wheel" onclick="bhMapWheel()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">滚轮缩放：关</button>
+<button id="bh-map-big" onclick="bhMapBig()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">⛶ 放大</button>
+<button id="bh-map-toggle" onclick="bhMapToggle()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">收起地图</button>
+</div>
+<div id="bh-map" style="height:480px;border-radius:0 0 10px 10px;overflow:hidden;background:#0d1526;border:1px solid #2a4a7f;border-top:none"></div>
+<div style="color:#8fa3c8;font-size:.76em;margin-top:4px">点标注看房源 · 点卡片上的 📍 定位到地图 · 手机双指可缩放 · 点「滚轮缩放」后滚轮也可缩放</div>
+</div>
 <div id="bh-map-fallback" style="display:none;color:#f0b35e;font-size:.82em;margin-top:6px">⚠ 地图组件未加载（网络原因），下方列表照常可用。</div>
 <style>
 @media (max-width:700px){#bh-map{height:360px!important}}
@@ -1264,6 +1260,7 @@ a.bh-chip{text-decoration:none;cursor:pointer}
 .bh-grade.best{background:#14351c;color:#8fd48f;border:1px solid #2f6e46}
 .bh-grade.acceptable{background:#12303f;color:#9fd8ff;border:1px solid #2a5a7f}
 .bh-grade.partial{background:#5b3a08;color:#ffd93d;border:1px solid #8a6d1a}
+#bh-map.bh-map-big{height:75vh!important}
 </style>
 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 10px">
 <select id="bh-sort" onchange="bhRender()" style="background:#101c33;color:#eee;border:1px solid #35507e;border-radius:8px;padding:7px 10px;font-size:.85em">
@@ -1287,6 +1284,12 @@ a.bh-chip{text-decoration:none;cursor:pointer}
 </select>
 <label style="font-size:.85em;color:#ddd"><input type="checkbox" id="bh-fstar" onchange="bhRender()"> 只看 ⭐重点推荐</label>
 <label style="font-size:.85em;color:#ddd"><input type="checkbox" id="bh-fup" onchange="bhRender()"> 只看升级线</label>
+<input id="bh-q" type="search" placeholder="🔍 搜地址 / 社区 / 学校链…" oninput="bhRender()" style="background:#101c33;color:#eee;border:1px solid #35507e;border-radius:8px;padding:7px 10px;font-size:.85em;min-width:190px">
+<label style="font-size:.85em;color:#ddd"><input type="checkbox" id="bh-foh" onchange="bhRender()"> 🗓️ 只看有开放日</label>
+<label style="font-size:.85em;color:#ddd"><input type="checkbox" id="bh-fneg" onchange="bhRender()"> 🎯 只看谈判目标</label>
+<label style="font-size:.85em;color:#ddd"><input type="checkbox" id="bh-fbest" onchange="bhRender()"> 🏆 只看最佳链</label>
+<label style="font-size:.85em;color:#ddd"><input type="checkbox" id="bh-fdrop" onchange="bhRender()"> 📉 只看降过价</label>
+<button onclick="bhClearFilters()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:8px;padding:7px 12px;font-size:.85em;cursor:pointer">清除筛选</button>
 <span id="bh-count" style="color:#9fb6d8;font-size:.82em"></span>
 </div>
 <div id="bh-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px"></div>
@@ -1511,6 +1514,7 @@ function bhCard(h){
   +(h.photos.length>1?'<button class="bh-nav prev" onclick="bhCardNav(event,'+h.n+',-1)" aria-label="上一张">‹</button><button class="bh-nav next" onclick="bhCardNav(event,'+h.n+',1)" aria-label="下一张">›</button><span class="bh-pg" id="bh-pg-'+h.n+'">1 / '+h.photos.length+"</span>":"")
   +"</div>":(bd?'<div style="margin:2px 0 6px"><span class="bh-badge '+bd[1]+'" style="position:static">'+bd[0]+"</span></div>":""))
  +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+bhMoney(h.price)+'</span><span style="color:#8fa3c8;font-size:.78em">No.'+h.n+"</span></div>"
+ +'<div style="margin-top:2px"><button onclick="bhLocate(event,'+h.n+')" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:2px 10px;font-size:.76em;cursor:pointer">📍 在地图上看</button></div>'
  +'<div style="color:#fff;font-weight:600;margin:2px 0">📍 '+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+h.city+"</div>"
  +'<div style="font-size:.84em;color:#ccc;margin:6px 0">'+spec.join(" · ")+"</div>"
  +'<div style="margin:2px 0 8px"><a href="'+h.url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#7cc4ff;font-size:.88em;font-weight:600">'+bhRfLabel(h)+'</a></div>'
@@ -1526,9 +1530,19 @@ function bhCard(h){
 function bhFiltered(){
  var s=document.getElementById("bh-sort").value,fp=document.getElementById("bh-fprice").value,fc=document.getElementById("bh-fchain").value,fs=document.getElementById("bh-fstar").checked;
  var fu=document.getElementById("bh-fup").checked;
+ var fq=((document.getElementById("bh-q")||{}).value||"").trim().toLowerCase();
+ var fo=document.getElementById("bh-foh").checked;
+ var fn=document.getElementById("bh-fneg").checked;
+ var fb=document.getElementById("bh-fbest").checked;
+ var fd=document.getElementById("bh-fdrop").checked;
  var arr=BH_HOMES.filter(function(h){
   if(fs&&h.tier!=="top")return false;
   if(fu&&h.line!=="upgrade")return false;
+  if(fo&&!(h.open_house&&h.open_house!=="近期无 open house"))return false;
+  if(fn&&h.tier!=="worth_neg")return false;
+  if(fb&&!(window.BH_ACCESS&&BH_ACCESS[h.n]&&BH_ACCESS[h.n].chain_grade==="best"))return false;
+  if(fd&&!(typeof BH_HIST!=="undefined"&&BH_HIST[h.n]&&BH_HIST[h.n].length>=2))return false;
+  if(fq){var hay=(h.addr+" "+h.city+" "+h.chain+" "+(h.oneliner||"")).toLowerCase();if(hay.indexOf(fq)<0)return false;}
   if(fc!=="all"&&h.chainKey!==fc)return false;
   if(fp==="b1"&&h.price>=2500000)return false;
   if(fp==="b2"&&(h.price<2500000||h.price>=3500000))return false;
@@ -1540,12 +1554,49 @@ function bhFiltered(){
  if(s==="sqft")arr.sort(function(a,b){return (b.sqft||0)-(a.sqft||0)});
  return arr;
 }
+function bhStats(){
+ var st=document.getElementById("bh-stats");if(!st)return;
+ function chip(txt,fn){return '<button onclick="'+fn+'" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 12px;font-size:.84em;cursor:pointer">'+txt+"</button>"}
+ var tot=BH_HOMES.length;
+ var star=BH_HOMES.filter(function(h){return h.tier==="top"}).length;
+ var neg=BH_HOMES.filter(function(h){return h.tier==="worth_neg"}).length;
+ var best=BH_HOMES.filter(function(h){return window.BH_ACCESS&&BH_ACCESS[h.n]&&BH_ACCESS[h.n].chain_grade==="best"}).length;
+ var oh=BH_HOMES.filter(function(h){return h.open_house&&h.open_house!=="近期无 open house"}).length;
+ var dr=BH_HOMES.filter(function(h){return typeof BH_HIST!=="undefined"&&BH_HIST[h.n]&&BH_HIST[h.n].length>=2}).length;
+ st.innerHTML=chip("🏠 跟踪 "+tot+" 套","bhQuickFilter('all')")+chip("⭐ 重点推荐 "+star+" 套","bhQuickFilter('star')")+chip("🎯 谈判目标 "+neg+" 套","bhQuickFilter('neg')")+chip("🏆 最佳链 "+best+" 套","bhQuickFilter('best')")+chip("🗓️ 有开放日 "+oh+" 套","bhQuickFilter('oh')")+chip("📉 降过价 "+dr+" 套","bhQuickFilter('drop')");
+ var ue=document.getElementById("bh-up-n");if(ue)ue.textContent=BH_HOMES.filter(function(h){return h.line==="upgrade"}).length;
+ var te=document.getElementById("bh-tk-n");if(te)te.textContent=BH_HOMES.filter(function(h){return h.line==="ticket"}).length;
+ var pk=document.getElementById("bh-picks");if(pk){
+  var t=BH_HOMES.filter(function(h){return h.tier==="top"})[0];
+  var bs=BH_HOMES.filter(function(h){return window.BH_ACCESS&&BH_ACCESS[h.n]&&BH_ACCESS[h.n].chain_grade==="best"});
+  pk.innerHTML=(t?('⭐ 本批唯一重点推荐：<a href="javascript:void(0)" onclick="bhDetail('+t.n+')" style="color:#7cc4ff">No.'+t.n+" · "+t.addr+" — "+bhMoney(t.price)+"</a>"):"")
+  +(bs.length?('<div>🏆 最佳链 '+bs.length+" 套（通达 97）："+bs.map(function(h){return ' <a href="javascript:void(0)" onclick="bhDetail('+h.n+')" style="color:#7cc4ff">No.'+h.n+" · "+h.addr+"</a>"}).join(" · ")+"</div>"):"");
+ }
+}
+function bhQuickFilter(kind){
+ ["bh-fstar","bh-fup","bh-foh","bh-fneg","bh-fbest","bh-fdrop"].forEach(function(id){var e=document.getElementById(id);if(e)e.checked=false});
+ var q=document.getElementById("bh-q");if(q)q.value="";
+ if(kind==="star")document.getElementById("bh-fstar").checked=true;
+ if(kind==="neg")document.getElementById("bh-fneg").checked=true;
+ if(kind==="best")document.getElementById("bh-fbest").checked=true;
+ if(kind==="oh")document.getElementById("bh-foh").checked=true;
+ if(kind==="drop")document.getElementById("bh-fdrop").checked=true;
+ bhRender();
+ var l=document.getElementById("bh-list");if(l)l.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function bhClearFilters(){
+ ["bh-fstar","bh-fup","bh-foh","bh-fneg","bh-fbest","bh-fdrop"].forEach(function(id){var e=document.getElementById(id);if(e)e.checked=false});
+ var q=document.getElementById("bh-q");if(q)q.value="";
+ document.getElementById("bh-fprice").value="all";document.getElementById("bh-fchain").value="all";document.getElementById("bh-sort").value="rec";
+ bhRender();
+}
 function bhRender(){
  if(window.bhClosePopups)window.bhClosePopups();
  var arr=bhFiltered(),el=document.getElementById("bh-list");
  el.innerHTML=arr.length?arr.map(bhCard).join(""):'<p style="color:#aaa">没有符合当前筛选的房源，换个条件试试。</p>';
  document.getElementById("bh-count").textContent="显示 "+arr.length+" / "+BH_HOMES.length+" 套";
  if(window.bhSyncPins)window.bhSyncPins(arr.map(function(h){return h.n}));
+ bhStats();
 }
 function bhDetail(n){
  if(window.BH_SWIPE_T&&Date.now()-window.BH_SWIPE_T<450)return;
@@ -1554,7 +1605,7 @@ function bhDetail(n){
  var tags="";h.tags.forEach(function(t){tags+='<span class="bh-tag">'+t+"</span>"});
  var html='<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><div class="bh-price" style="font-size:1.5em">'+bhMoney(h.price)+"</div>"
  +'<div style="color:#fff;font-weight:700;font-size:1.05em;margin-top:2px">No.'+h.n+" · "+h.addr+'</div><div style="color:#9fb6d8;font-size:.85em">'+h.city+"</div></div>"
- +'<button onclick="bhClose()" style="background:#1d2c4d;color:#eee;border:1px solid #35507e;border-radius:8px;padding:6px 12px;cursor:pointer">✕ 关闭</button></div>'
+ +'<button onclick="bhClose();bhLocate(null,'+n+')" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:8px;padding:6px 12px;cursor:pointer;margin-right:6px">📍 在地图上看</button><button onclick="bhClose()" style="background:#1d2c4d;color:#eee;border:1px solid #35507e;border-radius:8px;padding:6px 12px;cursor:pointer">✕ 关闭</button></div>'
  +'<div style="margin:8px 0"><span class="bh-tag hot">'+BH_TIER[h.tier].label+"</span>"+tags+(h.ver?'<span class="bh-ver">✔ 逐页核实</span>':'<span class="bh-ver w">⚠ 聚合页信息，约看前复核</span>')+"</div>"
  +'<div style="margin:0 0 10px"><a href="'+h.url+'" target="_blank" rel="noopener" style="color:#7cc4ff;font-weight:700">'+bhRfLabel(h)+'</a></div>'
  +(h.summary_line?'<div style="color:#ffd93d;font-size:.93em;margin:0 0 2px;line-height:1.6">'+h.summary_line+"</div>":"")
@@ -1628,6 +1679,36 @@ bhRender();
   }catch(e){var f2=document.getElementById("bh-map-fallback");if(f2)f2.style.display="block"}
  }
  window.bhClosePopups=function(){if(map)map.closePopup()};
+ window.bhInitMap=init;
+ window.bhLocate=function(ev,n){
+  if(ev&&ev.stopPropagation)ev.stopPropagation();
+  var w=document.getElementById("bh-mapwrap");
+  if(w&&w.dataset.collapsed==="1")window.bhMapToggle();
+  if(!map)init();
+  var h=bhGet(n);if(!h||!map)return;
+  if(w)w.scrollIntoView({behavior:"smooth",block:"start"});
+  setTimeout(function(){map.invalidateSize();map.setView([h.lat,h.lng],15);var mk=markers[n];if(mk)mk.openPopup();},80);
+ };
+ window.bhMapToggle=function(){
+  var m=document.getElementById("bh-map"),w=document.getElementById("bh-mapwrap"),b=document.getElementById("bh-map-toggle");
+  if(!m||!w)return;
+  if(w.dataset.collapsed==="1"){m.style.display="";w.dataset.collapsed="";if(b)b.textContent="收起地图";if(map)setTimeout(function(){map.invalidateSize()},30);}
+  else{m.style.display="none";w.dataset.collapsed="1";if(b)b.textContent="展开地图";}
+ };
+ window.bhMapBig=function(){
+  var m=document.getElementById("bh-map"),b=document.getElementById("bh-map-big");
+  if(!m)return;
+  var big=m.classList.toggle("bh-map-big");
+  if(b)b.textContent=big?"⛶ 恢复":"⛶ 放大";
+  if(map)setTimeout(function(){map.invalidateSize()},30);
+ };
+ window.bhMapWheel=function(){
+  var b=document.getElementById("bh-map-wheel");
+  if(!map)init();
+  if(!map)return;
+  if(map.scrollWheelZoom.enabled()){map.scrollWheelZoom.disable();if(b)b.textContent="滚轮缩放：关";}
+  else{map.scrollWheelZoom.enable();if(b)b.textContent="滚轮缩放：开";}
+ };
  window.bhSyncPins=function(ns){
   if(!map)return;
   BH_HOMES.forEach(function(h){var mk=markers[h.n];if(!mk)return;var el=mk.getElement();if(el)el.style.display=(ns.indexOf(h.n)>=0)?"":"none"});
@@ -1881,7 +1962,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-31 15:03 UTC';
+var BUILD_TS='2026-10-31 15:32 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
