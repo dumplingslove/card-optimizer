@@ -119,6 +119,7 @@
 @media(max-width:480px){.tab-btn{min-width:70px;padding:6px 3px;font-size:.8em}.sub-btn{min-width:0;padding:5px 6px;font-size:.82em}}
 .sub-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:#667eea;font-weight:bold}
 #tp-house[data-sub="view"] [data-subpage]:not([data-subpage="view"]),#tp-house[data-sub="market"] [data-subpage]:not([data-subpage="market"]),#tp-house[data-sub="school"] [data-subpage]:not([data-subpage="school"]),#tp-fire[data-sub="home"] [data-subpage]:not([data-subpage="home"]),#tp-fire[data-sub="balance"] [data-subpage]:not([data-subpage="balance"]),#tp-fire[data-sub="plan"] [data-subpage]:not([data-subpage="plan"]){display:none!important}
+#tp-house:not(.active) ~ [data-subpage="school"],#tp-house.active:not([data-sub="school"]) ~ [data-subpage="school"]{display:none}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .cc-cardline{background:#2a2410;border:1px solid #ffd93d;color:#ffe9a8;border-radius:7px;padding:7px 9px;font-size:.92em;line-height:1.55;margin-bottom:8px}
@@ -1140,7 +1141,8 @@ function bhSpark(h){
 
 <div data-subpage="view">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<div id="bh-mapbar" style="position:sticky;top:104px;z-index:1100;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0e1830;border:1px solid #2a4a7f;border-bottom:none;border-radius:10px 10px 0 0;padding:7px 10px">
+<div id="bh-mapwrap" style="position:sticky;top:104px;z-index:1100;background:#0a1224">
+<div id="bh-mapbar" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0e1830;border:1px solid #2a4a7f;border-bottom:none;border-radius:10px 10px 0 0;padding:7px 10px">
 <span style="font-weight:700;font-size:.9em">🗺️ 地图 · 已置顶</span>
 <span style="color:#8fa3c8;font-size:.76em">往下滑也一直在顶部</span>
 <span style="flex:1"></span>
@@ -1148,7 +1150,6 @@ function bhSpark(h){
 <button id="bh-map-big" onclick="bhMapBig()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">⛶ 放大</button>
 <button id="bh-map-toggle" onclick="bhMapToggle()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">收起地图</button>
 </div>
-<div id="bh-mapwrap" style="background:#0a1224">
 <div id="bh-map" style="height:480px;border-radius:0 0 10px 10px;overflow:hidden;background:#0d1526;border:1px solid #2a4a7f;border-top:none"></div>
 <div id="bh-map-hint" style="color:#8fa3c8;font-size:.76em;background:#0a1224;padding:4px 2px 8px">点标注看房源 · 点卡片 📍 定位到地图 · 双指可缩放</div>
 </div>
@@ -1514,7 +1515,7 @@ function bhCard(h){
   +(h.photos.length>1?'<button class="bh-nav prev" onclick="bhCardNav(event,'+h.n+',-1)" aria-label="上一张">‹</button><button class="bh-nav next" onclick="bhCardNav(event,'+h.n+',1)" aria-label="下一张">›</button><span class="bh-pg" id="bh-pg-'+h.n+'">1 / '+h.photos.length+"</span>":"")
   +"</div>":(bd?'<div style="margin:2px 0 6px"><span class="bh-badge '+bd[1]+'" style="position:static">'+bd[0]+"</span></div>":""))
  +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+bhMoney(h.price)+'</span><span style="color:#8fa3c8;font-size:.78em">No.'+h.n+"</span></div>"
- +'<div style="margin-top:2px"><button onclick="bhLocate(event,'+h.n+')" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:2px 10px;font-size:.76em;cursor:pointer">📍 在地图上看</button> <button onclick="event.stopPropagation();bhDetail('+h.n+')" style="background:#1d2c4d;color:#ffd93d;border:1px solid #8a6d1a;border-radius:20px;padding:2px 10px;font-size:.76em;cursor:pointer">详情</button></div>'
+ +'<div style="margin-top:6px"><button onclick="event.stopPropagation();bhDetail('+h.n+')" style="background:#ffd93d;color:#1a1a2e;border:1px solid #ffd93d;border-radius:22px;padding:9px 20px;font-size:.92em;font-weight:800;cursor:pointer">详情</button></div>'
  +'<div style="color:#fff;font-weight:600;margin:2px 0">📍 '+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+h.city+"</div>"
  +'<div style="font-size:.84em;color:#ccc;margin:6px 0">'+spec.join(" · ")+"</div>"
  +'<div style="margin:2px 0 8px"><a href="'+h.url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#7cc4ff;font-size:.88em;font-weight:600">'+bhRfLabel(h)+'</a></div>'
@@ -1725,8 +1726,8 @@ bhRender();
   window.scrollTo({top:top,behavior:"smooth"});
  };
  window.bhMapBarTop=function(){
-  var hd=document.querySelector(".navstick"),bar=document.getElementById("bh-mapbar");
-  if(hd&&bar)bar.style.top=hd.offsetHeight+"px";
+  var hd=document.querySelector(".navstick"),w=document.getElementById("bh-mapwrap");
+  if(hd&&w)w.style.top=hd.offsetHeight+"px";
  };
  window.bhMapBarTop();
  if(window.addEventListener)window.addEventListener("resize",window.bhMapBarTop);
@@ -1983,7 +1984,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-31 15:51 UTC';
+var BUILD_TS='2026-10-31 16:00 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
