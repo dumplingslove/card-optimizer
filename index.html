@@ -1677,6 +1677,7 @@ bhRender();
     markers[h.n]=mk;bounds.push([h.lat,h.lng]);
    });
    if(bounds.length)map.fitBounds(bounds,{padding:[24,24]});
+   map.on("popupopen",function(e){if(e.popup&&e.popup.getLatLng)map.panTo(e.popup.getLatLng());});
    setTimeout(function(){if(map)map.invalidateSize()},300);
   }catch(e){var f2=document.getElementById("bh-map-fallback");if(f2)f2.style.display="block"}
  }
@@ -1745,6 +1746,7 @@ bhRender();
  window.bhMapFsClose=function(){
   var fs=document.getElementById("bh-mapfs"),m=document.getElementById("bh-map"),w=document.getElementById("bh-mapwrap"),ht=document.getElementById("bh-map-hint");
   if(!fs||!m||!w)return;
+  window.bhClosePopups();
   fs.style.display="none";
   if(ht&&ht.parentNode===w)w.insertBefore(m,ht);else w.appendChild(m);
   m.style.height=window._bhFsHeight||"480px";
@@ -2049,7 +2051,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-31 23:06 UTC';
+var BUILD_TS='2026-10-31 23:11 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
