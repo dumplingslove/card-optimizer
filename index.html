@@ -1148,11 +1148,11 @@ function bhSpark(h){
 <span style="color:#8fa3c8;font-size:.76em">往下滑也一直在顶部</span>
 <span style="flex:1"></span>
 <button id="bh-map-wheel" onclick="bhMapWheel()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">滚轮缩放：关</button>
-<button id="bh-map-big" onclick="bhMapBig()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">⛶ 放大</button>
+<button id="bh-map-big" onclick="bhMapBig()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">⛶ 放大</button><button id="bh-my-loc" onclick="bhMyLoc()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">📍 我的位置</button>
 <button id="bh-map-toggle" onclick="bhMapToggle()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">收起地图</button>
 </div>
 <div id="bh-map" style="height:480px;border-radius:0 0 10px 10px;overflow:hidden;background:#0d1526;border:1px solid #2a4a7f;border-top:none"></div>
-<div id="bh-map-hint" style="color:#8fa3c8;font-size:.76em;background:#0a1224;padding:4px 2px 8px">点标注看房源 · 点卡片 📍 定位到地图 · 双指可缩放</div>
+<div id="bh-map-hint" style="color:#8fa3c8;font-size:.76em;background:#0a1224;padding:4px 2px 8px">点标注看房源 · 点卡片定位到地图 · ⛶ 放大是全屏 · 📍 我的位置显示你在哪 · 双指可缩放</div>
 </div>
 <div id="bh-map-fallback" style="display:none;color:#f0b35e;font-size:.82em;margin-top:6px">⚠ 地图组件未加载（网络原因），下方列表照常可用。</div>
 <style>
@@ -1635,7 +1635,7 @@ function bhDetail(n){
  +'<div style="margin-top:14px"><a href="'+h.url+'" target="_blank" rel="noopener" style="color:#7cc4ff">'+bhRfLabel(h)+'</a></div>'
  +'<p style="color:#777;font-size:.75em;margin-top:10px">数据截至 '+(typeof BH_TRACK!=="undefined"&&BH_TRACK.asOf?BH_TRACK.asOf:"2026-10-27")+'，约看前请复核价格与在售状态。</p>';
  document.getElementById("bh-modal").innerHTML=html;
- document.getElementById("bh-modal-bg").style.display="flex";
+ document.getElementById("bh-modal-bg").style.display="flex";window._bhModalScrollY=window.scrollY||0;document.body.style.overflow="hidden";
 }
 var BH_GAL={n:0,idx:0,len:0};
 function bhGalSet(i){
@@ -1650,7 +1650,7 @@ function bhGal(t){if(t&&t.dataset)bhGalSet(parseInt(t.dataset.i,10)||0)}
 var BH_TX=null;
 function bhTouchStart(e){BH_TX=(e.changedTouches&&e.changedTouches.length)?e.changedTouches[0].clientX:null}
 function bhTouchEnd(e){if(BH_TX===null||!e.changedTouches||!e.changedTouches.length)return;var dx=e.changedTouches[0].clientX-BH_TX;BH_TX=null;if(Math.abs(dx)>40)bhGalNav(dx<0?1:-1)}
-function bhClose(){document.getElementById("bh-modal-bg").style.display="none"}
+function bhClose(){document.getElementById("bh-modal-bg").style.display="none";document.body.style.overflow="";if(window._bhModalScrollY!==undefined)window.scrollTo(0,window._bhModalScrollY);}
 function bhHighlight(n){
  var c=document.getElementById("bh-card-"+n);
  document.querySelectorAll(".bh-card.bh-hl").forEach(function(x){x.classList.remove("bh-hl")});
@@ -1661,7 +1661,7 @@ bhRender();
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 (function(){
- var map=null,markers={};
+ var map=null,markers={},myMk=null,myCircle=null;
  function init(){
   if(map)return;
   if(typeof L==="undefined"){var f=document.getElementById("bh-map-fallback");if(f)f.style.display="block";var m=document.getElementById("bh-map");if(m)m.style.display="none";return}
@@ -1686,7 +1686,7 @@ bhRender();
   if(ev&&ev.stopPropagation)ev.stopPropagation();
   var w=document.getElementById("bh-mapwrap");
   if(w&&w.dataset.collapsed==="1")window.bhMapToggle();
-  else window.bhScrollMapIntoView();
+  else window.bhScrollMapIntoViewIfHidden();
   if(!map)init();
   var h=bhGet(n);if(!h||!map)return;
   setTimeout(function(){map.invalidateSize();map.setView([h.lat,h.lng],15);var mk=markers[n];if(mk)mk.openPopup();},150);
@@ -1698,19 +1698,83 @@ bhRender();
     if(m)m.style.display="";if(ht)ht.style.display="";w.dataset.collapsed="";
     if(b)b.textContent="收起地图";
     if(!map)init();
-    window.bhScrollMapIntoView();
     if(map)setTimeout(function(){map.invalidateSize()},120);
   } else {
     if(m)m.style.display="none";if(ht)ht.style.display="none";w.dataset.collapsed="1";
     if(b)b.textContent="展开地图";
   }
  };
- window.bhMapBig=function(){
-  var m=document.getElementById("bh-map"),b=document.getElementById("bh-map-big");
-  if(!m)return;
-  var big=m.classList.toggle("bh-map-big");
-  if(b)b.textContent=big?"⛶ 恢复":"⛶ 放大";
-  if(map)setTimeout(function(){map.invalidateSize()},30);
+ window.bhScrollMapIntoViewIfHidden=function(){
+  var m=document.getElementById("bh-map");if(!m)return;
+  var r=m.getBoundingClientRect();
+  if(r.bottom<0||r.top>window.innerHeight)window.bhScrollMapIntoView();
+ };
+ window.bhMapFsOpen=function(){
+  if(!map)init();if(!map)return;
+  var m=document.getElementById("bh-map"),w=document.getElementById("bh-mapwrap"),ht=document.getElementById("bh-map-hint");
+  if(!m||!w)return;
+  if(w.dataset.collapsed==="1")window.bhMapToggle();
+  var fs=document.getElementById("bh-mapfs");
+  if(!fs){
+   fs=document.createElement("div");fs.id="bh-mapfs";
+   fs.style.cssText="position:fixed;inset:0;z-index:9600;background:#0a1224;display:flex;flex-direction:column";
+   var bar=document.createElement("div");
+   bar.style.cssText="display:flex;gap:8px;align-items:center;padding:10px 12px;background:#0e1830;border-bottom:1px solid #2a4a7f;flex:none";
+   var cb=document.createElement("button");cb.textContent="✕ 关闭全屏";
+   cb.style.cssText="background:#ffd93d;color:#1a1a2e;border:none;border-radius:22px;padding:10px 20px;font-size:.92em;font-weight:800;cursor:pointer";
+   cb.onclick=function(){window.bhMapFsClose()};
+   var lb=document.createElement("span");lb.textContent="全屏地图 · 点标注看房源";
+   lb.style.cssText="color:#9fd8ff;font-size:.85em";
+   var mb=document.createElement("button");mb.textContent="📍 我的位置";
+   mb.style.cssText="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:8px 14px;font-size:.85em;cursor:pointer;margin-left:auto";
+   mb.onclick=function(){window.bhMyLoc()};
+   bar.appendChild(cb);bar.appendChild(lb);bar.appendChild(mb);
+   var holder=document.createElement("div");holder.id="bh-mapfs-holder";holder.style.cssText="flex:1;min-height:0";
+   fs.appendChild(bar);fs.appendChild(holder);document.body.appendChild(fs);
+  }
+  window._bhFsScrollY=window.scrollY||0;
+  window._bhFsHeight=m.style.height;
+  fs.style.display="flex";
+  var holder=document.getElementById("bh-mapfs-holder");
+  if(m.style.display==="none")m.style.display="";
+  holder.appendChild(m);
+  m.style.height="100%";
+  document.body.style.overflow="hidden";
+  if(map)setTimeout(function(){map.invalidateSize()},60);
+ };
+ window.bhMapFsClose=function(){
+  var fs=document.getElementById("bh-mapfs"),m=document.getElementById("bh-map"),w=document.getElementById("bh-mapwrap"),ht=document.getElementById("bh-map-hint");
+  if(!fs||!m||!w)return;
+  fs.style.display="none";
+  if(ht&&ht.parentNode===w)w.insertBefore(m,ht);else w.appendChild(m);
+  m.style.height=window._bhFsHeight||"480px";
+  document.body.style.overflow="";
+  window.scrollTo(0,window._bhFsScrollY||0);
+  if(map)setTimeout(function(){map.invalidateSize()},60);
+ };
+ window.bhMapBig=function(){window.bhMapFsOpen()};
+ window.bhMyLoc=function(){
+  var ht=document.getElementById("bh-map-hint");
+  function say(t){if(ht){ht.style.display="";ht.textContent=t;}}
+  var w=document.getElementById("bh-mapwrap");
+  if(w&&w.dataset.collapsed==="1")window.bhMapToggle();
+  if(!map)init();
+  if(!navigator.geolocation){say("此浏览器不支持定位");return;}
+  say("正在定位…");
+  navigator.geolocation.getCurrentPosition(function(pos){
+   if(!map){say("地图未初始化");return;}
+   var lat=pos.coords.latitude,lng=pos.coords.longitude,acc=pos.coords.accuracy||0;
+   if(myMk)map.removeLayer(myMk);
+   if(myCircle)map.removeLayer(myCircle);
+   var icon=L.divIcon({className:"",html:'<div style="width:18px;height:18px;border-radius:50%;background:#2f7bff;border:3px solid #fff;box-shadow:0 0 0 2px rgba(47,123,255,.45),0 2px 8px rgba(0,0,0,.4)"></div>',iconSize:[24,24],iconAnchor:[12,12]});
+   myMk=L.marker([lat,lng],{icon:icon}).addTo(map);
+   myMk.bindPopup("你现在的位置");
+   if(acc>0)myCircle=L.circle([lat,lng],{radius:acc,color:"#2f7bff",weight:1,fillOpacity:0.12}).addTo(map);
+   map.setView([lat,lng],15);
+   say("已定位到你现在的位置（蓝点）");
+  },function(err){
+   say(err&&err.code===1?"定位未授权：请在浏览器设置里允许本站使用位置，再点一次":"定位失败，请到开阔处再试一次");
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
  };
  window.bhMapWheel=function(){
   var b=document.getElementById("bh-map-wheel");
@@ -1985,7 +2049,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-31 18:03 UTC';
+var BUILD_TS='2026-10-31 22:59 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
