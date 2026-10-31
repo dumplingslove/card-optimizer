@@ -1140,8 +1140,7 @@ function bhSpark(h){
 
 <div data-subpage="view">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<div id="bh-mapwrap" style="position:sticky;top:0;z-index:200">
-<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0e1830;border:1px solid #2a4a7f;border-bottom:none;border-radius:10px 10px 0 0;padding:7px 10px">
+<div id="bh-mapbar" style="position:sticky;top:104px;z-index:1100;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#0e1830;border:1px solid #2a4a7f;border-bottom:none;border-radius:10px 10px 0 0;padding:7px 10px">
 <span style="font-weight:700;font-size:.9em">🗺️ 地图 · 已置顶</span>
 <span style="color:#8fa3c8;font-size:.76em">往下滑也一直在顶部</span>
 <span style="flex:1"></span>
@@ -1149,8 +1148,9 @@ function bhSpark(h){
 <button id="bh-map-big" onclick="bhMapBig()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">⛶ 放大</button>
 <button id="bh-map-toggle" onclick="bhMapToggle()" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:4px 11px;font-size:.8em;cursor:pointer">收起地图</button>
 </div>
+<div id="bh-mapwrap" style="background:#0a1224">
 <div id="bh-map" style="height:480px;border-radius:0 0 10px 10px;overflow:hidden;background:#0d1526;border:1px solid #2a4a7f;border-top:none"></div>
-<div style="color:#8fa3c8;font-size:.76em;margin-top:4px">点标注看房源 · 点卡片上的 📍 定位到地图 · 手机双指可缩放 · 点「滚轮缩放」后滚轮也可缩放</div>
+<div id="bh-map-hint" style="color:#8fa3c8;font-size:.76em;background:#0a1224;padding:4px 2px 8px">点标注看房源 · 点卡片 📍 定位到地图 · 双指可缩放</div>
 </div>
 <div id="bh-map-fallback" style="display:none;color:#f0b35e;font-size:.82em;margin-top:6px">⚠ 地图组件未加载（网络原因），下方列表照常可用。</div>
 <style>
@@ -1508,13 +1508,13 @@ function bhCard(h){
  if(h.renov)age=(age?age+" · ":"")+h.renov;
  row("房龄",age);
  row("开放日",bhOhVal(h));
- return '<div class="bh-card" id="bh-card-'+h.n+'" onclick="bhDetail('+h.n+')">'
+ return '<div class="bh-card" id="bh-card-'+h.n+'" onclick="bhLocate(event,'+h.n+')">'
  +(h.photos&&h.photos.length?'<div class="bh-phwrap" ontouchstart="bhCardTouchStart(event)" ontouchend="bhCardTouchEnd(event,'+h.n+')"><img class="bh-photo" id="bh-ph-'+h.n+'" src="'+h.photos[0]+'" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'">'
   +badge
   +(h.photos.length>1?'<button class="bh-nav prev" onclick="bhCardNav(event,'+h.n+',-1)" aria-label="上一张">‹</button><button class="bh-nav next" onclick="bhCardNav(event,'+h.n+',1)" aria-label="下一张">›</button><span class="bh-pg" id="bh-pg-'+h.n+'">1 / '+h.photos.length+"</span>":"")
   +"</div>":(bd?'<div style="margin:2px 0 6px"><span class="bh-badge '+bd[1]+'" style="position:static">'+bd[0]+"</span></div>":""))
  +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+bhMoney(h.price)+'</span><span style="color:#8fa3c8;font-size:.78em">No.'+h.n+"</span></div>"
- +'<div style="margin-top:2px"><button onclick="bhLocate(event,'+h.n+')" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:2px 10px;font-size:.76em;cursor:pointer">📍 在地图上看</button></div>'
+ +'<div style="margin-top:2px"><button onclick="bhLocate(event,'+h.n+')" style="background:#1d2c4d;color:#9fd8ff;border:1px solid #35507e;border-radius:20px;padding:2px 10px;font-size:.76em;cursor:pointer">📍 在地图上看</button> <button onclick="event.stopPropagation();bhDetail('+h.n+')" style="background:#1d2c4d;color:#ffd93d;border:1px solid #8a6d1a;border-radius:20px;padding:2px 10px;font-size:.76em;cursor:pointer">详情</button></div>'
  +'<div style="color:#fff;font-weight:600;margin:2px 0">📍 '+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+h.city+"</div>"
  +'<div style="font-size:.84em;color:#ccc;margin:6px 0">'+spec.join(" · ")+"</div>"
  +'<div style="margin:2px 0 8px"><a href="'+h.url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#7cc4ff;font-size:.88em;font-weight:600">'+bhRfLabel(h)+'</a></div>'
@@ -1684,16 +1684,24 @@ bhRender();
   if(ev&&ev.stopPropagation)ev.stopPropagation();
   var w=document.getElementById("bh-mapwrap");
   if(w&&w.dataset.collapsed==="1")window.bhMapToggle();
+  else window.bhScrollMapIntoView();
   if(!map)init();
   var h=bhGet(n);if(!h||!map)return;
-  if(w)w.scrollIntoView({behavior:"smooth",block:"start"});
-  setTimeout(function(){map.invalidateSize();map.setView([h.lat,h.lng],15);var mk=markers[n];if(mk)mk.openPopup();},80);
+  setTimeout(function(){map.invalidateSize();map.setView([h.lat,h.lng],15);var mk=markers[n];if(mk)mk.openPopup();},150);
  };
  window.bhMapToggle=function(){
-  var m=document.getElementById("bh-map"),w=document.getElementById("bh-mapwrap"),b=document.getElementById("bh-map-toggle");
+  var m=document.getElementById("bh-map"),w=document.getElementById("bh-mapwrap"),b=document.getElementById("bh-map-toggle"),ht=document.getElementById("bh-map-hint");
   if(!m||!w)return;
-  if(w.dataset.collapsed==="1"){m.style.display="";w.dataset.collapsed="";if(b)b.textContent="收起地图";if(map)setTimeout(function(){map.invalidateSize()},30);}
-  else{m.style.display="none";w.dataset.collapsed="1";if(b)b.textContent="展开地图";}
+  if(w.dataset.collapsed==="1"){
+    if(m)m.style.display="";if(ht)ht.style.display="";w.dataset.collapsed="";
+    if(b)b.textContent="收起地图";
+    if(!map)init();
+    window.bhScrollMapIntoView();
+    if(map)setTimeout(function(){map.invalidateSize()},120);
+  } else {
+    if(m)m.style.display="none";if(ht)ht.style.display="none";w.dataset.collapsed="1";
+    if(b)b.textContent="展开地图";
+  }
  };
  window.bhMapBig=function(){
   var m=document.getElementById("bh-map"),b=document.getElementById("bh-map-big");
@@ -1709,6 +1717,19 @@ bhRender();
   if(map.scrollWheelZoom.enabled()){map.scrollWheelZoom.disable();if(b)b.textContent="滚轮缩放：关";}
   else{map.scrollWheelZoom.enable();if(b)b.textContent="滚轮缩放：开";}
  };
+ window.bhScrollMapIntoView=function(){
+  var m=document.getElementById("bh-map");if(!m)return;
+  var hd=document.querySelector(".navstick"),bar=document.getElementById("bh-mapbar");
+  var off=(hd?hd.offsetHeight:0)+(bar?bar.offsetHeight:0)+8;
+  var top=m.getBoundingClientRect().top+window.scrollY-off;
+  window.scrollTo({top:top,behavior:"smooth"});
+ };
+ window.bhMapBarTop=function(){
+  var hd=document.querySelector(".navstick"),bar=document.getElementById("bh-mapbar");
+  if(hd&&bar)bar.style.top=hd.offsetHeight+"px";
+ };
+ window.bhMapBarTop();
+ if(window.addEventListener)window.addEventListener("resize",window.bhMapBarTop);
  window.bhSyncPins=function(ns){
   if(!map)return;
   BH_HOMES.forEach(function(h){var mk=markers[h.n];if(!mk)return;var el=mk.getElement();if(el)el.style.display=(ns.indexOf(h.n)>=0)?"":"none"});
@@ -1962,7 +1983,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-31 15:32 UTC';
+var BUILD_TS='2026-10-31 15:51 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
