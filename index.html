@@ -138,6 +138,7 @@
 .cc-row.st-todo{border-left-color:#ffb020}
 .cc-row.st-todo.urgent{border-left-color:#ff4d4d;background:#2a1620}
 .cc-row.st-pending{border-left-color:#4ea8ff}
+.cc-row.st-pending.urgent{border-left-color:#ff4d4d;background:#2a1620}
 .cc-row.st-unknown{border-left-color:#888}
 .cc-row.st-done{border-left-color:#2fbf71;opacity:.62}
 .cc-main{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
@@ -1879,7 +1880,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-10-30 18:53 UTC';
+var BUILD_TS='2026-10-31 04:04 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -2604,7 +2605,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     items.forEach(function(it){
       if (it.r.updated_at && it.r.updated_at > latest) latest = it.r.updated_at;
       if (it.state === "todo" && it.rem != null) { todoRem += it.rem; if (it.days != null && it.days <= 30) urgentRem += it.rem; }
-      if (it.state === "pending") { var rlp = remL(it); if (rlp != null) pendRem += rlp; }
+      if (it.state === "pending") { var rlp = remL(it); if (rlp != null) { pendRem += rlp; if (it.days != null && it.days <= 30) urgentRem += rlp; } }
     });
     var dash = $("creditDash");
     if (dash) {
@@ -2622,10 +2623,10 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       function itemHtml(it){
         var s = "";
         var r = it.r;
-        var urgent = it.state === "todo" && it.days != null && it.days <= 30;
+        var urgent = (it.state === "todo" || it.state === "pending") && it.days != null && it.days <= 30;
         var chip = "", chipCls = "chip-gray";
         if (it.state === "done") { chip = "✅ 已用完"; chipCls = "chip-green"; }
-        else if (it.state === "pending") { chip = "💸 钱在路上"; chipCls = "chip-blue"; }
+        else if (it.state === "pending") { if (it.days != null && it.days <= 14) { chip = "剩 " + it.days + " 天"; chipCls = "chip-red"; } else { chip = "💸 钱在路上"; chipCls = "chip-blue"; } }
         else if (it.days != null) { chip = "剩 " + it.days + " 天"; chipCls = it.days <= 14 ? "chip-red" : (it.days <= 45 ? "chip-orange" : "chip-gray"); }
         else chip = r.period_label || "";
         var amt = "";
