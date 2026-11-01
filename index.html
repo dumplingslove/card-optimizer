@@ -375,12 +375,11 @@ var REC_CATS = [
     candidates: [
       { n: "Marriott Brilliant", cur: "Marriott", m: 6, rate: "6x≈4.2%", pin: true },
       { n: "CSR Portal", s: "CSR Portal 10x(降级前!)", cur: "UR", m: 10, rate: "10x UR≈20.5%" } ] },
-  { g: 2, icon: "🛏️", name: "其他酒店", ccat: "hotel", why: "💡 Portal订=10x UR超值！降级前多用。之后→Bilt Portal($400 credit) 或 Plat FHR($200)",
+  { g: 2, icon: "🛏️", name: "其他酒店", ccat: "hotel", why: "💡 Portal订=10x UR超值！降级前多用。降级后→Bilt Portal($400 credit)（Plat 12/17 关卡、本年度酒店 credit 已用完，不再列为备选）",
     candidates: [
       { n: "⚡CSR Portal", cur: "UR", m: 10, rate: "10x UR!≈20.5%" },
       { n: "Amex Gold", s: "Amex Gold 5x(Amex Travel预付!)", cur: "MR", m: 5, rate: "5x MR≈10%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
-      { n: "Amex Platinum", s: "Plat FHR($200)", cur: "cash", m: 0, rate: "" },
       { n: "Bilt Palladium", s: "Bilt Portal($400)", cur: "cash", m: 0, rate: "" } ] },
   { g: 2, icon: "🌍", name: "境外消费", why: "💡 无FTF+兑Cathay商务舱可达约9.8cpp。Bilt月度没达标→先Bilt", alts: "Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)",
     candidates: [
@@ -407,9 +406,9 @@ var REC_CATS = [
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%", sv: 3.9 },
       { n: "Freedom Flex/老Freedom", s: "Freedom 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "transit"] } ] },
   // ===== 账单 & 订阅 (g:3) =====
-  { g: 3, icon: "📺", name: "流媒体", ccat: "entertainment", why: "💡 Disney+/Hulu/ESPN+/NYT $20/月报销！关卡(12/17)后→USB Cash+ 5%",
+  { g: 3, icon: "📺", name: "流媒体", ccat: "entertainment", why: "💡 Disney+/Hulu/ESPN+/NYT $25/月报销！关卡(12/17)后→USB Cash+ 5%",
     candidates: [
-      { n: "Amex Platinum", cur: "cash", m: 0, rate: "$20/月报销!", pin: true },
+      { n: "Amex Platinum", cur: "cash", m: 0, rate: "$25/月报销!", pin: true },
       { n: "USB Cash+", s: "USB Cash+ 5%(Plat关后)", cur: "cash", m: 5, rate: "5%" },
       { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
   { g: 3, icon: "📱", name: "手机账单", why: "💡 Cell Phone Protection $800/次+凑比例+≈5%Hyatt",
@@ -2140,7 +2139,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 15:01 UTC';
+var BUILD_TS='2026-11-01 16:01 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
