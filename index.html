@@ -1990,15 +1990,13 @@ bhRender();
 <button id="st-tab-advice" style="padding:5px 12px;margin:2px;border-radius:14px;border:1px solid #444;background:#222;color:#ccc;cursor:pointer;font-size:.85em" onclick="stShow('advice')">💡 配置建议</button>
 </div>
 <div id="st-prices">
-<div id="st-list" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"></div>
-<div id="st-head" style="margin:8px 0"></div>
+<div id="st-cats" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"></div>
 <div style="margin:8px 0">
 <button class="st-range" id="st-r-1d" style="padding:5px 10px;margin:2px;border-radius:14px;border:1px solid #444;background:#222;color:#ccc;cursor:pointer;font-size:.85em" onclick="stRange('1d')">1 日</button>
 <button class="st-range" id="st-r-1mo" style="padding:5px 10px;margin:2px;border-radius:14px;border:1px solid #ffd93d;background:#3a3208;color:#ffd93d;cursor:pointer;font-size:.85em" onclick="stRange('1mo')">1 月</button>
 <button class="st-range" id="st-r-1y" style="padding:5px 10px;margin:2px;border-radius:14px;border:1px solid #444;background:#222;color:#ccc;cursor:pointer;font-size:.85em" onclick="stRange('1y')">1 年</button>
 </div>
-<div id="st-chart"></div>
-<div id="st-event" style="margin-top:10px"></div>
+<div id="st-cards"></div>
 </div>
 <div id="st-advice" style="display:none"></div>
 <p id="st-status" style="color:#888;font-size:.78em;line-height:1.6"></p>
@@ -2142,7 +2140,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 06:07 UTC';
+var BUILD_TS='2026-11-01 06:38 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -6264,53 +6262,64 @@ function mfOnClick(e){
   function fmtW(v){ if (v == null || !isFinite(v)) return "—"; return "$" + (v / 10000).toLocaleString("en-US", {maximumFractionDigits: 1}) + "万"; }
   function fmtPct(v){ if (v == null || !isFinite(v)) return "—"; return (v >= 0 ? "+" : "") + Number(v).toFixed(2) + "%"; }
   function colPct(v){ return v == null ? "#ccc" : (v >= 0 ? "#2f9e5f" : "#e5484d"); }
-  var S = { holdings: [], sel: null, range: "1mo", prices: [], intraday: [], events: [], advice: null, user: null, filling: {} };
+  // 指数基金类：指数 ETF + 指数共同基金；其余一律算个股。SSTOT 为机构份额，无公开行情。
+  var INDEX_TICKERS = { QQQM: 1, VOO: 1, VTI: 1, FZROX: 1, FNILX: 1, SSTOT: 1 };
+  function catOf(h){ return INDEX_TICKERS[h.ticker] ? "index" : "stock"; }
+  function catLabel(c){ return c === "stock" ? "📊 个股" : (c === "index" ? "📈 指数基金" : "📋 全部"); }
+  var S = { holdings: [], cat: "all", range: "1mo", data: {}, advice: null, user: null, filling: {} };
   function setStatus(t){ var el = document.getElementById("st-status"); if (el) el.textContent = t; }
-  function chipStyle(active){ return "padding:5px 10px;margin:2px;border-radius:14px;border:1px solid " + (active ? "#ffd93d" : "#444") + ";background:" + (active ? "#3a3208" : "#222") + ";color:" + (active ? "#ffd93d" : "#ccc") + ";cursor:pointer;font-size:.85em"; }
-  function renderList(){
-    var el = document.getElementById("st-list"); if (!el) return;
+  function catStyle(active){ return "padding:5px 12px;margin:2px;border-radius:14px;border:1px solid " + (active ? "#ffd93d" : "#444") + ";background:" + (active ? "#3a3208" : "#222") + ";color:" + (active ? "#ffd93d" : "#ccc") + ";cursor:pointer;font-size:.85em"; }
+  function visible(){ return S.holdings.filter(function(h){ return S.cat === "all" || catOf(h) === S.cat; }); }
+  function renderCats(){
+    var el = document.getElementById("st-cats"); if (!el) return;
+    function n(c){ return c === "all" ? S.holdings.length : S.holdings.filter(function(h){ return catOf(h) === c; }).length; }
     var h = "";
-    S.holdings.forEach(function(x){
-      var act = S.sel && S.sel.ticker === x.ticker;
-      h += "<button style=\"" + chipStyle(act) + "\" onclick=\"stSelect('" + esc(x.ticker) + "')\">" + esc(x.ticker) + " · " + esc(x.name) + " · " + fmtW(x.value_usd) + "（" + (x.weight_pct == null ? "—" : Number(x.weight_pct).toFixed(1) + "%") + "）</button>";
+    ["all", "stock", "index"].forEach(function(c){
+      h += "<button style=\"" + catStyle(S.cat === c) + "\" onclick=\"stCat('" + c + "')\">" + catLabel(c) + "（" + n(c) + "）</button>";
     });
-    el.innerHTML = h || "<span style='color:#888'>暂无持仓记录</span>";
-  }
-  function renderHead(){
-    var el = document.getElementById("st-head"); if (!el || !S.sel) return;
-    var x = S.sel, last = S.prices.length ? S.prices[S.prices.length - 1] : null;
-    var prev = S.prices.length > 1 ? S.prices[S.prices.length - 2] : null;
-    var chg = (last && prev && prev.close) ? (last.close - prev.close) / prev.close * 100 : (last ? last.change_pct : null);
-    var h = "<div style='font-size:.95em;line-height:1.8'><b style='color:#fff'>" + esc(x.ticker) + "</b> " + esc(x.name);
-    h += " · 持仓 " + fmtW(x.value_usd) + "（权重 " + (x.weight_pct == null ? "—" : Number(x.weight_pct).toFixed(1) + "%") + "）";
-    if (last){
-      h += "<br>最新收盘 $" + Number(last.close).toFixed(2) + "（" + esc(last.trade_date) + "） <span style='color:" + colPct(chg) + "'>" + fmtPct(chg) + "</span>";
-      h += " · 盘前 <span style='color:" + colPct(last.pre_change_pct) + "'>" + fmtPct(last.pre_change_pct) + "</span>";
-      h += " · 盘后 <span style='color:" + colPct(last.post_change_pct) + "'>" + fmtPct(last.post_change_pct) + "</span>";
-    } else {
-      h += "<br><span style='color:#888'>暂无收盘价数据</span>";
-    }
-    if (!x.chart_symbol) h += "<br><span style='color:#888'>该机构份额无公开行情，暂不画曲线（仓位与权重照常显示）。</span>";
-    h += "</div>";
     el.innerHTML = h;
   }
-  function renderChart(){
-    var box = document.getElementById("st-chart"); if (!box) return;
+  function cardHead(h, d){
+    var last = d && d.prices.length ? d.prices[d.prices.length - 1] : null;
+    var prev = d && d.prices.length > 1 ? d.prices[d.prices.length - 2] : null;
+    var chg = (last && prev && prev.close) ? (last.close - prev.close) / prev.close * 100 : (last ? last.change_pct : null);
+    var t = "<div style='font-size:.95em;line-height:1.8'><b style='color:#fff'>" + esc(h.ticker) + "</b> " + esc(h.name);
+    t += " · 持仓 " + fmtW(h.value_usd) + "（权重 " + (h.weight_pct == null ? "—" : Number(h.weight_pct).toFixed(1) + "%") + "）";
+    if (last){
+      t += "<br>最新收盘 $" + Number(last.close).toFixed(2) + "（" + esc(last.trade_date) + "） <span style='color:" + colPct(chg) + "'>" + fmtPct(chg) + "</span>";
+      t += " · 盘前 <span style='color:" + colPct(last.pre_change_pct) + "'>" + fmtPct(last.pre_change_pct) + "</span>";
+      t += " · 盘后 <span style='color:" + colPct(last.post_change_pct) + "'>" + fmtPct(last.post_change_pct) + "</span>";
+    } else if (h.chart_symbol){
+      t += "<br><span style='color:#888'>正在加载曲线…</span>";
+    } else {
+      t += "<br><span style='color:#888'>该机构份额无公开行情，暂不画曲线（仓位与权重照常显示）。</span>";
+    }
+    t += "</div>";
+    return t;
+  }
+  function renderChartFor(tk){
+    var h = null; S.holdings.forEach(function(x){ if (x.ticker === tk) h = x; });
+    if (!h) return;
+    var d = S.data[tk] || { prices: [], intraday: [], events: [] };
+    var headEl = document.getElementById("st-head-" + tk);
+    if (headEl) headEl.innerHTML = cardHead(h, d);
+    var box = document.getElementById("st-chart-" + tk); if (!box) return;
+    if (!h.chart_symbol) { box.innerHTML = ""; return; }
     var series = [], evs = [];
     if (S.range === "1d"){
-      series = S.intraday.map(function(r){ return { t: r.ts, c: Number(r.price) }; });
+      series = d.intraday.map(function(r){ return { t: r.ts, c: Number(r.price), label: r.ts.slice(11, 16) }; });
     } else {
-      var rows = S.prices.slice();
+      var rows = d.prices.slice();
       if (S.range === "1mo") rows = rows.slice(-30);
-      series = rows.map(function(r){ return { t: r.trade_date, c: Number(r.close) }; });
+      series = rows.map(function(r){ return { t: r.trade_date, c: Number(r.close), label: r.trade_date.slice(5) }; });
       var from = rows.length ? rows[0].trade_date : null;
-      evs = S.events.filter(function(e){ return !from || e.event_date >= from; });
+      evs = d.events.filter(function(e){ return !from || e.event_date >= from; });
     }
     if (!series.length){
       box.innerHTML = "<p style='color:#888;font-size:.85em'>暂无曲线数据" + (S.range === "1d" ? "（今日分时在当日快照时补）" : "（首次打开某只票时会自动回填一年历史）") + "</p>";
       return;
     }
-    var W = 640, H = 260, padL = 8, padR = 8, padT = 12, padB = 26;
+    var W = 640, H = 280, padL = 64, padR = 10, padT = 14, padB = 30;
     var min = Math.min.apply(null, series.map(function(p){ return p.c; }));
     var max = Math.max.apply(null, series.map(function(p){ return p.c; }));
     if (max === min){ max = min + 1; }
@@ -6320,6 +6329,25 @@ function mfOnClick(e){
     var pts = series.map(function(p, i){ return X(i).toFixed(1) + "," + Y(p.c).toFixed(1); }).join(" ");
     var up = series[series.length - 1].c >= series[0].c;
     var s = "<svg viewBox='0 0 " + W + " " + H + "' style='width:100%;height:auto;display:block;background:#141428;border-radius:8px'>";
+    // Y 轴：5 档价格刻度 + 横向网格线
+    for (var k = 0; k <= 4; k++){
+      var v = min + (max - min) * k / 4;
+      var y = Y(v);
+      s += "<line x1='" + padL + "' y1='" + y.toFixed(1) + "' x2='" + (W - padR) + "' y2='" + y.toFixed(1) + "' stroke='" + (k === 0 ? "#666" : "#2a2a44") + "' stroke-width='1'/>";
+      s += "<text x='" + (padL - 6) + "' y='" + (y + 4).toFixed(1) + "' fill='#9fb6d8' font-size='11' text-anchor='end'>$" + v.toFixed(2) + "</text>";
+    }
+    // X 轴：最多 6 个日期/时间刻度 + 轴线
+    var nt = Math.min(6, series.length);
+    var tickIdx = [];
+    for (var ti = 0; ti < nt; ti++){ tickIdx.push(Math.round(ti * (series.length - 1) / (nt - 1 || 1))); }
+    tickIdx.forEach(function(i){
+      var x = X(i);
+      s += "<line x1='" + x.toFixed(1) + "' y1='" + padT + "' x2='" + x.toFixed(1) + "' y2='" + (H - padB) + "' stroke='#2a2a44' stroke-width='1'/>";
+      s += "<text x='" + x.toFixed(1) + "' y='" + (H - 8) + "' fill='#9fb6d8' font-size='11' text-anchor='middle'>" + esc(series[i].label) + "</text>";
+    });
+    s += "<line x1='" + padL + "' y1='" + padT + "' x2='" + padL + "' y2='" + (H - padB) + "' stroke='#666' stroke-width='1'/>";
+    s += "<line x1='" + padL + "' y1='" + (H - padB) + "' x2='" + (W - padR) + "' y2='" + (H - padB) + "' stroke='#666' stroke-width='1'/>";
+    s += "<text x='" + (padL + 4) + "' y='14' fill='#9fb6d8' font-size='11'>价格（美元）</text>";
     s += "<polyline points='" + pts + "' fill='none' stroke='" + (up ? "#2f9e5f" : "#e5484d") + "' stroke-width='2'/>";
     if (S.range !== "1d"){
       var dateIdx = {};
@@ -6327,19 +6355,39 @@ function mfOnClick(e){
       evs.forEach(function(e){
         var i = dateIdx[e.event_date];
         if (i == null) return;
-        s += "<circle cx='" + X(i).toFixed(1) + "' cy='" + Y(series[i].c).toFixed(1) + "' r='6' fill='#ffd93d' stroke='#000' stroke-width='1' style='cursor:pointer' onclick='stEvent(" + e.id + ")'><title>" + esc(e.title) + "</title></circle>";
+        s += "<circle cx='" + X(i).toFixed(1) + "' cy='" + Y(series[i].c).toFixed(1) + "' r='6' fill='#ffd93d' stroke='#000' stroke-width='1' style='cursor:pointer' onclick=\"stEvent('" + esc(tk) + "'," + e.id + ")\"><title>" + esc(e.title) + "</title></circle>";
       });
     }
-    s += "<text x='" + padL + "' y='" + (H - 8) + "' fill='#9fb6d8' font-size='11'>" + esc(series[0].t) + "</text>";
-    s += "<text x='" + (W - padR) + "' y='" + (H - 8) + "' fill='#9fb6d8' font-size='11' text-anchor='end'>" + esc(series[series.length - 1].t) + "</text>";
-    s += "<text x='" + padL + "' y='14' fill='#9fb6d8' font-size='11'>$" + max.toFixed(2) + "</text>";
     s += "</svg>";
     s += "<p style='color:#888;font-size:.78em;margin-top:4px'>金色圆点为事件节点，点开看当天发生了什么；1 日图为当日分时，1 月 / 1 年为日收盘价。</p>";
     box.innerHTML = s;
   }
-  function renderEvent(ev){
-    var el = document.getElementById("st-event"); if (!el) return;
-    if (!ev){ el.innerHTML = S.events.length ? "<p style='color:#888;font-size:.85em'>点曲线上的金色圆点查看事件解释。</p>" : ""; return; }
+  function renderList(){
+    renderCats();
+    var el = document.getElementById("st-cards"); if (!el) return;
+    var list = visible();
+    if (!list.length){ el.innerHTML = "<p style='color:#888'>暂无持仓记录</p>"; return; }
+    var h = "";
+    list.forEach(function(x){
+      h += "<div id='st-card-" + esc(x.ticker) + "' style='border:1px solid #333;border-radius:10px;padding:12px;margin:12px 0;background:#1a1a2e'>";
+      h += "<div id='st-head-" + esc(x.ticker) + "'></div>";
+      h += "<div id='st-chart-" + esc(x.ticker) + "'></div>";
+      h += "<div id='st-event-" + esc(x.ticker) + "' style='margin-top:10px'></div>";
+      h += "</div>";
+    });
+    el.innerHTML = h;
+    list.forEach(function(x){
+      var d = S.data[x.ticker];
+      var headEl = document.getElementById("st-head-" + x.ticker);
+      if (headEl) headEl.innerHTML = cardHead(x, d);
+      if (d) { renderChartFor(x.ticker); renderEventPanel(x.ticker, null); }
+      else loadTicker(x.ticker);
+    });
+  }
+  function renderEventPanel(tk, ev){
+    var el = document.getElementById("st-event-" + tk); if (!el) return;
+    var d = S.data[tk];
+    if (!ev){ el.innerHTML = (d && d.events.length) ? "<p style='color:#888;font-size:.85em'>点曲线上的金色圆点查看事件解释。</p>" : ""; return; }
     var h = "<div style='border:1px solid #8a6d1a;background:#2a2410;border-radius:8px;padding:10px 12px'>";
     h += "<b>" + esc(ev.title) + "</b> <span style='color:#888;font-size:.85em'>" + esc(ev.event_date) + (ev.move_pct == null ? "" : " · 当日 " + fmtPct(ev.move_pct)) + "</span>";
     h += "<p style='font-size:.88em;line-height:1.7;color:#ddd'>" + esc(ev.summary) + "</p>";
@@ -6363,7 +6411,8 @@ function mfOnClick(e){
     el.innerHTML = h;
   }
   function backfill(tk){
-    var x = S.sel; if (!x || !x.chart_symbol) return;
+    var x = null; S.holdings.forEach(function(h){ if (h.ticker === tk) x = h; });
+    if (!x || !x.chart_symbol) return;
     S.filling[tk] = true; setStatus("正在回填 " + tk + " 一年历史…");
     fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(x.chart_symbol) + "?range=1y&interval=1d")
       .then(function(r){ return r.json(); })
@@ -6388,7 +6437,7 @@ function mfOnClick(e){
       .then(function(n){
         S.filling[tk] = false;
         setStatus(tk + " 一年历史回填完成（" + n + " 个交易日），正在刷新曲线…");
-        select(tk);
+        loadTicker(tk, true);
       })
       .catch(function(e){
         S.filling[tk] = false;
@@ -6396,7 +6445,8 @@ function mfOnClick(e){
       });
   }
   function refreshIntraday(tk){
-    var x = S.sel; if (!x || !x.chart_symbol) return;
+    var x = null; S.holdings.forEach(function(h){ if (h.ticker === tk) x = h; });
+    if (!x || !x.chart_symbol) return;
     fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(x.chart_symbol) + "?range=1d&interval=5m&includePrePost=true")
       .then(function(r){ return r.json(); })
       .then(function(d){
@@ -6410,7 +6460,8 @@ function mfOnClick(e){
         return window.__sb.from("stock_intraday").delete().eq("ticker", tk).eq("trade_date", today).then(function(){
           return window.__sb.from("stock_intraday").upsert(rows, { onConflict: "ticker,ts" });
         }).then(function(){
-          S.intraday = rows; if (S.range === "1d") renderChart();
+          if (!S.data[tk]) S.data[tk] = { prices: [], intraday: [], events: [] };
+          S.data[tk].intraday = rows; if (S.range === "1d") renderChartFor(tk);
           try {
             var ctp = res.meta && res.meta.currentTradingPeriod, prevClose = res.meta && res.meta.chartPreviousClose, close = res.meta && res.meta.regularMarketPrice;
             if (ctp && ctp.pre && ctp.post && prevClose && close){
@@ -6419,38 +6470,51 @@ function mfOnClick(e){
               var upd = { ticker: tk, trade_date: today, close: close };
               if (prePts.length) upd.pre_change_pct = (prePts[prePts.length - 1].price - prevClose) / prevClose * 100;
               if (postPts.length) upd.post_change_pct = (postPts[postPts.length - 1].price - close) / close * 100;
-              window.__sb.from("stock_prices").upsert(upd, { onConflict: "ticker,trade_date" }).then(function(){ select(tk); });
+              window.__sb.from("stock_prices").upsert(upd, { onConflict: "ticker,trade_date" }).then(function(){ loadTicker(tk, true); });
             }
           } catch (e) {}
         });
       })
       .catch(function(){});
   }
-  function select(tk){
-    var x = null;
-    S.holdings.forEach(function(h){ if (h.ticker === tk) x = h; });
+  function loadTicker(tk, force){
+    if (S.data[tk] && !force){
+      renderChartFor(tk); renderEventPanel(tk, null);
+      if (S.range === "1d") refreshIntraday(tk);
+      return;
+    }
+    var x = null; S.holdings.forEach(function(h){ if (h.ticker === tk) x = h; });
     if (!x) return;
-    S.sel = x; renderList();
     window.__sb.from("stock_prices").select("*").eq("ticker", tk).order("trade_date", { ascending: true }).limit(400).then(function(res){
-      S.prices = res.data || [];
+      if (!S.data[tk]) S.data[tk] = { prices: [], intraday: [], events: [] };
+      S.data[tk].prices = res.data || [];
       return window.__sb.from("stock_intraday").select("*").eq("ticker", tk).order("ts", { ascending: true });
     }).then(function(r2){
-      S.intraday = r2.data || [];
+      S.data[tk].intraday = r2.data || [];
       return window.__sb.from("stock_events").select("*").eq("ticker", tk).order("event_date", { ascending: true });
     }).then(function(r3){
-      S.events = r3.data || [];
-      renderHead(); renderChart(); renderEvent(null);
-      if (!S.prices.length && x.chart_symbol && !S.filling[tk]) backfill(tk);
+      S.data[tk].events = r3.data || [];
+      renderChartFor(tk); renderEventPanel(tk, null);
+      if (!S.data[tk].prices.length && x.chart_symbol && !S.filling[tk]) backfill(tk);
       if (S.range === "1d") refreshIntraday(tk);
     });
   }
-  window.stSelect = select;
-  window.stEvent = function(id){ var ev = null; S.events.forEach(function(e){ if (e.id === id) ev = e; }); renderEvent(ev); };
+  window.stCat = function(c){ S.cat = c; renderList(); };
+  window.stSelect = function(tk){
+    var h = null; S.holdings.forEach(function(x){ if (x.ticker === tk) h = x; });
+    if (!h) return;
+    var c = catOf(h); if (S.cat !== "all" && S.cat !== c){ S.cat = c; renderList(); }
+    var card = document.getElementById("st-card-" + tk);
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  window.stEvent = function(tk, id){ var ev = null; (S.data[tk] && S.data[tk].events || []).forEach(function(e){ if (e.id === id) ev = e; }); renderEventPanel(tk, ev); };
   window.stRange = function(r){
     S.range = r;
     ["1d", "1mo", "1y"].forEach(function(k){ var b = document.getElementById("st-r-" + k); if (b) b.style.borderColor = (k === r) ? "#ffd93d" : "#444"; });
-    if (r === "1d" && S.sel) refreshIntraday(S.sel.ticker);
-    renderChart();
+    visible().forEach(function(h){
+      if (S.data[h.ticker]) { renderChartFor(h.ticker); if (r === "1d") refreshIntraday(h.ticker); }
+      else loadTicker(h.ticker);
+    });
   };
   window.stShow = function(tab){
     document.getElementById("st-prices").style.display = tab === "prices" ? "" : "none";
@@ -6470,8 +6534,7 @@ function mfOnClick(e){
       renderList();
       window.__sb.from("stock_advice").select("body").eq("id", 1).single().then(function(r2){
         S.advice = r2.data || null; renderAdvice();
-        if (S.holdings.length && !S.sel) select(S.holdings[0].ticker);
-        setStatus("持仓快照截至 " + (S.holdings[0] ? S.holdings[0].as_of : "—") + "；曲线在首次打开某只票时自动回填一年历史。");
+        setStatus("持仓快照截至 " + (S.holdings[0] ? S.holdings[0].as_of : "—") + "；点分类一次看一类，曲线在首次打开某只票时自动回填一年历史。");
       });
     });
   }
