@@ -179,6 +179,7 @@
 <button class="tab-btn active" data-group="cards" onclick="goGroup('cards')">💳 信用卡</button>
 <button class="tab-btn" data-tab="fire" data-group="fire" onclick="goTab('fire')">🔥 FIRE</button>
 <button class="tab-btn" data-tab="house" data-group="house" onclick="goTab('house')">🏡 换房</button>
+<button class="tab-btn" data-tab="stocks" onclick="goTab('stocks')">📈 持仓</button>
 </nav>
 <div class="subslot" id="subslot-cards"></div>
 <div class="subslot" id="subslot-house"></div>
@@ -1978,6 +1979,33 @@ bhRender();
 </div>
 </div>
 
+<div class="tab-page" id="tp-stocks">
+<div class="section">
+<h2>📈 持仓追踪</h2>
+<p style="color:#aaa;font-size:.85em;line-height:1.6">持仓与价格只在登录后从数据库读取，静态网页里不含任何个人仓位数据。曲线每天盘前、收盘后各快照一次；关键节点点开可看当天新闻与专业评论解释。</p>
+<p id="st-lock" style="color:#aaa;font-size:.85em;line-height:1.6">登录后查看你的持仓追踪：各仓位市值与权重、1 日 / 1 月 / 1 年曲线、可点事件解释、盘前盘后动向与配置建议。本区数据仅登录白名单邮箱可见。</p>
+<div id="st-body" style="display:none">
+<div style="margin:8px 0">
+<button id="st-tab-prices" style="padding:5px 12px;margin:2px;border-radius:14px;border:1px solid #ffd93d;background:#3a3208;color:#ffd93d;cursor:pointer;font-size:.85em" onclick="stShow('prices')">📈 行情</button>
+<button id="st-tab-advice" style="padding:5px 12px;margin:2px;border-radius:14px;border:1px solid #444;background:#222;color:#ccc;cursor:pointer;font-size:.85em" onclick="stShow('advice')">💡 配置建议</button>
+</div>
+<div id="st-prices">
+<div id="st-list" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0"></div>
+<div id="st-head" style="margin:8px 0"></div>
+<div style="margin:8px 0">
+<button class="st-range" id="st-r-1d" style="padding:5px 10px;margin:2px;border-radius:14px;border:1px solid #444;background:#222;color:#ccc;cursor:pointer;font-size:.85em" onclick="stRange('1d')">1 日</button>
+<button class="st-range" id="st-r-1mo" style="padding:5px 10px;margin:2px;border-radius:14px;border:1px solid #ffd93d;background:#3a3208;color:#ffd93d;cursor:pointer;font-size:.85em" onclick="stRange('1mo')">1 月</button>
+<button class="st-range" id="st-r-1y" style="padding:5px 10px;margin:2px;border-radius:14px;border:1px solid #444;background:#222;color:#ccc;cursor:pointer;font-size:.85em" onclick="stRange('1y')">1 年</button>
+</div>
+<div id="st-chart"></div>
+<div id="st-event" style="margin-top:10px"></div>
+</div>
+<div id="st-advice" style="display:none"></div>
+<p id="st-status" style="color:#888;font-size:.78em;line-height:1.6"></p>
+</div>
+</div>
+</div>
+
 <script>
 var CC_PAGES=['spend','home','cards','redeem','new','updates'];
 function ccGroup(t){return CC_PAGES.indexOf(t)>=0?'cards':t}
@@ -2114,7 +2142,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 06:02 UTC';
+var BUILD_TS='2026-11-01 06:07 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -6219,6 +6247,232 @@ function mfOnClick(e){
         return;
       }
       render(res.data.state, res.data.updated_at);
+    });
+  }
+  function hook(){
+    if (!window.__sb || !window.__sb.auth) return;
+    window.__sb.auth.getSession().then(function(res){ load(res.data.session ? res.data.session.user : null); });
+    window.__sb.auth.onAuthStateChange(function(ev, session){ load(session ? session.user : null); });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hook); else hook();
+})();
+</script>
+<script>
+/* ================= 📈 持仓追踪（登录后从 Supabase 读取，私人数据不落静态页） ================= */
+(function(){
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function fmtW(v){ if (v == null || !isFinite(v)) return "—"; return "$" + (v / 10000).toLocaleString("en-US", {maximumFractionDigits: 1}) + "万"; }
+  function fmtPct(v){ if (v == null || !isFinite(v)) return "—"; return (v >= 0 ? "+" : "") + Number(v).toFixed(2) + "%"; }
+  function colPct(v){ return v == null ? "#ccc" : (v >= 0 ? "#2f9e5f" : "#e5484d"); }
+  var S = { holdings: [], sel: null, range: "1mo", prices: [], intraday: [], events: [], advice: null, user: null, filling: {} };
+  function setStatus(t){ var el = document.getElementById("st-status"); if (el) el.textContent = t; }
+  function chipStyle(active){ return "padding:5px 10px;margin:2px;border-radius:14px;border:1px solid " + (active ? "#ffd93d" : "#444") + ";background:" + (active ? "#3a3208" : "#222") + ";color:" + (active ? "#ffd93d" : "#ccc") + ";cursor:pointer;font-size:.85em"; }
+  function renderList(){
+    var el = document.getElementById("st-list"); if (!el) return;
+    var h = "";
+    S.holdings.forEach(function(x){
+      var act = S.sel && S.sel.ticker === x.ticker;
+      h += "<button style=\"" + chipStyle(act) + "\" onclick=\"stSelect('" + esc(x.ticker) + "')\">" + esc(x.ticker) + " · " + esc(x.name) + " · " + fmtW(x.value_usd) + "（" + (x.weight_pct == null ? "—" : Number(x.weight_pct).toFixed(1) + "%") + "）</button>";
+    });
+    el.innerHTML = h || "<span style='color:#888'>暂无持仓记录</span>";
+  }
+  function renderHead(){
+    var el = document.getElementById("st-head"); if (!el || !S.sel) return;
+    var x = S.sel, last = S.prices.length ? S.prices[S.prices.length - 1] : null;
+    var prev = S.prices.length > 1 ? S.prices[S.prices.length - 2] : null;
+    var chg = (last && prev && prev.close) ? (last.close - prev.close) / prev.close * 100 : (last ? last.change_pct : null);
+    var h = "<div style='font-size:.95em;line-height:1.8'><b style='color:#fff'>" + esc(x.ticker) + "</b> " + esc(x.name);
+    h += " · 持仓 " + fmtW(x.value_usd) + "（权重 " + (x.weight_pct == null ? "—" : Number(x.weight_pct).toFixed(1) + "%") + "）";
+    if (last){
+      h += "<br>最新收盘 $" + Number(last.close).toFixed(2) + "（" + esc(last.trade_date) + "） <span style='color:" + colPct(chg) + "'>" + fmtPct(chg) + "</span>";
+      h += " · 盘前 <span style='color:" + colPct(last.pre_change_pct) + "'>" + fmtPct(last.pre_change_pct) + "</span>";
+      h += " · 盘后 <span style='color:" + colPct(last.post_change_pct) + "'>" + fmtPct(last.post_change_pct) + "</span>";
+    } else {
+      h += "<br><span style='color:#888'>暂无收盘价数据</span>";
+    }
+    if (!x.chart_symbol) h += "<br><span style='color:#888'>该机构份额无公开行情，暂不画曲线（仓位与权重照常显示）。</span>";
+    h += "</div>";
+    el.innerHTML = h;
+  }
+  function renderChart(){
+    var box = document.getElementById("st-chart"); if (!box) return;
+    var series = [], evs = [];
+    if (S.range === "1d"){
+      series = S.intraday.map(function(r){ return { t: r.ts, c: Number(r.price) }; });
+    } else {
+      var rows = S.prices.slice();
+      if (S.range === "1mo") rows = rows.slice(-30);
+      series = rows.map(function(r){ return { t: r.trade_date, c: Number(r.close) }; });
+      var from = rows.length ? rows[0].trade_date : null;
+      evs = S.events.filter(function(e){ return !from || e.event_date >= from; });
+    }
+    if (!series.length){
+      box.innerHTML = "<p style='color:#888;font-size:.85em'>暂无曲线数据" + (S.range === "1d" ? "（今日分时在当日快照时补）" : "（首次打开某只票时会自动回填一年历史）") + "</p>";
+      return;
+    }
+    var W = 640, H = 260, padL = 8, padR = 8, padT = 12, padB = 26;
+    var min = Math.min.apply(null, series.map(function(p){ return p.c; }));
+    var max = Math.max.apply(null, series.map(function(p){ return p.c; }));
+    if (max === min){ max = min + 1; }
+    var span = max - min; min -= span * 0.05; max += span * 0.05;
+    function X(i){ return padL + i / (series.length - 1 || 1) * (W - padL - padR); }
+    function Y(v){ return padT + (max - v) / (max - min) * (H - padT - padB); }
+    var pts = series.map(function(p, i){ return X(i).toFixed(1) + "," + Y(p.c).toFixed(1); }).join(" ");
+    var up = series[series.length - 1].c >= series[0].c;
+    var s = "<svg viewBox='0 0 " + W + " " + H + "' style='width:100%;height:auto;display:block;background:#141428;border-radius:8px'>";
+    s += "<polyline points='" + pts + "' fill='none' stroke='" + (up ? "#2f9e5f" : "#e5484d") + "' stroke-width='2'/>";
+    if (S.range !== "1d"){
+      var dateIdx = {};
+      series.forEach(function(p, i){ dateIdx[p.t] = i; });
+      evs.forEach(function(e){
+        var i = dateIdx[e.event_date];
+        if (i == null) return;
+        s += "<circle cx='" + X(i).toFixed(1) + "' cy='" + Y(series[i].c).toFixed(1) + "' r='6' fill='#ffd93d' stroke='#000' stroke-width='1' style='cursor:pointer' onclick='stEvent(" + e.id + ")'><title>" + esc(e.title) + "</title></circle>";
+      });
+    }
+    s += "<text x='" + padL + "' y='" + (H - 8) + "' fill='#9fb6d8' font-size='11'>" + esc(series[0].t) + "</text>";
+    s += "<text x='" + (W - padR) + "' y='" + (H - 8) + "' fill='#9fb6d8' font-size='11' text-anchor='end'>" + esc(series[series.length - 1].t) + "</text>";
+    s += "<text x='" + padL + "' y='14' fill='#9fb6d8' font-size='11'>$" + max.toFixed(2) + "</text>";
+    s += "</svg>";
+    s += "<p style='color:#888;font-size:.78em;margin-top:4px'>金色圆点为事件节点，点开看当天发生了什么；1 日图为当日分时，1 月 / 1 年为日收盘价。</p>";
+    box.innerHTML = s;
+  }
+  function renderEvent(ev){
+    var el = document.getElementById("st-event"); if (!el) return;
+    if (!ev){ el.innerHTML = S.events.length ? "<p style='color:#888;font-size:.85em'>点曲线上的金色圆点查看事件解释。</p>" : ""; return; }
+    var h = "<div style='border:1px solid #8a6d1a;background:#2a2410;border-radius:8px;padding:10px 12px'>";
+    h += "<b>" + esc(ev.title) + "</b> <span style='color:#888;font-size:.85em'>" + esc(ev.event_date) + (ev.move_pct == null ? "" : " · 当日 " + fmtPct(ev.move_pct)) + "</span>";
+    h += "<p style='font-size:.88em;line-height:1.7;color:#ddd'>" + esc(ev.summary) + "</p>";
+    var srcs = ev.sources || [];
+    if (srcs.length){
+      h += "<p style='font-size:.8em'>";
+      srcs.forEach(function(src){ h += "<a href='" + esc(src.url || src) + "' target='_blank' rel='noopener' style='color:#9fd8ff;margin-right:10px'>" + esc(src.label || src.url || src) + " ↗</a>"; });
+      h += "</p>";
+    }
+    h += "</div>";
+    el.innerHTML = h;
+  }
+  function renderAdvice(){
+    var el = document.getElementById("st-advice"); if (!el) return;
+    var b = S.advice && S.advice.body;
+    if (!b || !b.sections || !b.sections.length){ el.innerHTML = "<p style='color:#888'>配置建议尚未生成（回填完成后生成）。</p>"; return; }
+    var h = "<p style='color:#888;font-size:.78em'>" + esc(b.note || "") + "</p>";
+    b.sections.forEach(function(sec){
+      h += "<h3 style='color:#4ecdc4;margin:14px 0 6px'>" + esc(sec.title) + "</h3><p style='font-size:.88em;line-height:1.7;color:#ddd'>" + esc(sec.html) + "</p>";
+    });
+    el.innerHTML = h;
+  }
+  function backfill(tk){
+    var x = S.sel; if (!x || !x.chart_symbol) return;
+    S.filling[tk] = true; setStatus("正在回填 " + tk + " 一年历史…");
+    fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(x.chart_symbol) + "?range=1y&interval=1d")
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var res = d && d.chart && d.chart.result && d.chart.result[0];
+        if (!res) throw new Error("no result");
+        var ts = res.timestamp || [], q = (res.indicators && res.indicators.quote && res.indicators.quote[0]) || {};
+        var closes = q.close || [], opens = q.open || [], highs = q.high || [], lows = q.low || [], vols = q.volume || [];
+        var prevClose = res.meta && res.meta.chartPreviousClose;
+        var rows = [];
+        ts.forEach(function(t, i){
+          if (closes[i] == null) return;
+          var dt = new Date(t * 1000).toISOString().slice(0, 10);
+          var pc = null;
+          for (var j = i - 1; j >= 0; j--){ if (closes[j] != null){ pc = closes[j]; break; } }
+          if (pc == null) pc = prevClose;
+          rows.push({ ticker: tk, trade_date: dt, open: opens[i], high: highs[i], low: lows[i], close: closes[i], volume: vols[i] == null ? null : Math.round(vols[i]), prev_close: pc == null ? null : pc, change_pct: (pc && pc !== 0) ? (closes[i] - pc) / pc * 100 : null, source: "yahoo" });
+        });
+        if (!rows.length) throw new Error("empty rows");
+        return window.__sb.from("stock_prices").upsert(rows, { onConflict: "ticker,trade_date" }).then(function(){ return rows.length; });
+      })
+      .then(function(n){
+        S.filling[tk] = false;
+        setStatus(tk + " 一年历史回填完成（" + n + " 个交易日），正在刷新曲线…");
+        select(tk);
+      })
+      .catch(function(e){
+        S.filling[tk] = false;
+        setStatus("回填 " + tk + " 失败（行情直连被挡或无数据），每日快照任务会补： " + (e && e.message ? e.message : e));
+      });
+  }
+  function refreshIntraday(tk){
+    var x = S.sel; if (!x || !x.chart_symbol) return;
+    fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(x.chart_symbol) + "?range=1d&interval=5m&includePrePost=true")
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var res = d && d.chart && d.chart.result && d.chart.result[0]; if (!res) return;
+        var ts = res.timestamp || [], q = (res.indicators && res.indicators.quote && res.indicators.quote[0]) || {};
+        var closes = q.close || [];
+        var rows = [];
+        ts.forEach(function(t, i){ if (closes[i] == null) return; rows.push({ ticker: tk, trade_date: new Date(t * 1000).toISOString().slice(0, 10), ts: new Date(t * 1000).toISOString(), price: closes[i] }); });
+        if (!rows.length) return;
+        var today = rows[rows.length - 1].trade_date;
+        return window.__sb.from("stock_intraday").delete().eq("ticker", tk).eq("trade_date", today).then(function(){
+          return window.__sb.from("stock_intraday").upsert(rows, { onConflict: "ticker,ts" });
+        }).then(function(){
+          S.intraday = rows; if (S.range === "1d") renderChart();
+          try {
+            var ctp = res.meta && res.meta.currentTradingPeriod, prevClose = res.meta && res.meta.chartPreviousClose, close = res.meta && res.meta.regularMarketPrice;
+            if (ctp && ctp.pre && ctp.post && prevClose && close){
+              var prePts = rows.filter(function(r){ var t = Date.parse(r.ts) / 1000; return t >= ctp.pre.start && t <= ctp.pre.end; });
+              var postPts = rows.filter(function(r){ var t = Date.parse(r.ts) / 1000; return t >= ctp.post.start && t <= ctp.post.end; });
+              var upd = { ticker: tk, trade_date: today, close: close };
+              if (prePts.length) upd.pre_change_pct = (prePts[prePts.length - 1].price - prevClose) / prevClose * 100;
+              if (postPts.length) upd.post_change_pct = (postPts[postPts.length - 1].price - close) / close * 100;
+              window.__sb.from("stock_prices").upsert(upd, { onConflict: "ticker,trade_date" }).then(function(){ select(tk); });
+            }
+          } catch (e) {}
+        });
+      })
+      .catch(function(){});
+  }
+  function select(tk){
+    var x = null;
+    S.holdings.forEach(function(h){ if (h.ticker === tk) x = h; });
+    if (!x) return;
+    S.sel = x; renderList();
+    window.__sb.from("stock_prices").select("*").eq("ticker", tk).order("trade_date", { ascending: true }).limit(400).then(function(res){
+      S.prices = res.data || [];
+      return window.__sb.from("stock_intraday").select("*").eq("ticker", tk).order("ts", { ascending: true });
+    }).then(function(r2){
+      S.intraday = r2.data || [];
+      return window.__sb.from("stock_events").select("*").eq("ticker", tk).order("event_date", { ascending: true });
+    }).then(function(r3){
+      S.events = r3.data || [];
+      renderHead(); renderChart(); renderEvent(null);
+      if (!S.prices.length && x.chart_symbol && !S.filling[tk]) backfill(tk);
+      if (S.range === "1d") refreshIntraday(tk);
+    });
+  }
+  window.stSelect = select;
+  window.stEvent = function(id){ var ev = null; S.events.forEach(function(e){ if (e.id === id) ev = e; }); renderEvent(ev); };
+  window.stRange = function(r){
+    S.range = r;
+    ["1d", "1mo", "1y"].forEach(function(k){ var b = document.getElementById("st-r-" + k); if (b) b.style.borderColor = (k === r) ? "#ffd93d" : "#444"; });
+    if (r === "1d" && S.sel) refreshIntraday(S.sel.ticker);
+    renderChart();
+  };
+  window.stShow = function(tab){
+    document.getElementById("st-prices").style.display = tab === "prices" ? "" : "none";
+    document.getElementById("st-advice").style.display = tab === "advice" ? "" : "none";
+    document.getElementById("st-tab-prices").style.borderColor = tab === "prices" ? "#ffd93d" : "#444";
+    document.getElementById("st-tab-advice").style.borderColor = tab === "advice" ? "#ffd93d" : "#444";
+  };
+  function load(user){
+    var body = document.getElementById("st-body"), lock = document.getElementById("st-lock");
+    if (!body) return;
+    if (!user){ body.style.display = "none"; if (lock) lock.style.display = ""; return; }
+    if (!window.__sb) return;
+    if (lock) lock.style.display = "none";
+    body.style.display = "";
+    window.__sb.from("stock_holdings").select("*").order("value_usd", { ascending: false }).then(function(res){
+      S.holdings = res.data || [];
+      renderList();
+      window.__sb.from("stock_advice").select("body").eq("id", 1).single().then(function(r2){
+        S.advice = r2.data || null; renderAdvice();
+        if (S.holdings.length && !S.sel) select(S.holdings[0].ticker);
+        setStatus("持仓快照截至 " + (S.holdings[0] ? S.holdings[0].as_of : "—") + "；曲线在首次打开某只票时自动回填一年历史。");
+      });
     });
   }
   function hook(){
