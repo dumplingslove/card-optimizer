@@ -1160,6 +1160,7 @@ function bhSpark(h){
 .bh-pin{background:#2b6cb0;color:#fff;border:2px solid #fff;border-radius:50%;width:26px;height:26px;line-height:22px;text-align:center;font-weight:700;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .bh-pin.top{background:#d97706}
 .bh-pin.bh-sel{background:#ffd93d;color:#1a1a2e;border-color:#1a1a2e;box-shadow:0 0 0 3px rgba(255,217,61,.45),0 2px 8px rgba(0,0,0,.5);position:relative;z-index:1000}
+.bh-pin.off{background:#7a5cff}
 .bh-card{background:#101c33;border:1px solid #26365a;border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
 .bh-card:hover{border-color:#4a6db3}
 .bh-card.bh-hl{border-color:#ffd93d;box-shadow:0 0 0 2px rgba(255,217,61,.35)}
@@ -1309,7 +1310,7 @@ var BH_HOMES=[{"n": 1, "oneliner": "已转 Pending（卖家已接受 offer），
 var BH_TIER={"top":{"label":"⭐ 重点推荐","ord":0},"worth_neg":{"label":"值得约看 · 谈判目标","ord":1},"worth":{"label":"值得约看","ord":2},"watch":{"label":"可关注 · 待查因","ord":3},"ok":{"label":"可关注","ord":4},"maybe":{"label":"可看可不看","ord":5},"avoid":{"label":"⛔ 不推（避开）","ord":6},"anchor":{"label":"价格锚点","ord":7},"pending":{"label":"已 Pending · 买不到","ord":8}};
 function bhMoney(v){return "$"+v.toLocaleString("en-US")}
 function bhPpsf(h){return h.sqft?Math.round(h.price/h.sqft):null}
-var BH_OFFMARKET=[{"oid":"off-p1","off":"在建未上市","addr":"15940 NE 1st St","city":"Bellevue, WA","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"SEA HOME BUILDERS LLC","expected":"许可 26 101239 BS 已发证，尚未最终验收","url":"","photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101239 BS"]},{"oid":"off-p2","off":"在建未上市","addr":"12456 SE 26th Pl","city":"Bellevue, WA","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"L&M DEVELOPMENT LLC","expected":"许可 26 101551 BS 已发证，尚未最终验收","url":"","photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101551 BS"]},{"oid":"off-p3","off":"在建未上市","addr":"16205 NE 18th St","city":"Bellevue, WA","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"HG WHITE ROCK CONSTRUCTIO","expected":"许可 26 101589 BS 已发证，尚未最终验收","url":"","photos":[],"oneliner":"拆旧建新，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101589 BS"]},{"oid":"off-p4","off":"在建未上市","addr":"10425 SE 20th St","city":"Bellevue, WA","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"BELLSHIRE HOMES INC","expected":"许可 26 101635 BS 已发证，尚未最终验收","url":"","photos":[],"oneliner":"拆旧建 2 层新房含 ADU，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101635 BS"]},{"oid":"off-p5","off":"在建未上市","addr":"4723 Lakehurst Ln","city":"Bellevue, WA","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"MIRIKEEN HOMES LLC","expected":"许可 26 101801 BS 已发证，尚未最终验收","url":"","photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101801 BS"]},{"oid":"off-p6","off":"在建未上市","addr":"16527 NE 16th Pl","city":"Bellevue, WA","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"SUMAL CONSTRUCTION LLC","expected":"许可 26 103992 BS 已发证，尚未最终验收","url":"","photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 103992 BS"]}];
+var BH_OFFMARKET=[{"oid":"off-p1","off":"在建未上市","addr":"15940 NE 1st St","city":"Bellevue, WA 98008","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"SEA HOME BUILDERS LLC","expected":"许可 26 101239 BS 已发证，尚未最终验收","url":"","lat":47.61061,"lng":-122.12552,"photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101239 BS"]},{"oid":"off-p2","off":"在建未上市","addr":"12456 SE 26th Pl","city":"Bellevue, WA 98005","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"L&M DEVELOPMENT LLC","expected":"许可 26 101551 BS 已发证，尚未最终验收","url":"","lat":47.58718,"lng":-122.17216,"photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101551 BS"]},{"oid":"off-p3","off":"在建未上市","addr":"16205 NE 18th St","city":"Bellevue, WA 98008","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"HG WHITE ROCK CONSTRUCTIO","expected":"许可 26 101589 BS 已发证，尚未最终验收","url":"","lat":47.62579,"lng":-122.12348,"photos":[],"oneliner":"拆旧建新，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101589 BS"]},{"oid":"off-p4","off":"在建未上市","addr":"10425 SE 20th St","city":"Bellevue, WA 98004","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"BELLSHIRE HOMES INC","expected":"许可 26 101635 BS 已发证，尚未最终验收","url":"","lat":47.5923,"lng":-122.20014,"photos":[],"oneliner":"拆旧建 2 层新房含 ADU，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101635 BS"]},{"oid":"off-p5","off":"在建未上市","addr":"4723 Lakehurst Ln","city":"Bellevue, WA 98006","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"MIRIKEEN HOMES LLC","expected":"许可 26 101801 BS 已发证，尚未最终验收","url":"","lat":47.56039,"lng":-122.19054,"photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 101801 BS"]},{"oid":"off-p6","off":"在建未上市","addr":"16527 NE 16th Pl","city":"Bellevue, WA 98008","price":null,"starting":false,"beds":"","baths":"","sqft":null,"year":"","builder":"SUMAL CONSTRUCTION LLC","expected":"许可 26 103992 BS 已发证，尚未最终验收","url":"","lat":47.62411,"lng":-122.11914,"photos":[],"oneliner":"拆旧建新独栋，许可已发证、尚未最终验收；学区与价格待核。","ftags":["🏗️ 许可在建","📋 许可号 26 103992 BS"]},{"oid":"off-a1","off":"在建未上市","addr":"14 158th Pl NE","city":"Bellevue, WA 98008","price":null,"starting":false,"beds":"5","baths":"6","sqft":4397,"year":"","builder":"AART Homes","expected":"建商官网标 Available，徽章 Jan '26（已过期，疑似久未更新）","url":"https://www.aarthomes.com/","lat":47.61015,"lng":-122.12835,"photos":[],"oneliner":"建商官网在售前房源，未标价；学区与 $500 万上限待核。","ftags":["🏗️ AART Homes","未标价"]},{"oid":"off-a2","off":"在建未上市","addr":"10656 Woodhaven Ln","city":"Bellevue, WA 98004","price":null,"starting":false,"beds":"6","baths":"7","sqft":5706,"year":"","builder":"AART Homes","expected":"建商官网标 Available now","url":"https://www.aarthomes.com/","lat":47.58715,"lng":-122.1987,"photos":[],"oneliner":"建商官网在售前房源，未标价；学区与 $500 万上限待核。","ftags":["🏗️ AART Homes","未标价"]},{"oid":"off-a3","off":"在建未上市","addr":"3242 Evergreen Point Rd","city":"Medina, WA 98039","price":null,"starting":false,"beds":"6","baths":"6","sqft":6356,"year":"","builder":"AART Homes","expected":"建商官网徽章 May '26（已过期，疑似久未更新）","url":"https://www.aarthomes.com/index2.php?house_id=24","lat":47.63953,"lng":-122.23809,"photos":[],"oneliner":"建商官网在售前房源，未标价；学区与 $500 万上限待核。","ftags":["🏗️ AART Homes","未标价"]},{"oid":"off-a4","off":"即将上市","addr":"16672 NE 12th St","city":"Bellevue, WA 98008","price":null,"starting":false,"beds":"5","baths":"6","sqft":4248,"year":"","builder":"AART Homes","expected":"建商官网 Coming Soon/Upcoming，未给日期","url":"https://www.aarthomes.com/index2.php?house_id=38","lat":47.62034,"lng":-122.11753,"photos":[],"oneliner":"建商官网 Coming Soon，未标价；学区与 $500 万上限待核。","ftags":["🏗️ AART Homes","未标价"]},{"oid":"off-a5","off":"即将上市","addr":"10624 Woodhaven Ln","city":"Bellevue, WA 98004","price":null,"starting":false,"beds":"6","baths":"7","sqft":6087,"year":"","builder":"AART Homes","expected":"建商官网 Coming Soon/Upcoming，未给日期","url":"https://www.aarthomes.com/index2.php?house_id=39","lat":47.58781,"lng":-122.19937,"photos":[],"oneliner":"建商官网 Coming Soon，未标价；学区与 $500 万上限待核。","ftags":["🏗️ AART Homes","未标价"]},{"oid":"off-a6","off":"即将上市","addr":"4604 137th Ave NE","city":"Bellevue, WA 98005","price":null,"starting":false,"beds":"6","baths":"7","sqft":8593,"year":"","builder":"AART Homes","expected":"建商官网 Coming Soon/Upcoming，未给日期","url":"https://www.aarthomes.com/index2.php?house_id=41","lat":47.65117,"lng":-122.15706,"photos":[],"oneliner":"Bridle Trails 地段大宅，建商官网 Coming Soon，未标价；学区与 $500 万上限待核。","ftags":["🏗️ AART Homes","未标价"]}];
 function bhOffCard(h){
  var p=(h.price&&h.sqft)?Math.round(h.price/h.sqft):null;
  var spec=[];
@@ -1324,7 +1325,7 @@ function bhOffCard(h){
  row("预计",h.expected||"");
  var priceTxt=h.price?(bhMoney(h.price)+(h.starting?' <span style="color:#ffd93d;font-size:.8em">起价（非挂牌价）</span>':'')):"价格未公布";
  var badge='<span class="bh-badge" style="background:#7a5cff;color:#fff">'+(h.off||"off-market")+"</span>";
- return '<div class="bh-card" id="bh-ocard-'+h.oid+'">'
+ return '<div class="bh-card" id="bh-ocard-'+h.oid+'"'+(h.lat&&h.lng?' onclick="bhLocateOff(event,\''+h.oid+'\')"':"")+'>'
  +(h.photos&&h.photos.length?'<div class="bh-phwrap"><img class="bh-photo" src="'+h.photos[0]+'" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'">'+badge+(h.photos.length>1?'<span class="bh-pg">1 / '+h.photos.length+"</span>":"")+"</div>":'<div style="margin:2px 0 6px"><span class="bh-badge" style="position:static;background:#7a5cff;color:#fff">'+(h.off||"off-market")+"</span></div>")
  +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+priceTxt+'</span><span style="color:#8fa3c8;font-size:.78em">'+(h.off||"")+"</span></div>"
  +'<div style="color:#fff;font-weight:600;margin:2px 0">📍 '+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+(h.city||"")+"</div>"
@@ -1639,6 +1640,7 @@ function bhRender(){
  el.innerHTML=arr.length?arr.map(offm?bhOffCard:bhCard).join(""):'<p style="color:#aaa">没有符合当前筛选的房源，换个条件试试。</p>';
  document.getElementById("bh-count").textContent=offm?("显示 "+arr.length+" / "+BH_OFFMARKET.length+" 套 off-market"):("显示 "+arr.length+" / "+BH_HOMES.length+" 套");
  if(window.bhSyncPins)window.bhSyncPins(offm?[]:arr.map(function(h){return h.n}));
+ if(window.bhSyncOffPins)window.bhSyncOffPins(!!offm);
  if(offm){var st=document.getElementById("bh-stats");if(st)st.innerHTML="";}else bhStats();
 }
 function bhDetail(n){
@@ -1717,12 +1719,31 @@ bhRender();
     mk.on("click",function(){bhHighlight(h.n);bhSelPin(h.n)});
     markers[h.n]=mk;bounds.push([h.lat,h.lng]);
    });
+   BH_OFFMARKET.forEach(function(h){
+    if(!h.lat||!h.lng)return;
+    var icon=L.divIcon({className:"",html:'<div class="bh-pin off">🏗</div>',iconSize:[26,26],iconAnchor:[13,13]});
+    var mk=L.marker([h.lat,h.lng],{icon:icon}).addTo(map);
+    mk.on("click",function(){bhSelOffPin(h.oid);map.setView([h.lat,h.lng],12);map.closePopup();var c=document.getElementById("bh-ocard-"+h.oid);if(c)c.scrollIntoView({behavior:"smooth",block:"start"});});
+    markers["off:"+h.oid]=mk;
+   });
    if(bounds.length)map.fitBounds(bounds,{padding:[24,24]});
    map.on("popupopen",function(e){if(e.popup&&e.popup.getLatLng)map.panTo(e.popup.getLatLng());});
    setTimeout(function(){if(map)map.invalidateSize()},300);
   }catch(e){var f2=document.getElementById("bh-map-fallback");if(f2)f2.style.display="block"}
  }
  function bhSelPin(n){document.querySelectorAll("#bh-map .bh-pin").forEach(function(el){el.classList.remove("bh-sel")});var mk=markers[n];if(!mk)return;var el=mk.getElement();var inner=el?el.querySelector(".bh-pin"):null;if(inner)inner.classList.add("bh-sel");}
+ function bhSelOffPin(oid){document.querySelectorAll("#bh-map .bh-pin").forEach(function(el){el.classList.remove("bh-sel")});var mk=markers["off:"+oid];if(!mk)return;var el=mk.getElement();var inner=el?el.querySelector(".bh-pin"):null;if(inner)inner.classList.add("bh-sel");}
+ window.bhSyncOffPins=function(show){if(!map)return;BH_OFFMARKET.forEach(function(h){var mk=markers["off:"+h.oid];if(!mk)return;var el=mk.getElement();if(el)el.style.display=show?"":"none";});};
+ window.bhLocateOff=function(ev,oid){
+  if(ev&&ev.stopPropagation)ev.stopPropagation();
+  var w=document.getElementById("bh-mapwrap");
+  if(w&&w.dataset.collapsed==="1")window.bhMapToggle();
+  else window.bhScrollMapIntoViewIfHidden();
+  if(!map)init();
+  var h=null;BH_OFFMARKET.forEach(function(x){if(x.oid===oid)h=x});
+  if(!h||!h.lat||!h.lng||!map)return;
+  setTimeout(function(){map.invalidateSize();map.setView([h.lat,h.lng],12);map.closePopup();bhSelOffPin(oid);},150);
+ };
  window.bhClosePopups=function(){if(map)map.closePopup()};
  window.bhInitMap=init;
  window.bhLocate=function(ev,n){
@@ -2093,7 +2114,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 01:34 UTC';
+var BUILD_TS='2026-11-01 01:39 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
