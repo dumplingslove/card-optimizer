@@ -461,10 +461,19 @@ function compBlockHtml(catName){
     + (itemsHtml ? '<div class="comp-items">' + itemsHtml + "</div>" : "")
     + "</div>";
 }
-var REC_ROT_BY_NAME = { "超市": ["FLEX", "FREEDOM"], "餐饮": ["FLEX", "FREEDOM"], "境外餐饮": ["FLEX", "FREEDOM"], "水电": ["CASHPLUS", "DISCOVER"], "网络/WiFi": ["CASHPLUS"], "流媒体": ["CASHPLUS"] };
+var REC_CASHPLUS_ROWS = ["水电", "网络/WiFi", "流媒体"]; // 本季 Cash+ 自选的两类只落这三行；手机账单/百货/Home Improvement 不在本季自选内，不给条
+function rotKeysFor(cat){
+  var keys = [];
+  function add(k){ if (keys.indexOf(k) < 0) keys.push(k); }
+  if (REC_CASHPLUS_ROWS.indexOf(cat.name) >= 0) add("CASHPLUS");
+  (cat.candidates || []).forEach(function(c){
+    if (c.rot && rotOn(c.rot[0], c.rot[1])) { if (c.rot[0] === "chase") { add("FLEX"); add("FREEDOM"); } if (c.rot[0] === "discover") add("DISCOVER"); }
+  });
+  return keys;
+};
 var ROT_SHORT = { "FLEX": "Flex", "FREEDOM": "老 Freedom", "DISCOVER": "Discover", "CASHPLUS": "Cash+" };
-function rotBarHtml(catName){
-  var keys = REC_ROT_BY_NAME[catName];
+function rotBarHtml(cat){
+  var keys = rotKeysFor(cat);
   if (!keys || !window.__ROT_MAP__) return "";
   var parts = [];
   keys.forEach(function(k){
@@ -497,7 +506,7 @@ function renderRecs() {
       return s;
     }).join(" | ");
     var row = '<div class="rec-row" onclick="this.classList.toggle(\'open\')"><span class="cat-icon">' + cat.icon + '</span><span class="cat-name">' + cat.name + '</span><span class="best-name">' + bname + '</span><span class="best-rate">' + recRate(best.c) + '</span><span class="arrow">›</span></div>'
-      + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="why">' + why + '</div><div class="alts"><b>备选：</b>' + altsHtml + '</div>' + compBlockHtml(cat.name) + rotBarHtml(cat.name) + '</div>';
+      + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="why">' + why + '</div><div class="alts"><b>备选：</b>' + altsHtml + '</div>' + compBlockHtml(cat.name) + rotBarHtml(cat) + '</div>';
     groups[cat.g].push(row);
   });
   for (var g = 1; g <= 3; g++) {
@@ -2156,7 +2165,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 19:36 UTC';
+var BUILD_TS='2026-11-01 19:44 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
