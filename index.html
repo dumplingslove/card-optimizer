@@ -1159,6 +1159,7 @@ function bhSpark(h){
 @media (max-width:700px){#bh-map{height:220px!important}#bh-mapbar .bh-map-sub{display:none}.bh-card{font-size:.9em;padding:10px 12px}}
 .bh-pin{background:#2b6cb0;color:#fff;border:2px solid #fff;border-radius:50%;width:26px;height:26px;line-height:22px;text-align:center;font-weight:700;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .bh-pin.top{background:#d97706}
+.bh-pin.bh-sel{background:#ffd93d;color:#1a1a2e;border-color:#1a1a2e;box-shadow:0 0 0 3px rgba(255,217,61,.45),0 2px 8px rgba(0,0,0,.5);position:relative;z-index:1000}
 .bh-card{background:#101c33;border:1px solid #26365a;border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
 .bh-card:hover{border-color:#4a6db3}
 .bh-card.bh-hl{border-color:#ffd93d;box-shadow:0 0 0 2px rgba(255,217,61,.35)}
@@ -1673,7 +1674,7 @@ bhRender();
     var icon=L.divIcon({className:"",html:'<div class="bh-pin'+(h.tier==="top"?" top":"")+'">'+h.n+"</div>",iconSize:[26,26],iconAnchor:[13,13]});
     var mk=L.marker([h.lat,h.lng],{icon:icon}).addTo(map);
     mk.bindPopup('<div style="font-size:13px;line-height:1.5"><b>'+bhMoney(h.price)+'</b><br>'+h.addr+"<br>"+h.city+'<br><a href="javascript:void(0)" onclick="bhDetail('+h.n+')">看详情 →</a></div>');
-    mk.on("click",function(){bhHighlight(h.n)});
+    mk.on("click",function(){bhHighlight(h.n);bhSelPin(h.n)});
     markers[h.n]=mk;bounds.push([h.lat,h.lng]);
    });
    if(bounds.length)map.fitBounds(bounds,{padding:[24,24]});
@@ -1681,6 +1682,7 @@ bhRender();
    setTimeout(function(){if(map)map.invalidateSize()},300);
   }catch(e){var f2=document.getElementById("bh-map-fallback");if(f2)f2.style.display="block"}
  }
+ function bhSelPin(n){document.querySelectorAll("#bh-map .bh-pin").forEach(function(el){el.classList.remove("bh-sel")});var mk=markers[n];if(!mk)return;var el=mk.getElement();var inner=el?el.querySelector(".bh-pin"):null;if(inner)inner.classList.add("bh-sel");}
  window.bhClosePopups=function(){if(map)map.closePopup()};
  window.bhInitMap=init;
  window.bhLocate=function(ev,n){
@@ -1690,7 +1692,7 @@ bhRender();
   else window.bhScrollMapIntoViewIfHidden();
   if(!map)init();
   var h=bhGet(n);if(!h||!map)return;
-  setTimeout(function(){map.invalidateSize();map.setView([h.lat,h.lng],13);var mk=markers[n];if(mk)mk.openPopup();},150);
+  setTimeout(function(){map.invalidateSize();map.setView([h.lat,h.lng],12);map.closePopup();bhSelPin(n);},150);
  };
  window.bhMapToggle=function(){
   var m=document.getElementById("bh-map"),w=document.getElementById("bh-mapwrap"),b=document.getElementById("bh-map-toggle"),ht=document.getElementById("bh-map-hint");
@@ -2051,7 +2053,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 00:11 UTC';
+var BUILD_TS='2026-11-01 00:46 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
