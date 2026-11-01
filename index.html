@@ -470,10 +470,10 @@ function rotBarHtml(catName){
   keys.forEach(function(k){
     var r = window.__ROT_MAP__[k]; if (!r) return;
     var cap = Number(r.cap || 0);
-    if (!r.connected) { parts.push("<div class='rot-mini'><span class='rot-mini-name'>" + esc(ROT_SHORT[k] || r.card_name) + "</span><span style='color:#ffb26b'>未连接·用量未知</span></div>"); return; }
+    if (!r.connected) { parts.push("<div class='rot-mini'><span class='rot-mini-name'>" + compEsc(ROT_SHORT[k] || r.card_name) + "</span><span style='color:#ffb26b'>未连接·用量未知</span></div>"); return; }
     var used = Number(r.used || 0), rem = cap - used, pct = cap ? Math.min(100, used / cap * 100) : 0;
-    var flag = rem <= 0 ? " <span style='color:#ff6b6b;font-weight:bold'>⛔已用满</span>" : (rem < 300 ? " <span style='color:#ffb26b'>⚠️剩" + money(rem) + "</span>" : "");
-    parts.push("<div class='rot-mini'><span class='rot-mini-name'>" + esc(ROT_SHORT[k] || r.card_name) + "</span><span class='rot-mini-bar'><i style='width:" + Math.max(used > 0 ? 2 : 0, Math.round(pct)) + "%'></i></span><span class='rot-mini-nums'>" + money(used) + " / " + money(cap) + flag + "</span></div>");
+    var flag = rem <= 0 ? " <span style='color:#ff6b6b;font-weight:bold'>⛔已用满</span>" : (rem < 300 ? " <span style='color:#ffb26b'>⚠️剩" + compMoney(rem) + "</span>" : "");
+    parts.push("<div class='rot-mini'><span class='rot-mini-name'>" + compEsc(ROT_SHORT[k] || r.card_name) + "</span><span class='rot-mini-bar'><i style='width:" + Math.max(used > 0 ? 2 : 0, Math.round(pct)) + "%'></i></span><span class='rot-mini-nums'>" + compMoney(used) + " / " + compMoney(cap) + flag + "</span></div>");
   });
   if (!parts.length) return "";
   return "<div class='rot-block'><div class='rot-block-title'>🎯 本季 5% 额度</div>" + parts.join("") + "</div>";
@@ -2156,7 +2156,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 19:21 UTC';
+var BUILD_TS='2026-11-01 19:36 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
