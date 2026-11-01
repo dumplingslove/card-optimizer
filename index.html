@@ -31,7 +31,7 @@
 .sub-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.sub-row .sub-main{flex:1;min-width:0;color:#ddd;line-height:1.55}.sub-row .sub-main b{color:#fff}.sub-row .sub-note{color:#999;font-size:0.88em;margin-top:2px}.sub-row .sub-amt{color:#ffd93d;font-weight:bold;white-space:nowrap;text-align:right}.sub-row .sub-amt .sub-cycle{color:#888;font-weight:normal;font-size:0.8em;display:block}.sub-save{color:#7fc97f;font-weight:bold;white-space:nowrap}
 .fee-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.fee-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.fee-main b{color:#fff}.fee-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.fee-bar i{display:block;height:100%}.fee-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}
 .hold-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.hold-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.hold-main b{color:#fff}.hold-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.hold-bar i{display:block;height:100%;background:#ff9f43}.hold-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.hold-nums b{color:#ffd93d}
-.rot-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.rot-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.rot-main b{color:#fff}.rot-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.rot-bar i{display:block;height:100%;background:#4ecdc4}.rot-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.rot-nums b{color:#ffd93d}
+.rot-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.rot-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.rot-main b{color:#fff}.rot-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.rot-bar i{display:block;height:100%;background:#4ecdc4}.rot-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.rot-nums b{color:#ffd93d}.rot-block{margin-top:8px;padding-top:8px;border-top:1px solid #2a2a2a}.rot-block-title{color:#4ecdc4;font-size:0.85em;margin-bottom:4px}.rot-mini{display:flex;align-items:center;gap:8px;font-size:0.85em;color:#ccc;margin:3px 0}.rot-mini-name{color:#fff;white-space:nowrap}.rot-mini-bar{flex:1;height:6px;background:#222;border-radius:3px;overflow:hidden;max-width:280px}.rot-mini-bar i{display:block;height:100%;background:#4ecdc4}.rot-mini-nums{white-space:nowrap}
 .nw-row{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;background:#16213e;border-radius:6px;margin-bottom:6px;font-size:0.84em}.nw-main{flex:1;color:#ddd;line-height:1.55;min-width:0}.nw-main b{color:#fff}.nw-bar{display:flex;height:8px;background:#222;border-radius:4px;overflow:hidden;margin:6px 0 4px;max-width:520px}.nw-bar i{display:block;height:100%}.nw-nums{color:#ccc;white-space:nowrap;text-align:right;line-height:1.6;font-size:0.92em}.nw-nums b{color:#ffd93d}
 @media(max-width:640px){.sub-row,.fee-row,.hold-row,.rot-row,.nw-row{flex-direction:column;gap:4px}.sub-row .sub-amt,.fee-nums,.hold-nums,.rot-nums,.nw-nums{text-align:left;white-space:normal}}
 .bilt-section{border-color:#ffd93d}.bilt-section h2{color:#ffd93d}.bilt-slider{width:100%;margin:8px 0;accent-color:#667eea}.bilt-result{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.bilt-stat{text-align:center;padding:8px;background:#16213e;border-radius:6px}.bilt-stat .num{font-size:1.2em;font-weight:bold;color:#4ecdc4}.bilt-stat .label{font-size:0.7em;color:#888;margin-top:2px}
@@ -239,7 +239,6 @@
 <div class="section rec-section">
 <h2>🎯 消费推荐速查 <span class="xlink" onclick="goTab('cards')">→ 💳 卡片看单卡详情</span></h2>
 <p style="color:#888;font-size:0.72em;margin:-4px 0 12px">💱 等效返现按 TPG 2026-10 估值：MR 2.0¢｜UR 2.05¢｜Bilt 2.2¢（转Hyatt按2.5¢）｜Atmos 1.55¢｜Marriott 0.7¢ —— 实际价值看你换什么</p>
-<div id="myRotationSpend" style="display:none;margin:0 0 12px;padding:10px 12px;background:#101a2e;border:1px solid #2a3a5e;border-radius:8px"><div style="color:#4ecdc4;font-weight:bold;font-size:0.92em;margin-bottom:6px">🎯 本季 5% 额度用量（登录实测）</div><div id="rotSpendList" style="font-size:0.85em;color:#ddd;line-height:1.7"></div><p id="rotSpendMeta" style="font-size:0.75em;color:#888;margin:6px 0 0"></p></div>
 
 <!-- Group: Daily -->
 <div class="group-header open" onclick="this.classList.toggle('open')"><h3>🛒 日常消费</h3><span class="garrow">›</span></div>
@@ -462,6 +461,23 @@ function compBlockHtml(catName){
     + (itemsHtml ? '<div class="comp-items">' + itemsHtml + "</div>" : "")
     + "</div>";
 }
+var REC_ROT_BY_NAME = { "超市": ["FLEX", "FREEDOM"], "餐饮": ["FLEX", "FREEDOM"], "境外餐饮": ["FLEX", "FREEDOM"], "水电": ["CASHPLUS", "DISCOVER"], "网络/WiFi": ["CASHPLUS"], "流媒体": ["CASHPLUS"] };
+var ROT_SHORT = { "FLEX": "Flex", "FREEDOM": "老 Freedom", "DISCOVER": "Discover", "CASHPLUS": "Cash+" };
+function rotBarHtml(catName){
+  var keys = REC_ROT_BY_NAME[catName];
+  if (!keys || !window.__ROT_MAP__) return "";
+  var parts = [];
+  keys.forEach(function(k){
+    var r = window.__ROT_MAP__[k]; if (!r) return;
+    var cap = Number(r.cap || 0);
+    if (!r.connected) { parts.push("<div class='rot-mini'><span class='rot-mini-name'>" + esc(ROT_SHORT[k] || r.card_name) + "</span><span style='color:#ffb26b'>未连接·用量未知</span></div>"); return; }
+    var used = Number(r.used || 0), rem = cap - used, pct = cap ? Math.min(100, used / cap * 100) : 0;
+    var flag = rem <= 0 ? " <span style='color:#ff6b6b;font-weight:bold'>⛔已用满</span>" : (rem < 300 ? " <span style='color:#ffb26b'>⚠️剩" + money(rem) + "</span>" : "");
+    parts.push("<div class='rot-mini'><span class='rot-mini-name'>" + esc(ROT_SHORT[k] || r.card_name) + "</span><span class='rot-mini-bar'><i style='width:" + Math.max(used > 0 ? 2 : 0, Math.round(pct)) + "%'></i></span><span class='rot-mini-nums'>" + money(used) + " / " + money(cap) + flag + "</span></div>");
+  });
+  if (!parts.length) return "";
+  return "<div class='rot-block'><div class='rot-block-title'>🎯 本季 5% 额度</div>" + parts.join("") + "</div>";
+}
 function renderRecs() {
   var groups = { 1: [], 2: [], 3: [] };
   REC_CATS.forEach(function(cat) {
@@ -481,7 +497,7 @@ function renderRecs() {
       return s;
     }).join(" | ");
     var row = '<div class="rec-row" onclick="this.classList.toggle(\'open\')"><span class="cat-icon">' + cat.icon + '</span><span class="cat-name">' + cat.name + '</span><span class="best-name">' + bname + '</span><span class="best-rate">' + recRate(best.c) + '</span><span class="arrow">›</span></div>'
-      + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="why">' + why + '</div><div class="alts"><b>备选：</b>' + altsHtml + '</div>' + compBlockHtml(cat.name) + '</div>';
+      + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="why">' + why + '</div><div class="alts"><b>备选：</b>' + altsHtml + '</div>' + compBlockHtml(cat.name) + rotBarHtml(cat.name) + '</div>';
     groups[cat.g].push(row);
   });
   for (var g = 1; g <= 3; g++) {
@@ -2140,7 +2156,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 18:01 UTC';
+var BUILD_TS='2026-11-01 19:21 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -2644,29 +2660,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         + (r.note ? "<div class='sub-note'>" + esc(r.note) + "</div>" : "")
         + "</div><div class='rot-nums'>已用 <b>" + money(used) + "</b> / " + money(cap) + "<br>还剩 " + money(cap - used) + " · " + pct.toFixed(1) + "%</div></div>";
     }).join("");
-    $("rotMeta").textContent = "口径：只统计 Plaid 已连接卡本季（10/1 起）流水；超市按 Chase 口径不含 Walmart / Target / Costco；每卡 $1,500 额度三类共用、卡与卡之间不互通；Chase 12/14 前激活可追溯，Discover 须先激活再消费" + (latest ? " · 数据更新 " + fmtDateLocal(latest) : "");
-    box.style.display = "block";
-  }
-  function renderRotationSpend(rows){
-    if (!rows || !rows.length) return;
-    var box = $("myRotationSpend"); if (!box) return;
-    var latest = "";
-    rows.forEach(function(r){ if (r.updated_at && r.updated_at > latest) latest = r.updated_at; });
-    var html = rows.filter(function(r){ return r.card_key !== "POOL"; }).map(function(r){
-      var cap = Number(r.cap || 1500);
-      if (!r.connected) return "<div style='margin-bottom:6px'><b>" + esc(r.card_name) + "</b> <span style='color:#888'>··" + esc(r.mask || "") + "</span>：<span style='color:#ffb26b'>未连接，用量未知</span>（她那份 " + money(cap) + " 独立额度，不计入你的已用）</div>";
-      var used = Number(r.used || 0), rem = cap - used;
-      var pct = cap ? Math.min(100, used / cap * 100) : 0;
-      var cats = (r.issuer === "Discover") ? "餐饮/娱乐/水电" : "超市/餐饮/捐款";
-      var verdict = rem <= 0
-        ? "<span style='color:#ff6b6b;font-weight:bold'>⛔ 已用满：这张卡本季再刷" + cats + "只有 1x，别再用它刷轮转类，换下一张。</span>"
-        : (rem < 300
-          ? "<span style='color:#ffb26b;font-weight:bold'>⚠️ 快用满了，还剩 " + money(rem) + "，悠着刷。</span>"
-          : "<span style='color:#4ecdc4'>还剩 " + money(rem) + "，继续刷 5%/7% 没问题。</span>");
-      return "<div style='margin-bottom:6px'><b>" + esc(r.card_name) + "</b> <span style='color:#888'>··" + esc(r.mask || "") + "</span>：已用 <b style='color:#ffd93d'>" + money(used) + "</b> / " + money(cap) + "（" + pct.toFixed(1) + "%）· " + verdict + (r.note ? "<div style='color:#aaa;font-size:0.92em'>" + esc(r.note) + "</div>" : "") + "</div>";
-    }).join("");
-    $("rotSpendList").innerHTML = html;
-    $("rotSpendMeta").textContent = "口径：Plaid 已连接卡本季（10/1 起）流水净额；超市不含 Walmart / Target / Costco；每卡 $1,500 三类共用、卡间不互通" + (latest ? " · 数据更新 " + fmtDateLocal(latest) : "");
+    $("rotMeta").textContent = "口径：只统计 Plaid 已连接卡本季（10/1 起）流水；超市按 Chase 口径不含 Walmart / Target / Costco；每卡 $1,500 额度三类共用、卡与卡之间不互通；Chase 12/14 前激活可追溯，Discover 须先激活再消费；Cash+ 自选两类（水电 + TV/网络/流媒体）共用 $2,000/季" + (latest ? " · 数据更新 " + fmtDateLocal(latest) : "");
     box.style.display = "block";
   }
   function renderNetWorth(rows){
@@ -2783,7 +2777,10 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       .then(function(res){
         if (res.error) { console.warn("rotation_usage", res.error.message); return; }
         renderRotation(res.data);
-        renderRotationSpend(res.data);
+        var rotMap = {};
+        (res.data || []).forEach(function(r){ rotMap[r.card_key] = r; });
+        window.__ROT_MAP__ = rotMap;
+        if (window.renderRecs) window.renderRecs();
       });
     sb.from("net_worth").select("name,value,category,note,as_of,sort,updated_at").order("sort")
       .then(function(res){
