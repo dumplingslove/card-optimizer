@@ -239,6 +239,7 @@
 <div class="section rec-section">
 <h2>🎯 消费推荐速查 <span class="xlink" onclick="goTab('cards')">→ 💳 卡片看单卡详情</span></h2>
 <p style="color:#888;font-size:0.72em;margin:-4px 0 12px">💱 等效返现按 TPG 2026-10 估值：MR 2.0¢｜UR 2.05¢｜Bilt 2.2¢（转Hyatt按2.5¢）｜Atmos 1.55¢｜Marriott 0.7¢ —— 实际价值看你换什么</p>
+<div id="myRotationSpend" style="display:none;margin:0 0 12px;padding:10px 12px;background:#101a2e;border:1px solid #2a3a5e;border-radius:8px"><div style="color:#4ecdc4;font-weight:bold;font-size:0.92em;margin-bottom:6px">🎯 本季 5% 额度用量（登录实测）</div><div id="rotSpendList" style="font-size:0.85em;color:#ddd;line-height:1.7"></div><p id="rotSpendMeta" style="font-size:0.75em;color:#888;margin:6px 0 0"></p></div>
 
 <!-- Group: Daily -->
 <div class="group-header open" onclick="this.classList.toggle('open')"><h3>🛒 日常消费</h3><span class="garrow">›</span></div>
@@ -2139,7 +2140,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-01 16:01 UTC';
+var BUILD_TS='2026-11-01 18:01 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -2646,6 +2647,28 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
     $("rotMeta").textContent = "口径：只统计 Plaid 已连接卡本季（10/1 起）流水；超市按 Chase 口径不含 Walmart / Target / Costco；每卡 $1,500 额度三类共用、卡与卡之间不互通；Chase 12/14 前激活可追溯，Discover 须先激活再消费" + (latest ? " · 数据更新 " + fmtDateLocal(latest) : "");
     box.style.display = "block";
   }
+  function renderRotationSpend(rows){
+    if (!rows || !rows.length) return;
+    var box = $("myRotationSpend"); if (!box) return;
+    var latest = "";
+    rows.forEach(function(r){ if (r.updated_at && r.updated_at > latest) latest = r.updated_at; });
+    var html = rows.filter(function(r){ return r.card_key !== "POOL"; }).map(function(r){
+      var cap = Number(r.cap || 1500);
+      if (!r.connected) return "<div style='margin-bottom:6px'><b>" + esc(r.card_name) + "</b> <span style='color:#888'>··" + esc(r.mask || "") + "</span>：<span style='color:#ffb26b'>未连接，用量未知</span>（她那份 " + money(cap) + " 独立额度，不计入你的已用）</div>";
+      var used = Number(r.used || 0), rem = cap - used;
+      var pct = cap ? Math.min(100, used / cap * 100) : 0;
+      var cats = (r.issuer === "Discover") ? "餐饮/娱乐/水电" : "超市/餐饮/捐款";
+      var verdict = rem <= 0
+        ? "<span style='color:#ff6b6b;font-weight:bold'>⛔ 已用满：这张卡本季再刷" + cats + "只有 1x，别再用它刷轮转类，换下一张。</span>"
+        : (rem < 300
+          ? "<span style='color:#ffb26b;font-weight:bold'>⚠️ 快用满了，还剩 " + money(rem) + "，悠着刷。</span>"
+          : "<span style='color:#4ecdc4'>还剩 " + money(rem) + "，继续刷 5%/7% 没问题。</span>");
+      return "<div style='margin-bottom:6px'><b>" + esc(r.card_name) + "</b> <span style='color:#888'>··" + esc(r.mask || "") + "</span>：已用 <b style='color:#ffd93d'>" + money(used) + "</b> / " + money(cap) + "（" + pct.toFixed(1) + "%）· " + verdict + (r.note ? "<div style='color:#aaa;font-size:0.92em'>" + esc(r.note) + "</div>" : "") + "</div>";
+    }).join("");
+    $("rotSpendList").innerHTML = html;
+    $("rotSpendMeta").textContent = "口径：Plaid 已连接卡本季（10/1 起）流水净额；超市不含 Walmart / Target / Costco；每卡 $1,500 三类共用、卡间不互通" + (latest ? " · 数据更新 " + fmtDateLocal(latest) : "");
+    box.style.display = "block";
+  }
   function renderNetWorth(rows){
     if (!rows || !rows.length) return;
     var box = $("myNetWorth"); if (!box) return;
@@ -2760,6 +2783,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       .then(function(res){
         if (res.error) { console.warn("rotation_usage", res.error.message); return; }
         renderRotation(res.data);
+        renderRotationSpend(res.data);
       });
     sb.from("net_worth").select("name,value,category,note,as_of,sort,updated_at").order("sort")
       .then(function(res){
