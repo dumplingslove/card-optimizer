@@ -383,7 +383,7 @@ var REC_CATS = [
       { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%(目标后)", cur: "cash", m: 4, rate: "4%" } ] },
   // ===== 旅行预订 (g:2) =====
-  { g: 2, icon: "✈️", name: "Alaska机票", pinNote: "自家航班 status 优先于门户积分", ccat: "airline", why: "💡 自家航班 Summit 3x + status 积分",
+  { g: 2, icon: "✈️", name: "Alaska机票", pinNote: "自家航班攒 status，AS120 已用 Summit 出票", ccat: "airline", why: "💡 自家航班 Summit 3x + status 积分",
     candidates: [
       { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x+Status≈4.65%", pin: true },
       { n: "CSR Portal", s: "CSR Portal 5x(降级前!)", cur: "UR", m: 5, rate: "5x UR≈10%" },
@@ -458,8 +458,9 @@ var REC_CATS = [
 ];
 // ===== 消费执行度（登录后由 Supabase spend_compliance 注入 window.__COMP_MAP__，未登录无此数据、不渲染）=====
 // 映射：推荐行名 → 合规类别键（仅这 8 行有执行度块）
-var REC_COMP_BY_NAME = { "超市": "grocery", "Whole Foods": "grocery", "餐饮": "dining", "境外餐饮": "dining", "加油": "gas", "Alaska机票": "airline", "其他机票": "airline", "Marriott酒店": "hotel", "其他酒店": "hotel", "流媒体": "streaming", "打车": "rideshare", "水电": "utilities" };
-var REC_COMP_SHARED = { "Whole Foods": "超市类合计（流水不拆 Whole Foods 子项）", "境外餐饮": "餐饮类合计（含国内餐饮，流水不分境内外）", "其他机票": "机票类合计", "Marriott酒店": "酒店类合计" };
+var REC_COMP_BY_NAME = { "超市": "grocery", "Whole Foods": "grocery", "餐饮": "dining", "境外餐饮": "dining", "加油": "gas", "Alaska机票": "alaska", "其他机票": "airline_other", "其他酒店": "hotel", "流媒体": "streaming", "打车": "rideshare", "水电": "utilities" };
+var REC_COMP_NODATA = { "Marriott酒店": "本季暂无万豪品牌直订流水" };
+var REC_COMP_SHARED = { "Whole Foods": "超市类合计（流水不拆 Whole Foods 子项）", "境外餐饮": "餐饮类合计（含国内餐饮，流水不分境内外）" };
 function compEsc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 function compMoney(v){ return "$" + Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 var COMP_TRUE_MULT = { // 该类常规倍率 [倍率,币种]，换季同步改；仅用于分账积分估算（凑比例 sv 卡仍按名义倍率算分）
@@ -469,10 +470,13 @@ var COMP_TRUE_MULT = { // 该类常规倍率 [倍率,币种]，换季同步改�
   airline: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[3,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
   hotel: { BRILLIANT:[6,"Marriott"], GOLD:[5,"MR"], CSR:[10,"UR"], PLAT:[5,"MR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], SUMMIT:[1,"Atmos"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
   utilities: { CASHPLUS:[5,"cash"], DISCOVER:[5,"cash"], BILT:[2,"Bilt"], SMARTLY:[4,"cash"], CFU:[1.5,"UR"], CSR:[1,"UR"], PLAT:[1,"MR"], GOLD:[1,"MR"], SUMMIT:[1,"Atmos"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], BRILLIANT:[2,"Marriott"], DELTA:[1,"MILES"] },
-  streaming: { PLAT:[1,"MR"], CASHPLUS:[5,"cash"], CSR:[1,"UR"], CFU:[1.5,"UR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], GOLD:[1,"MR"], SUMMIT:[1,"Atmos"], BRILLIANT:[2,"Marriott"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] }
+  streaming: { PLAT:[1,"MR"], CASHPLUS:[5,"cash"], CSR:[1,"UR"], CFU:[1.5,"UR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], GOLD:[1,"MR"], SUMMIT:[1,"Atmos"], BRILLIANT:[2,"Marriott"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
+  alaska: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[3,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
+  airline_other: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[3,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] }
 };
 var COMP_TIER_DOT = { best: "✅", alt: "🟡", off: "❌", pending: "❔" };
 function compBlockHtml(cat){
+  if (REC_COMP_NODATA[cat.name]) return "<div class='comp-note2'>" + REC_COMP_NODATA[cat.name] + "</div>";
   var key = REC_COMP_BY_NAME[cat.name];
   if (!key) return "<div class='comp-note2'>暂无流水统计（该类未纳入执行度口径）</div>";
   if (!window.__COMP_MAP__) return "<div class='comp-note2'>登录后显示本季执行统计</div>";
@@ -570,8 +574,8 @@ function candTableHtml(cat){
     var tags = "";
     if (c.cond) tags += " <span class='tag'>" + compEsc(c.cond) + "</span>";
     else if (c.rot && !rotOn(c.rot[0], c.rot[1])) tags += " <span class='tag'>本季无轮转</span>";
-    if (isBest) tags += " <span class='tag ok'>⭐最优</span>";
-    else if (c.pin) tags += " <span class='tag ok'>⭐置顶</span>";
+    if (isBest) tags += " <span class='tag ok'>💰返现最高</span>";
+    if (c.pin) tags += " <span class='tag ok'>⭐置顶" + (cat.pinNote ? "·" + compEsc(cat.pinNote) : "") + "</span>";
     var w = maxScore > 0 ? Math.min(100, Math.max(3, Math.round(x.score / maxScore * 100))) : 3;
     return "<div class='cand-row" + (isBest ? " best" : "") + (c.cond ? " cond" : "") + "'><i class='bar' style='width:" + w + "%'></i><span class='cand-name'>" + compEsc(c.s || c.n) + tags + "</span><span class='cand-mult'>" + compEsc(multText) + "</span><span class='cand-val'>" + compEsc(valText) + "</span></div>";
   }).join("");
@@ -588,7 +592,7 @@ function renderRecs() {
     var bname = best.c.n;
     if (recRotMult(best.c) != null && bname.indexOf("⚡") !== 0) bname = "⚡" + bname;
     var verdict = "首选 " + bname.replace(/^⚡/, "") + " · " + recRate(best.c);
-    if (cat.pinNote) verdict += " <span class='v-note'>（" + cat.pinNote + "）</span>";
+    if (cat.pinNote) verdict += " <span class='v-note'>（置顶原因：" + cat.pinNote + "）</span>";
     var tip = (typeof cat.why === "function") ? cat.why() : cat.why;
     var row = '<div class="rec-row" onclick="this.classList.toggle(\'open\')"><span class="cat-icon">' + cat.icon + '</span><span class="cat-name">' + cat.name + '</span><span class="best-name">' + bname + '</span><span class="best-rate">' + recRate(best.c) + '</span><span class="arrow">›</span></div>'
       + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="verdict">' + verdict + '</div>' + (tip ? '<div class="v-note" style="margin-bottom:2px">' + tip + '</div>' : '') + candTableHtml(cat) + compBlockHtml(cat) + rotBarHtml(cat) + '</div>';
@@ -2250,7 +2254,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-02 01:04 UTC';
+var BUILD_TS='2026-11-02 01:20 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
