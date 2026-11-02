@@ -24,6 +24,34 @@
 .rec-detail .comp-items{margin-top:4px}
 .rec-detail .comp-item{padding:1px 0;color:#999}
 .rec-detail .comp-note{color:#8a8f98;font-size:.92em}
+.rec-detail .verdict{color:#fff;font-weight:bold;margin-bottom:4px}
+.rec-detail .verdict .v-rate{color:#ffd93d}
+.rec-detail .v-note{color:#aaa}
+.rec-detail .cand-table{margin:6px 0 2px}
+.rec-detail .cand-row{position:relative;display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;overflow:hidden;margin:2px 0}
+.rec-detail .cand-row i.bar{position:absolute;left:0;top:0;bottom:0;background:rgba(78,205,196,.13)}
+.rec-detail .cand-row.best i.bar{background:rgba(255,217,61,.16)}
+.rec-detail .cand-row span{position:relative}
+.rec-detail .cand-name{flex:1;min-width:0;color:#ddd}
+.rec-detail .cand-row.best .cand-name{color:#fff;font-weight:bold}
+.rec-detail .cand-row.cond{opacity:.55}
+.rec-detail .cand-row.cond i.bar{background:rgba(138,143,152,.15)}
+.rec-detail .cand-mult{color:#4ecdc4;white-space:nowrap;font-size:.92em}
+.rec-detail .cand-val{color:#ffd93d;font-weight:bold;white-space:nowrap;min-width:64px;text-align:right}
+.rec-detail .tag{font-size:.82em;color:#ffb26b;border:1px solid #444;border-radius:4px;padding:0 4px;white-space:nowrap}
+.rec-detail .tag.ok{color:#7fd6a4}
+.rec-detail .comp-amounts{color:#ddd;margin:4px 0}
+.rec-detail .comp-amounts b{color:#fff}
+.rec-detail .cb-row{position:relative;display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;overflow:hidden;margin:2px 0}
+.rec-detail .cb-row i.bar{position:absolute;left:0;top:0;bottom:0;background:rgba(78,205,196,.13)}
+.rec-detail .cb-name{flex:1;min-width:0;color:#ddd;position:relative}
+.rec-detail .cb-nums{position:relative;color:#ccc;white-space:nowrap;text-align:right}
+.rec-detail .cb-nums b{color:#ffd93d}
+.rec-detail .comp-note2{color:#8a8f98;font-size:.92em;margin-top:4px}
+@media (max-width:560px){
+.rec-detail .cb-row{display:block;padding:7px 10px}
+.rec-detail .cb-nums{display:block;text-align:left;margin-top:2px}
+}
 .quarter-banner{background:linear-gradient(135deg,#2d1b69,#11998e);border:1px solid #4ecdc4}.quarter-banner h2{color:#4ecdc4}.q-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.q-card{background:rgba(0,0,0,0.3);border-radius:10px;padding:10px}.q-card h3{color:#ffd93d;font-size:0.85em;margin-bottom:4px}.q-card li{color:#ddd;font-size:0.78em;padding:2px 0;list-style:none}.q-card li::before{content:"• ";color:#4ecdc4}
 .enroll-section{border-color:#ffd93d;background:linear-gradient(135deg,#2a2a10,#1a1a2e)}.enroll-section h2{color:#ffd93d}.enroll-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#16213e;border-radius:7px;border-left:3px solid #4ecdc4;margin-bottom:6px;font-size:0.82em}.enroll-item .en-name{font-weight:bold;color:#fff}.enroll-item .en-how{font-size:0.85em;color:#888}.enroll-item .en-freq{color:#4ecdc4;font-size:0.8em;white-space:nowrap}
 .cards-section h2{color:#ffd93d}.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}.card-box{background:#16213e;border-radius:10px;border:1px solid #333;overflow:hidden;cursor:pointer;transition:all 0.2s}.card-box:hover{border-color:#667eea}.card-box .ct{padding:12px;display:flex;justify-content:space-between;align-items:center}.card-box .cn{font-weight:bold;color:#fff;font-size:0.9em}.card-box .cf{color:#ffd93d;font-size:0.75em}.card-box .cb{padding:0 12px 8px;font-size:0.78em;color:#aaa}.card-box .cd{display:none;padding:12px;border-top:1px solid #333;background:#12122a;font-size:0.78em;line-height:1.6;color:#ccc}.card-box.open .cd{display:block}.card-box .cd h4{color:#4ecdc4;margin:6px 0 3px;font-size:0.85em}.card-box .cd li{padding:1px 0}.card-box .cd .tip{background:#1a2a1a;border:1px solid #4ecdc4;border-radius:6px;padding:6px;margin-top:6px;font-size:0.85em;color:#4ecdc4}.card-box .cd .protip{background:#2a1a2a;border:1px solid #764ba2;border-radius:6px;padding:6px;margin-top:6px;font-size:0.85em;color:#c49bff}.ftf{display:inline-block;padding:1px 7px;border-radius:8px;font-size:0.88em;font-weight:bold;margin-left:6px;white-space:nowrap}.ftf-ok{background:#0d3325;color:#4ade80;border:1px solid #22c55e}.ftf-bad{background:#3a1420;color:#ff8080;border:1px solid #e5484d}.credit-item{flex-wrap:wrap}.cstat{flex-basis:100%;color:#9fd8ff;font-size:0.85em;padding:1px 0 3px}.auth-bar{background:#16213e;border:1px solid #667eea;border-radius:9px;padding:5px 10px;font-size:0.78em;display:flex;flex-wrap:nowrap;gap:6px;align-items:center;justify-content:space-between;margin-bottom:8px}#authStatus{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.auth-btn{background:#667eea;color:#fff;border:none;border-radius:7px;padding:3px 10px;cursor:pointer;font-size:0.85em;white-space:nowrap}.auth-btn:hover{background:#764ba2}.auth-btn.ghost{background:transparent;border:1px solid #667eea;color:#8f9bff}.auth-input{background:#0f0f23;border:1px solid #444;border-radius:8px;padding:6px 10px;color:#e0e0e0;font-size:0.9em;min-width:230px}.acct-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-top:8px}.acct-box{background:#16213e;border:1px solid #333;border-radius:10px;padding:12px;font-size:0.8em;line-height:1.75;color:#ccc;text-align:left}.acct-box .an{color:#fff;font-weight:bold;font-size:1.05em}.acct-box b{color:#4ecdc4}.acct-box .due-soon{color:#ff6b6b;font-weight:bold}
@@ -282,12 +310,12 @@ function rotOn(issuer, cat) { var R = REC_ROTATION[issuer]; return !!(R && R.cat
 // 候选字段：n 展示名 / s 备选链短名 / cur 币种 / m 常驻倍率 / rate 常驻展示 / rot [发卡方,轮转类别] / pin 规则型置顶
 var REC_CATS = [
   // ===== 日常消费 (g:1) =====
-  { g: 1, icon: "🏠", name: "房租", why: "💡 唯一能赚房租积分的卡。$7K满比例=8,750pts/月(≈$157-219)。需非房租消费≥$7K", alts: "无替代",
+  { g: 1, icon: "🏠", name: "房租", why: "💡 唯一能赚房租积分的卡；非房租消费≥$7,000/月才拿满 1.25x", alts: "无替代",
     candidates: [ { n: "Bilt Palladium", cur: "Bilt", m: 1.25, rate: "最高1.25x≈2.8%", pin: true } ] },
   { g: 1, icon: "🥦", name: "超市",
     why: function() {
-      if (rotOn("chase", "grocery")) { var R = REC_ROTATION.chase; return "💡 " + REC_ROTATION.qLabel + "轮转:超市" + R.cats.grocery + "x UR,按转Hyatt≈2¢算≈10%,高于Gold 4x MR≈8%。额度$" + R.cap.toLocaleString() + "/卡/季(与餐饮+捐款共用),家庭三份Chase额度共$4,500;不含Walmart/Target;" + R.activateBy + "前激活(Chase可追溯)。"; }
-      return "💡 本季轮转没有超市。Amex Gold 4x MR≈8%(转航司,TPG 2.0cpp),$25K/年cap。";
+      if (rotOn("chase", "grocery")) { return "Q4 轮转 5x；额度与餐饮/捐款共用 $1,500/卡"; }
+      return "本季无超市轮转；Gold 4x 兜底";
     },
     candidates: [
       { n: "Freedom Flex/老Freedom", s: "Freedom 5x", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "grocery"] },
@@ -295,8 +323,8 @@ var REC_CATS = [
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
   { g: 1, icon: "🌿", name: "Whole Foods",
     why: function() {
-      if (rotOn("chase", "grocery")) { var R = REC_ROTATION.chase; return "💡 Whole Foods 按超市(grocery)编码:" + REC_ROTATION.qLabel + "轮转 Freedom " + R.cats.grocery + "x UR≈10% 最高,高于 Prime Visa 5% cash 与 Gold 4x MR≈8%;额度$" + R.cap.toLocaleString() + "/卡/季(与超市+餐饮共用)," + R.activateBy + "前激活。"; }
-      return "💡 Whole Foods 按超市(grocery)编码:本季轮转没有超市,Gold 4x MR≈8%(Amex 认的美国超市)最优;Prime Visa 5% cash 备选。";
+      if (rotOn("chase", "grocery")) { return "按超市编码，Q4 同享超市轮转"; }
+      return "本季无超市轮转；Gold 4x 兜底";
     },
     candidates: [
       { n: "Freedom Flex/老Freedom", s: "Freedom 5x", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "grocery"] },
@@ -305,8 +333,8 @@ var REC_CATS = [
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
   { g: 1, icon: "🍽️", name: "餐饮", ccat: "dining",
     why: function() {
-      if (rotOn("chase", "dining")) { var R = REC_ROTATION.chase; return "💡 " + REC_ROTATION.qLabel + " Flex餐饮=常驻3x+季度" + (R.cats.dining - 1) + "x=" + (R.cats.dining + 2) + "x UR≈14%,本季最强;与超市共用$" + R.cap.toLocaleString() + "/卡额度(老Freedom餐饮只有" + R.cats.dining + "x);" + R.activateBy + "前激活可追溯。额度用完→Gold 4x。不收Amex→Atmos 3x(≈4.65%)"; }
-      return "💡 Amex Gold 4x MR≈8%全球餐饮最强($50K/年cap)。Flex常驻3x、Atmos 3x为备选。";
+      if (rotOn("chase", "dining")) { return "Flex 7x 本季最强；额度用完→Gold 4x"; }
+      return "Gold 4x 最强；Flex 常驻 3x 备选";
     },
     candidates: [
       { n: "Freedom Flex", s: "Freedom Flex 轮转", cur: "UR", m: 3, rate: "3x UR≈6%", rot: ["chase", "dining"] },
@@ -317,79 +345,79 @@ var REC_CATS = [
       { n: "Marriott Brilliant", s: "Marriott Brilliant 3x", cur: "Marriott", m: 3, rate: "3x≈2.1%" } ] },
   { g: 1, icon: "⛽", name: "加油",
     why: function() {
-      if (rotOn("chase", "gas") || rotOn("discover", "gas")) return "💡 本季轮转含加油5%,额度内先刷轮转卡。";
-      return "💡 本季轮转没有加油(Q3的5%已结束)。Costco卡加油4%(含Costco油站,年cap $7,000)。";
+      if (rotOn("chase", "gas") || rotOn("discover", "gas")) return "本季轮转含加油 5x 时先刷轮转卡";
+      return "本季无加油轮转；Costco 油站与 Smartly 并列 4%";
     },
     candidates: [
       { n: "Costco Anywhere Visa", s: "Costco 4%", cur: "cash", m: 4, rate: "4%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%", sv: 3.9 } ] },
-  { g: 1, icon: "🚕", name: "打车", ccat: "rideshare", why: "💡 Lyft用CSR=5x UR(合作伙伴)！Uber用Gold拿$10/月credit。CSR降级后→Bilt 2x或Smartly 4%",
+  { g: 1, icon: "🚕", name: "打车", pinNote: "分商户：Lyft→CSR，Uber→Gold", ccat: "rideshare", why: "💡 Lyft→CSR 5x；Uber→Gold（另有 Uber credit）；CSR 降级后→Bilt 2x",
     candidates: [
       { n: "⚡CSR Lyft 5x / Gold Uber", cur: "UR", m: 5, rate: "5x UR!≈10.3%", pin: true },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
       { n: "Amex Platinum", s: "Plat Uber $15/月credit(关前)", cur: "cash", m: 0, rate: "" } ] },
-  { g: 1, icon: "📦", name: "Amazon.com", why: "💡 在线零售,不按超市编码。Prime Visa 常驻5% cash;轮转命中 Amazon 的季度(如 2026 Q2 Chase 类别含 Amazon)Freedom 5x UR≈10% 更值。",
+  { g: 1, icon: "📦", name: "Amazon.com", why: "💡 Prime Visa 常驻 5%；本季无 Amazon 轮转",
     candidates: [
       { n: "Amazon Prime Visa", cur: "cash", m: 5, rate: "5%" },
       { n: "Freedom Flex/老Freedom", s: "Freedom 5x(轮转命中时)", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "amazon"] },
       { n: "Discover it", s: "Discover 5%(轮转命中时)", cur: "cash", m: 1, rate: "1%", rot: ["discover", "amazon"] } ] },
-  { g: 1, icon: "🏪", name: "Costco", why: "💡 Costco收Visa✓。Smartly 4%>Costco卡2%。Bilt是MC不能用",
+  { g: 1, icon: "🏪", name: "Costco", why: "💡 Costco 只收 Visa；Smartly 4% ＞ Costco 卡 2%",
     candidates: [
       { n: "U.S. Bank Smartly", cur: "cash", m: 4, rate: "4% cash" },
       { n: "Costco Anywhere Visa", s: "Costco Visa 2%", cur: "cash", m: 2, rate: "2%" } ] },
-  { g: 1, icon: "🏬", name: "百货商店", ccat: "shopping", why: "💡 Bilt 2x(≈5%Hyatt)+凑比例。无特定百货bonus卡",
+  { g: 1, icon: "🏬", name: "百货商店", ccat: "shopping", why: "💡 无专属 bonus 卡；Bilt 2x 凑房租比例",
     candidates: [
       { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
-      { n: "USB Cash+", s: "USB Cash+5%(如选百货为类别)", cur: "cash", m: 5, rate: "5%" } ] },
-  { g: 1, icon: "🔨", name: "Home Improvement", why: "💡 Home Depot/Lowes等。Bilt 2x凑比例+≈5%Hyatt",
+      { n: "USB Cash+", s: "USB Cash+ 5%", cur: "cash", m: 5, rate: "5%", cond: "本季未选百货类" } ] },
+  { g: 1, icon: "🔨", name: "Home Improvement", why: "💡 Bilt 2x 凑比例；Cash+ 本季未选此类",
     candidates: [
       { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
-      { n: "USB Cash+", s: "USB Cash+5%(如选Home Improvement为类别)", cur: "cash", m: 5, rate: "5%" },
-      { n: "CFF/Discover", s: "CFF/Discover 5%(如当季)", cur: "cash", m: 1, rate: "1%" } ] },
-  { g: 1, icon: "⭐", name: "其他", why: "💡 转Hyatt≈5%+凑房租比例。月度目标后→Smartly 4%",
+      { n: "USB Cash+", s: "USB Cash+ 5%", cur: "cash", m: 5, rate: "5%", cond: "本季未选家装类" },
+      { n: "CFF/Discover", s: "CFF/Discover 5%", cur: "cash", m: 1, rate: "1%", cond: "本季无此轮转" } ] },
+  { g: 1, icon: "⭐", name: "其他", why: "💡 Bilt 2x 凑比例；达标后→Smartly 4%",
     candidates: [
       { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%(目标后)", cur: "cash", m: 4, rate: "4%" } ] },
   // ===== 旅行预订 (g:2) =====
-  { g: 2, icon: "✈️", name: "Alaska机票", ccat: "airline", why: "💡 3x+status pts攒MVP。可兑oneworld商务舱",
+  { g: 2, icon: "✈️", name: "Alaska机票", pinNote: "自家航班 status 优先于门户积分", ccat: "airline", why: "💡 自家航班 Summit 3x + status 积分",
     candidates: [
       { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x+Status≈4.65%", pin: true },
       { n: "CSR Portal", s: "CSR Portal 5x(降级前!)", cur: "UR", m: 5, rate: "5x UR≈10%" },
       { n: "Amex Platinum", s: "Plat 5x(关前!)", cur: "MR", m: 5, rate: "5x MR≈10%" } ] },
-  { g: 2, icon: "🛫", name: "其他机票", ccat: "airline", why: "💡 CSR Portal订=5x UR(降级前!)。直接航司买=Amex Plat 5x MR(关前!)。两个都没了后→Atmos 3x(境外) 或 Bilt 2x", alts: "Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)",
+  { g: 2, icon: "🛫", name: "其他机票", pinNote: "降级前 5x 优先", ccat: "airline", why: "💡 降级前门户/官网 5x；之后→Summit 3x（境外）", alts: "Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)",
     candidates: [
       { n: "⚡CSR Portal / Amex Plat", cur: "UR", m: 5, rate: "5x≈10%", pin: true },
       { n: "Atmos Summit", s: "Atmos 3x(境外航司)", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Amex Gold", s: "Amex Gold 3x(航司直购)", cur: "MR", m: 3, rate: "3x MR≈6%" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
-  { g: 2, icon: "🚗", name: "租车", why: "💡 Chase Portal租车=10x UR！(降级前猛用!) 降级后→Bilt 2x或Smartly 4%",
+  { g: 2, icon: "🚗", name: "租车", why: "💡 降级前门户 10x；之后→Bilt 2x / Smartly 4%",
     candidates: [
       { n: "⚡CSR Portal", cur: "UR", m: 10, rate: "10x UR!≈20.5%" },
       { n: "Bilt Palladium", s: "Bilt 2x(≈5%Hyatt+凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] },
-  { g: 2, icon: "🏨", name: "Marriott酒店", ccat: "hotel", why: "💡 最高Marriott倍率+Platinum Elite升级",
+  { g: 2, icon: "🏨", name: "Marriott酒店", pinNote: "直订房晚+升级优先", ccat: "hotel", why: "💡 直订拿房晚+升级；门户积分多但无精英待遇",
     candidates: [
       { n: "Marriott Brilliant", cur: "Marriott", m: 6, rate: "6x≈4.2%", pin: true },
       { n: "CSR Portal", s: "CSR Portal 10x(降级前!)", cur: "UR", m: 10, rate: "10x UR≈20.5%" } ] },
-  { g: 2, icon: "🛏️", name: "其他酒店", ccat: "hotel", why: "💡 Portal订=10x UR超值！降级前多用。降级后→Bilt Portal($400 credit)（Plat 12/17 关卡、本年度酒店 credit 已用完，不再列为备选）",
+  { g: 2, icon: "🛏️", name: "其他酒店", ccat: "hotel", why: "💡 降级前门户 10x；Plat 酒店 credit 已用完",
     candidates: [
       { n: "⚡CSR Portal", cur: "UR", m: 10, rate: "10x UR!≈20.5%" },
       { n: "Amex Gold", s: "Amex Gold 5x(Amex Travel预付!)", cur: "MR", m: 5, rate: "5x MR≈10%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
       { n: "Bilt Palladium", s: "Bilt Portal($400)", cur: "cash", m: 0, rate: "" } ] },
-  { g: 2, icon: "🌍", name: "境外消费", why: "💡 无FTF+兑Cathay商务舱可达约9.8cpp。Bilt月度没达标→先Bilt", alts: "Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)",
+  { g: 2, icon: "🌍", name: "境外消费", pinNote: "境外 3x + status 优先于纯返现", why: "💡 无 FTF；Summit 3x + status；收 3% FTF 的卡（Smartly/Cash+/CFU/老 Freedom）境外别刷", alts: "Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)",
     candidates: [
       { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
       { n: "Bilt Palladium", s: "Bilt 2x(≈5%+凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
-      { n: "Amex Platinum", s: "Plat 5x(仅机票,关前)", cur: "MR", m: 5, rate: "5x MR≈10%" } ] },
+      { n: "Amex Platinum", s: "Plat 5x(仅机票,关前)", cur: "MR", m: 5, rate: "5x MR≈10%", cond: "仅机票，不适用一般境外消费" } ] },
   { g: 2, icon: "🌏", name: "境外餐饮", ccat: "dining",
     why: function() {
-      if (rotOn("chase", "dining")) { var R = REC_ROTATION.chase; return "💡 Flex 2026-09-20改版后免境外手续费:" + REC_ROTATION.qLabel + "境外餐饮=常驻3x+季度" + (R.cats.dining - 1) + "x=" + (R.cats.dining + 2) + "x UR≈14%,境外最强;与超市共用$" + R.cap.toLocaleString() + "/卡额度," + R.activateBy + "前激活可追溯。⚠️老Freedom仍收3%境外手续费,境外别刷它。不收Chase/额度用完→Gold 4x MR≈8%(无FTF)。"; }
-      return "💡 收Amex时首选Gold 4x(无FTF)。不收→Atmos 3x。Flex常驻3x且免境外手续费可备选;老Freedom有3%境外手续费别带。";
+      if (rotOn("chase", "dining")) { return "与国内同为 Flex 7x 最强；老 Freedom 境外收 3% 别带"; }
+      return "Gold 4x（无 FTF）；老 Freedom 境外收 3% 别带";
     },
     candidates: [
       { n: "Amex Gold", cur: "MR", m: 4, rate: "4x MR≈8%" },
@@ -398,31 +426,31 @@ var REC_CATS = [
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
   { g: 2, icon: "🚇", name: "公交/地铁",
     why: function() {
-      if (rotOn("chase", "transit")) return "💡 本季Chase轮转含公交5x,额度内先刷Freedom。";
-      return "💡 本季轮转没有公交,4%返现兜底。";
+      if (rotOn("chase", "transit")) return "本季轮转含公交 5x 时先刷 Freedom";
+      return "本季无公交轮转；Smartly 4% 兜底";
     },
     candidates: [
       { n: "U.S. Bank Smartly", cur: "cash", m: 4, rate: "4% cash" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%", sv: 3.9 },
       { n: "Freedom Flex/老Freedom", s: "Freedom 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "transit"] } ] },
   // ===== 账单 & 订阅 (g:3) =====
-  { g: 3, icon: "📺", name: "流媒体", ccat: "entertainment", why: "💡 Disney+/Hulu/ESPN+/NYT $25/月报销！关卡(12/17)后→USB Cash+ 5%",
+  { g: 3, icon: "📺", name: "流媒体", pinNote: "报销抵扣优先", ccat: "entertainment", why: "💡 Plat $25/月报销；关卡后→Cash+ 5%",
     candidates: [
       { n: "Amex Platinum", cur: "cash", m: 0, rate: "$25/月报销!", pin: true },
       { n: "USB Cash+", s: "USB Cash+ 5%(Plat关后)", cur: "cash", m: 5, rate: "5%" },
       { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
-  { g: 3, icon: "📱", name: "手机账单", why: "💡 Cell Phone Protection $800/次+凑比例+≈5%Hyatt",
+  { g: 3, icon: "📱", name: "手机账单", pinNote: "手机保险优先", why: "💡 Bilt 2x + 手机保险；Cash+ 本季未选手机类",
     candidates: [
       { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x+手机保险≈4.4%", pin: true },
-      { n: "USB Cash+", s: "USB Cash+ 5%(无保险)", cur: "cash", m: 5, rate: "5%" },
+      { n: "USB Cash+", s: "USB Cash+ 5%", cur: "cash", m: 5, rate: "5%", cond: "本季未选手机类" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] },
-  { g: 3, icon: "💡", name: "水电", why: "💡 选Utilities为5%类别，固定账单稳赚",
+  { g: 3, icon: "💡", name: "水电", why: "💡 Cash+ / Discover 轮转 / Bilt 2x 三者并列 5%",
     candidates: [
       { n: "USB Cash+", cur: "cash", m: 5, rate: "5%" },
       { n: "Discover it", s: "Discover 5%(轮转)", cur: "cash", m: 1, rate: "1%", rot: ["discover", "utilities"] },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] },
-  { g: 3, icon: "🌐", name: "网络/WiFi", why: "💡 选TV/Internet/Streaming为5%类别",
+  { g: 3, icon: "🌐", name: "网络/WiFi", why: "💡 Cash+ 自选 TV/网络/流媒体 5%",
     candidates: [
       { n: "USB Cash+", cur: "cash", m: 5, rate: "5%" },
       { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" },
@@ -430,36 +458,71 @@ var REC_CATS = [
 ];
 // ===== 消费执行度（登录后由 Supabase spend_compliance 注入 window.__COMP_MAP__，未登录无此数据、不渲染）=====
 // 映射：推荐行名 → 合规类别键（仅这 8 行有执行度块）
-var REC_COMP_BY_NAME = { "超市": "grocery", "餐饮": "dining", "加油": "gas", "Alaska机票": "airline", "其他酒店": "hotel", "流媒体": "streaming", "打车": "rideshare", "水电": "utilities" };
+var REC_COMP_BY_NAME = { "超市": "grocery", "Whole Foods": "grocery", "餐饮": "dining", "境外餐饮": "dining", "加油": "gas", "Alaska机票": "airline", "其他机票": "airline", "Marriott酒店": "hotel", "其他酒店": "hotel", "流媒体": "streaming", "打车": "rideshare", "水电": "utilities" };
+var REC_COMP_SHARED = { "Whole Foods": "超市类合计（流水不拆 Whole Foods 子项）", "境外餐饮": "餐饮类合计（含国内餐饮，流水不分境内外）", "其他机票": "机票类合计", "Marriott酒店": "酒店类合计" };
 function compEsc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 function compMoney(v){ return "$" + Number(v || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function compBlockHtml(catName){
-  var key = REC_COMP_BY_NAME[catName];
-  if (!key || !window.__COMP_MAP__) return "";
+var COMP_TRUE_MULT = { // 该类常规倍率 [倍率,币种]，换季同步改；仅用于分账积分估算（凑比例 sv 卡仍按名义倍率算分）
+  grocery: { FLEX:[5,"UR"], FREEDOM:[5,"UR"], GOLD:[4,"MR"], CFU:[1.5,"UR"], CSR:[1,"UR"], PLAT:[1,"MR"], DELTA:[1,"MILES"], SUMMIT:[1,"Atmos"], SMARTLY:[4,"cash"], CASHPLUS:[1,"cash"], BILT:[2,"Bilt"], DISCOVER:[1,"cash"], BRILLIANT:[2,"Marriott"] },
+  dining: { FLEX:[7,"UR"], FREEDOM:[5,"UR"], GOLD:[4,"MR"], CSR:[3,"UR"], CFU:[1.5,"UR"], PLAT:[1,"MR"], DELTA:[1,"MILES"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], CASHPLUS:[1,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], DISCOVER:[5,"cash"] },
+  gas: { SMARTLY:[4,"cash"], CFU:[1.5,"UR"], CSR:[1,"UR"], PLAT:[1,"MR"], GOLD:[1,"MR"], DELTA:[1,"MILES"], SUMMIT:[1,"Atmos"], CASHPLUS:[1,"cash"], BILT:[2,"Bilt"], DISCOVER:[1,"cash"], BRILLIANT:[2,"Marriott"], FLEX:[1,"UR"], FREEDOM:[1,"UR"] },
+  airline: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[3,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
+  hotel: { BRILLIANT:[6,"Marriott"], GOLD:[5,"MR"], CSR:[10,"UR"], PLAT:[5,"MR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], SUMMIT:[1,"Atmos"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
+  utilities: { CASHPLUS:[5,"cash"], DISCOVER:[5,"cash"], BILT:[2,"Bilt"], SMARTLY:[4,"cash"], CFU:[1.5,"UR"], CSR:[1,"UR"], PLAT:[1,"MR"], GOLD:[1,"MR"], SUMMIT:[1,"Atmos"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], BRILLIANT:[2,"Marriott"], DELTA:[1,"MILES"] },
+  streaming: { PLAT:[1,"MR"], CASHPLUS:[5,"cash"], CSR:[1,"UR"], CFU:[1.5,"UR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], GOLD:[1,"MR"], SUMMIT:[1,"Atmos"], BRILLIANT:[2,"Marriott"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] }
+};
+var COMP_TIER_DOT = { best: "✅", alt: "🟡", off: "❌", pending: "❔" };
+function compBlockHtml(cat){
+  var key = REC_COMP_BY_NAME[cat.name];
+  if (!key) return "<div class='comp-note2'>暂无流水统计（该类未纳入执行度口径）</div>";
+  if (!window.__COMP_MAP__) return "<div class='comp-note2'>登录后显示本季执行统计</div>";
   var row = window.__COMP_MAP__[key];
-  if (!row) return "";
+  if (!row) return "<div class='comp-note2'>本季暂无该类已连接卡流水</div>";
   var total = Number(row.total_spend || 0);
-  if (!(total > 0)) return "";
+  if (!(total > 0)) return "<div class='comp-note2'>本季暂无该类已连接卡流水</div>";
   var best = Number(row.best_spend || 0), alt = Number(row.alt_spend || 0), off = Number(row.off_spend || 0), pend = Number(row.pending_spend || 0);
   function pct(v){ return Math.round(v / total * 100); }
   function seg(v, col){ return v > 0 ? '<i style="width:' + (v / total * 100) + "%;background:" + col + '"></i>' : ""; }
-  var legend = "✅ 最优 " + pct(best) + "% · 🟡 备选 " + pct(alt) + "% · ❌ 偏离 " + pct(off) + "%";
-  if (pend > 0) legend += " · ❔ 待确认 " + pct(pend) + "%";
-  var tierRank = { off: 0, pending: 1, alt: 2, best: 3 };
-  var items = (row.items || []).slice().sort(function(a, b){ return (tierRank[a.tier] != null ? tierRank[a.tier] : 4) - (tierRank[b.tier] != null ? tierRank[b.tier] : 4); });
+  var amounts = "✅ 最优 <b>" + compMoney(best) + " · " + pct(best) + "%</b> · 🟡 备选 <b>" + compMoney(alt) + " · " + pct(alt) + "%</b> · ❌ 偏离 <b>" + compMoney(off) + " · " + pct(off) + "%</b>";
+  if (pend > 0) amounts += " · ❔ 待确认 <b>" + compMoney(pend) + " · " + pct(pend) + "%</b>";
+  var multMap = COMP_TRUE_MULT[key] || {};
+  var cbHtml = "";
+  var cbs = (row.card_breakdown || []).slice();
+  if (cbs.length) {
+    cbHtml = "<div class='comp-title' style='margin-top:8px'>💳 按卡分账 · 本季该类消费从哪张卡来</div>";
+    cbs.forEach(function(cb){
+      var sp = Number(cb.spend || 0); if (!(sp > 0)) return;
+      var mm = multMap[cb.kind];
+      var ptsHtml = "";
+      if (mm) {
+        var pts = Math.round(sp * mm[0]);
+        var val = sp * mm[0] * (REC_CPP[mm[1]] || 1) / 100;
+        ptsHtml = mm[1] === "cash" ? ("返现约 <b>" + compMoney(val) + "</b>") : ("约 <b>" + pts.toLocaleString() + " " + mm[1] + "分</b> ≈" + compMoney(val));
+      }
+      var tierNote = (key === "dining" && cb.kind === "PLAT" && cb.tier === "best") ? " <span class='tag ok'>Resy口径</span>" : "";
+      var w = Math.max(2, Math.round(sp / total * 100));
+      cbHtml += "<div class='cb-row'><i class='bar' style='width:" + w + "%'></i><span class='cb-name'>" + (COMP_TIER_DOT[cb.tier] || "") + " " + compEsc(cb.card) + tierNote + "</span><span class='cb-nums'>" + compMoney(sp) + " · " + Math.round(sp / total * 100) + "%" + (ptsHtml ? " · " + ptsHtml : "") + "</span></div>";
+    });
+  }
+  var items = (row.items || []).slice().sort(function(a, b){ return b.amount - a.amount; });
+  var lossTotal = 0; items.forEach(function(it){ if (it.loss_est != null) lossTotal += Number(it.loss_est); });
   var itemsHtml = "";
-  items.slice(0, 8).forEach(function(it){
-    var line = compEsc(it.date) + " " + compEsc(it.merchant) + " " + compMoney(it.amount) + " · 用了 " + compEsc(it.used_card) + " · 应刷 " + compEsc(it.should);
-    if (it.loss_est != null && it.loss_est !== "") line += " · 约少赚 " + compMoney(it.loss_est);
-    if (it.note) line += ' <span class="comp-note">' + compEsc(it.note) + "</span>";
-    if (it.tier === "pending") line += "（卡种待确认，告诉我这张卡是什么就能判定）";
-    itemsHtml += '<div class="comp-item">' + line + "</div>";
-  });
-  return '<div class="comp-block"><div class="comp-title">📊 我的执行情况 · 本季度（仅已连接卡流水）</div>'
+  if (items.length) {
+    itemsHtml = "<div class='comp-items'><div style='color:#ccc;margin-top:6px'>偏离明细（共 " + items.length + " 笔" + (lossTotal > 0 ? "，约少赚 <b style='color:#ffd93d'>" + compMoney(lossTotal) + "</b>" : "") + "）：</div>";
+    items.slice(0, 5).forEach(function(it){
+      var line = compEsc(it.date) + " " + compEsc(it.merchant) + " " + compMoney(it.amount) + " · 用了 " + compEsc(it.used_card);
+      if (it.loss_est != null && it.loss_est !== "") line += " · 少赚 " + compMoney(it.loss_est);
+      if (it.note) line += "（" + compEsc(it.note) + "）";
+      itemsHtml += '<div class="comp-item">' + line + "</div>";
+    });
+    if (items.length > 5) itemsHtml += '<div class="comp-item">……其余 ' + (items.length - 5) + ' 笔已计入合计</div>';
+    itemsHtml += "</div>";
+  }
+  var shared = REC_COMP_SHARED[cat.name] ? "<div class='comp-note2'>口径：" + REC_COMP_SHARED[cat.name] + "</div>" : "";
+  return '<div class="comp-block"><div class="comp-title">📊 本季执行 · ' + REC_ROTATION.quarter + '（仅已连接卡流水，共 ' + compMoney(total) + '）</div>'
     + '<div class="comp-bar">' + seg(best, "#4caf7d") + seg(alt, "#e8c468") + seg(pend, "#8a8f98") + seg(off, "#e06c5f") + "</div>"
-    + '<div class="comp-legend">' + legend + "</div>"
-    + (itemsHtml ? '<div class="comp-items">' + itemsHtml + "</div>" : "")
-    + "</div>";
+    + '<div class="comp-amounts">' + amounts + "</div>"
+    + cbHtml + itemsHtml + shared + "</div>";
 }
 var REC_CASHPLUS_ROWS = ["水电", "网络/WiFi", "流媒体"]; // 本季 Cash+ 自选的两类只落这三行；手机账单/百货/Home Improvement 不在本季自选内，不给条
 function rotKeysFor(cat){
@@ -487,26 +550,48 @@ function rotBarHtml(cat){
   if (!parts.length) return "";
   return "<div class='rot-block'><div class='rot-block-title'>🎯 本季 5% 额度</div>" + parts.join("") + "</div>";
 }
+function candTableHtml(cat){
+  var cands = cat.candidates.map(function(c, i) { return { c: c, i: i, score: recScore(c) }; });
+  var live = cands.filter(function(x){ return !x.c.cond; });
+  var maxScore = live.length ? Math.max.apply(null, live.map(function(x){ return x.score; })) : 0;
+  cands.sort(function(a, b){
+    if (!!a.c.cond !== !!b.c.cond) return a.c.cond ? 1 : -1;
+    return (b.score - a.score) || (a.i - b.i);
+  });
+  var rows = cands.map(function(x){
+    var c = x.c;
+    var isBest = !c.cond && maxScore > 0 && Math.abs(x.score - maxScore) < 0.011;
+    var multText = "", valText = "";
+    if (recRotMult(c) != null) { var m = recEffM(c); multText = m + "x " + c.cur; valText = "≈" + Math.round(m * REC_CPP[c.cur]) + "%"; }
+    else if (c.sv != null) { multText = c.m + "x " + c.cur; valText = "≈" + c.sv + "%"; }
+    else if (c.m === 0) { multText = ""; valText = c.rate || ""; }
+    else if (c.cur === "cash") { multText = c.m + "%"; valText = c.rate || ""; }
+    else { multText = c.m + "x " + c.cur; valText = c.rate ? c.rate.replace(/^.*≈/, "≈") : ""; }
+    var tags = "";
+    if (c.cond) tags += " <span class='tag'>" + compEsc(c.cond) + "</span>";
+    else if (c.rot && !rotOn(c.rot[0], c.rot[1])) tags += " <span class='tag'>本季无轮转</span>";
+    if (isBest) tags += " <span class='tag ok'>⭐最优</span>";
+    else if (c.pin) tags += " <span class='tag ok'>⭐置顶</span>";
+    var w = maxScore > 0 ? Math.min(100, Math.max(3, Math.round(x.score / maxScore * 100))) : 3;
+    return "<div class='cand-row" + (isBest ? " best" : "") + (c.cond ? " cond" : "") + "'><i class='bar' style='width:" + w + "%'></i><span class='cand-name'>" + compEsc(c.s || c.n) + tags + "</span><span class='cand-mult'>" + compEsc(multText) + "</span><span class='cand-val'>" + compEsc(valText) + "</span></div>";
+  }).join("");
+  return "<div class='cand-table'>" + rows + "</div>";
+}
 function renderRecs() {
   var groups = { 1: [], 2: [], 3: [] };
   REC_CATS.forEach(function(cat) {
     var cands = cat.candidates.map(function(c, i) { return { c: c, i: i, score: recScore(c) }; });
     var best = null;
     cands.forEach(function(x) { if (x.c.pin && !best) best = x; });
-    if (!best) cands.forEach(function(x) { if (!best || x.score > best.score) best = x; });
-    var rest = cands.filter(function(x) { return x !== best; }).sort(function(a, b) { return (b.score - a.score) || (a.i - b.i); });
+    if (!best) cands.forEach(function(x) { if (!x.c.cond && (!best || x.score > best.score)) best = x; });
+    if (!best) best = cands[0];
     var bname = best.c.n;
     if (recRotMult(best.c) != null && bname.indexOf("⚡") !== 0) bname = "⚡" + bname;
-    var why = (typeof cat.why === "function") ? cat.why() : cat.why;
-    var altsHtml;
-    if (cat.alts != null) altsHtml = cat.alts;
-    else altsHtml = rest.slice(0, 4).map(function(x, xi) {
-      var s = x.c.s || x.c.n;
-      if (xi === 0 && recRotMult(best.c) != null) s += "(额度用完后)";
-      return s;
-    }).join(" | ");
+    var verdict = "首选 " + bname.replace(/^⚡/, "") + " · " + recRate(best.c);
+    if (cat.pinNote) verdict += " <span class='v-note'>（" + cat.pinNote + "）</span>";
+    var tip = (typeof cat.why === "function") ? cat.why() : cat.why;
     var row = '<div class="rec-row" onclick="this.classList.toggle(\'open\')"><span class="cat-icon">' + cat.icon + '</span><span class="cat-name">' + cat.name + '</span><span class="best-name">' + bname + '</span><span class="best-rate">' + recRate(best.c) + '</span><span class="arrow">›</span></div>'
-      + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="why">' + why + '</div><div class="alts"><b>备选：</b>' + altsHtml + '</div>' + compBlockHtml(cat.name) + rotBarHtml(cat) + '</div>';
+      + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="verdict">' + verdict + '</div>' + (tip ? '<div class="v-note" style="margin-bottom:2px">' + tip + '</div>' : '') + candTableHtml(cat) + compBlockHtml(cat) + rotBarHtml(cat) + '</div>';
     groups[cat.g].push(row);
   });
   for (var g = 1; g <= 3; g++) {
@@ -2165,7 +2250,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-02 00:39 UTC';
+var BUILD_TS='2026-11-02 01:04 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -2762,7 +2847,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
         renderCreditSystems(res.data);
         renderFees(res.data);
       });
-    sb.from("spend_compliance").select("category,period_start,period_end,total_spend,best_spend,alt_spend,off_spend,pending_spend,items")
+    sb.from("spend_compliance").select("category,period_start,period_end,total_spend,best_spend,alt_spend,off_spend,pending_spend,items,card_breakdown")
       .then(function(res){
         if (res.error) { console.warn("spend_compliance", res.error.message); return; }
         if (!res.data || !res.data.length) return;
