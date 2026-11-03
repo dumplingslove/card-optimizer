@@ -291,10 +291,31 @@ var REC_ROTATION = {
   discover: { cats: { dining: 5, entertainment: 5, utilities: 5 }, cap: 1500 }
 };
 function recRotMult(c) {
-  if (!c.rot) return null;
+  if (!c.rot || rotExhausted(c)) return null;
   var R = REC_ROTATION[c.rot[0]];
   if (R && R.cats && R.cats[c.rot[1]]) return R.cats[c.rot[1]];
   return null;
+}
+// 轮转额度已用满判定（2026-11-02）：额度条只标⛔不够，排序/倍率也必须降级，否则用满的卡仍会被排成最佳。
+// 映射按候选名：单卡名只看本卡；合并名“Freedom Flex/老Freedom”须两卡都满才算满（任一卡有剩即可继续刷轮转）。
+// 未连接/用量未知一律不算满（不猜），rotation_usage 未加载前也不算满（__ROT_MAP__ 为空时返回 false）。
+function rotExhausted(c) {
+  if (!c.rot || !window.__ROT_MAP__) return false;
+  var keys = [];
+  if (c.rot[0] === "chase") {
+    if (c.n === "Freedom Flex") keys = ["FLEX"];
+    else if (c.n === "老Freedom") keys = ["FREEDOM"];
+    else if (c.n.indexOf("Flex") >= 0) keys = ["FLEX", "FREEDOM"];
+    else return false;
+  } else if (c.rot[0] === "discover") {
+    keys = ["DISCOVER"];
+  } else return false;
+  for (var i = 0; i < keys.length; i++) {
+    var r = window.__ROT_MAP__[keys[i]];
+    if (!r || !r.connected) return false;
+    if (Number(r.used || 0) < Number(r.cap || 0)) return false;
+  }
+  return keys.length > 0;
 }
 function recEffM(c) { var r = recRotMult(c); return r == null ? c.m : c.m + r - 1; }
 // sv = 口径分值覆盖：现金优先的类别（加油/公交）里 Bilt 2x 需转Hyatt才≈5%、且凑比例已由其他消费覆盖，计分排在 4% 现金之后
@@ -573,6 +594,7 @@ function candTableHtml(cat){
     else { multText = c.m + "x " + c.cur; valText = c.rate ? c.rate.replace(/^.*≈/, "≈") : ""; }
     var tags = "";
     if (c.cond) tags += " <span class='tag'>" + compEsc(c.cond) + "</span>";
+    else if (c.rot && rotExhausted(c)) tags += " <span class='tag'>额度已用满·按常驻倍率</span>";
     else if (c.rot && !rotOn(c.rot[0], c.rot[1])) tags += " <span class='tag'>本季无轮转</span>";
     if (isBest) tags += " <span class='tag ok'>💰返现最高</span>";
     if (c.pin) tags += " <span class='tag ok'>⭐置顶" + (cat.pinNote ? "·" + compEsc(cat.pinNote) : "") + "</span>";
@@ -2262,7 +2284,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-02 22:08 UTC';
+var BUILD_TS='2026-11-03 02:01 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
