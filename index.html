@@ -145,7 +145,7 @@
 .sub-btn{flex:1;min-width:96px;white-space:nowrap;background:#16213e;border:1px solid #2a3a5f;color:#9fb6d8;border-radius:20px;padding:5px 10px;font-size:.85em;cursor:pointer;transition:all .15s;font-family:inherit}
 @media(max-width:480px){.tab-btn{min-width:70px;padding:6px 3px;font-size:.8em}.sub-btn{min-width:0;padding:5px 6px;font-size:.82em}}
 .sub-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:#667eea;font-weight:bold}
-#tp-house[data-sub="view"] [data-subpage]:not([data-subpage="view"]),#tp-house[data-sub="market"] [data-subpage]:not([data-subpage="market"]),#tp-house[data-sub="school"] [data-subpage]:not([data-subpage="school"]),#tp-fire[data-sub="home"] [data-subpage]:not([data-subpage="home"]),#tp-fire[data-sub="balance"] [data-subpage]:not([data-subpage="balance"]),#tp-fire[data-sub="plan"] [data-subpage]:not([data-subpage="plan"]){display:none!important}
+#tp-house[data-sub="view"] [data-subpage]:not([data-subpage="view"]),#tp-house[data-sub="market"] [data-subpage]:not([data-subpage="market"]),#tp-house[data-sub="sold"] [data-subpage]:not([data-subpage="sold"]),#tp-house[data-sub="school"] [data-subpage]:not([data-subpage="school"]),#tp-fire[data-sub="home"] [data-subpage]:not([data-subpage="home"]),#tp-fire[data-sub="balance"] [data-subpage]:not([data-subpage="balance"]),#tp-fire[data-sub="plan"] [data-subpage]:not([data-subpage="plan"]){display:none!important}
 #tp-house:not(.active) ~ [data-subpage="school"],#tp-house.active:not([data-sub="school"]) ~ [data-subpage="school"]{display:none}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
@@ -1171,6 +1171,130 @@ renderRecs();
 <div id="bh-track"></div>
 <div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin-top:10px"><div style="color:#9fd8ff;font-weight:700;margin-bottom:2px">数据口径与局限</div><div>数据说明：① 本回溯共 270 套（2026-10-25 扩样修订：以 King County Assessor 县成交记录逐条核实，补入 172 套 Tier B；其成交价/日期为县记录精确值、无 DOM 与比值，只计成交量）。县记录全口径核实：符合条件（Bellevue/Medina/Clyde Hill 独栋、$180–500 万、≥4 卧 ≥3 卫）的成交至少 268 套（县严格卫浴口径），按 MLS 卫浴算法加登记尾差估计真实总量约 285–355 套，本样本覆盖约八成至九成五。② <b>DOM 口径局限</b>：页面 DOM 是当前一轮挂牌的天数；在售审计发现「撤牌重挂洗天数」普遍存在，成交样本同样可能被洗——慢销的真实占比与天数被系统性低估，DOM≥60 的 n=4 应理解为下限。③ Q3 的 Tier A 仍薄（7 套，DOM/比值仅供参考），但含县记录的成交量已达 69 套；Q4 仅 10 月上旬登记 7 套、未齐。2025Q4 门户快照偏密的现象已由县记录补样稀释（该季总量 54 套）。④ 学校链结论只基于 27 套已核实 Tier A，其余 243 套未逐套核学校（县记录地址均在三市市界内；个别南 Bellevue 地址可能属 Issaquah 学区，已识别并剔除 1 例）。⑤ 在售台账 65 套的中位挂牌单价约 $764/sqft，比已成交中位 $739 高约 3.4%——在售的是「还没卖掉的」，别拿挂牌价当市场价。⑥ 降价史字段仅 7/82 套 Tier A 有据，相关结论只作旁证。完整口径见回溯分析报告（2026-10-25，含扩样修订节）。</div></div></div>
 </div>
+<div data-subpage="sold">
+<div style="background:#0e1830;border:1px solid #2a4a7f;border-radius:10px;padding:14px 14px 10px;margin-bottom:12px">
+<div style="color:#ffd93d;font-weight:700;margin-bottom:8px">🏠 已成交 · 逐套价格走势与分析</div>
+<div style="background:#132c1e;border:1px solid #2f6e46;border-radius:8px;padding:9px 12px;font-size:.9em;line-height:1.7;color:#dff5e3;margin-bottom:12px">一句话：<b>最近成交的 5 套都是先降价再成交，折价中位 −13.8%</b>——远深于近一年回溯中位 −2.5%。这批是「降价才卖掉」的慢盘，不是市场常态；回溯 82 套的常态仍是挂牌价 96–97% 成交、9 天走掉。</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px">
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">−13.8%</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">台账 5 套折价中位<br>口径：4 套有成交价，较最后挂牌价；回溯中位仅 −2.5%</div></div>
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">40 天</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">台账 5 套 DOM 中位<br>口径：3 套有 DOM；回溯中位 9 天</div></div>
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">$739<span style="font-size:.55em;color:#9fb6d8">/sqft</span></div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">回溯 Tier A 中位成交单价<br>中位成交价 $2,977,500 · 比值 0.975 · DOM 9 天（n=82）</div></div>
+<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px"><div style="font-size:1.45em;font-weight:800;color:#fff">270 套</div><div style="font-size:.8em;color:#9fb6d8;line-height:1.5">近一年成交样本<br>Tier A 门户精确 82 套 + Tier B 县记录 188 套；窗口 2025-10-28 → 2026-10-30</div></div>
+</div>
+<div style="font-weight:700;color:#fff;font-size:.92em;margin:2px 0 6px">🆕 台账最新成交 · 5 套逐套拆（2026-09 → 10）</div>
+<div id="bh-sold-ledger"></div>
+<div style="font-weight:700;color:#fff;font-size:.92em;margin:12px 0 6px">📅 按月：成交量 · 中位成交价（全部 270 套）</div>
+<div id="bh-sold-months"></div>
+<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin:2px 0 4px">2025-10 与 2026-10 为窗口首尾不完整月；Tier B 价格为县记录约数、日期只到月，月度中位价含 Tier B。</div>
+<div style="font-weight:700;color:#fff;font-size:.92em;margin:12px 0 6px">📋 回溯逐套总表 · Tier A 82 套（门户精确价 / 日）</div>
+<div id="bh-sold-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+<div style="overflow-x:auto"><div id="bh-sold-table"></div></div>
+<div id="bh-sold-count" style="font-size:.8em;color:#9fb6d8;margin-top:6px"></div>
+<div style="font-size:.76em;color:#8fa3c8;line-height:1.6;margin-top:10px"><div style="color:#9fd8ff;font-weight:700;margin-bottom:2px">数据口径与局限</div><div>台账 5 套来自 bellevue-homes-watch-state.json（逐套核实）；回溯 270 套来自 bellevue-sold-backfill-2025-10_to_2026-10.json（Tier A 82 套为门户精确成交价 / 日期 / DOM / 挂牌价，Tier B 188 套为 King County 县记录：价格为约数、日期只到月、无 DOM 与比值，只计成交量与月度中位价）。比值 = 成交价 ÷ 最后挂牌价；DOM 为当轮挂牌天数，可能被撤牌重挂洗低；逐套表按成交日倒序；社区为空表示回溯文件未标注。统计均由原始 JSON 程序重算，口径见回溯分析报告（2026-10-25，含扩样修订节）。</div></div>
+</div>
+</div>
+<script>
+var BH_SOLD={"ledger":[{"addr":"12536 SE 15th St","beds":4,"baths":3,"sqft":3483,"year":1960,"firstList":2000000,"lastList":2085000,"sold":1900000,"soldDate":"2026-10-29","dom":null,"score":47.0,"grade":"acceptable","pts":[["09-23",2000000],["",2188000],["",2085000],["10-29 成交",1900000]],"note":"先涨 $2.00M→$2.188M 再降回 $2.085M，成交 $1.90M：较首挂 -5.0%、较末挂 -8.9%。"},{"addr":"10444 SE 22nd St","beds":6,"baths":4,"sqft":4312,"year":1998,"firstList":3998000,"lastList":3998000,"sold":3100000,"soldDate":"2026-10-30","dom":40,"score":47.0,"grade":"acceptable","pts":[["挂牌",3998000],["10-30 成交",3100000]],"note":"挂牌 40 天零降价、一次谈成 $3.10M，较挂牌 -22.5%：开价高估最深的一套。"},{"addr":"16390 NE 1st St","beds":5,"baths":5,"sqft":3909,"year":2026,"firstList":2949950,"lastList":2724950,"sold":2580000,"soldDate":"2026-10-30","dom":117,"score":null,"grade":null,"pts":[["06-10",2949950],["07-28",2849950],["09-14",2724950],["10-30 成交",2580000]],"note":"三连降 $2.95M→$2.85M→$2.72M，挂 117 天后 $2.58M 成交：降价马拉松样本。"},{"addr":"3739 139th Ave SE","beds":6,"baths":4.5,"sqft":4320,"year":2026,"firstList":3298000,"lastList":3298000,"sold":2800000,"soldDate":"2026-09-18","dom":1,"score":76.0,"grade":"partial","pts":[["挂牌",3298000],["09-18 成交",2800000]],"note":"DOM 仅 1 天却 -15.1% 成交：上市即大幅议价，非按挂牌价成交。"},{"addr":"37 Tatoosh Key","beds":5,"baths":3.5,"sqft":3310,"year":1967,"firstList":3495000,"lastList":2995000,"sold":null,"soldDate":null,"dom":null,"score":76.0,"grade":"partial","pts":[["",3495000],["",2995000]],"note":"挂牌 $3.495M→$2.995M 后成交，成交价/日期未公布：降价 $50 万才走掉。"}],"tierA":[["2026-09-29","15423 SE 7th Pl",2900000,697,null,null,5,4,4158,null,"Lake Hills"],["2026-09-18","10856 NE 12th St",3918000,872,11,null,5,4.5,4491,2018,"Downtown"],["2026-08-21","11688 NE 33rd St",4088000,747,null,0.9596244131455399,5,5.5,5470,null,"Bridle Trails"],["2026-08-20","16003 SE 43rd St",1853500,583,49,0.8500000917183805,4,4,3180,2017,null],["2026-07-24","10411 NE 17th St",4220000,837,null,null,5,4.5,5040,null,null],["2026-07-20","1599 158th Ct NE",3650000,845,0,null,5,4.5,4319,null,null],["2026-07-17","16137 Northup Way",2068000,627,7,0.9800000379110266,4,3,3300,null,null],["2026-06-30","2416 96th Ave NE, Clyde Hill, WA 98004",3500000,816,null,null,4,3,4290,null,"Clyde Hill"],["2026-06-30","4210 163rd Ave SE",1965000,720,3,null,5,4,2730,1968,null],["2026-06-30","10620 NE 28th Place",3850000,949,42,0.9399999267532525,5,4.5,4058,null,null],["2026-06-24","5005 136th Place SE",1855000,488,4,1.0399999102965036,4,3.5,3800,null,null],["2026-06-18","4019 131st Place SE",2700000,808,9,0.9800000145185187,5,4.5,3342,2010,null],["2026-06-11","428 164th Ave SE",2445000,717,35,0.9799599198396793,5,4.5,3410,1957,"Lake Hills"],["2026-06-11","16430 SE 61st Place",2050000,568,43,0.8800001717073506,5,3,3610,null,"Lakemont Heights"],["2026-06-09","9215 NE 32nd St, Clyde Hill, WA",4000000,847,1,0.9599999232000062,5,6,4720,null,null],["2026-06-08","2104 166th Pl NE",2800000,716,null,null,5,5,3910,2025,null],["2026-06-03","16544 SE 28th St",3750000,805,56,0.96,5,4.5,4660,null,null],["2026-06-01","15134 SE 41st St",3880000,785,4,null,5,4.5,4942,2026,null],["2026-05-27","5824 168th Place SE",3175000,626,4,1.0200000321259852,5,4.5,5071,null,null],["2026-05-21","9750 SE 5th St",4225000,828,2,0.9430803571428571,5,4.5,5100,2006,"Meydenbauer"],["2026-05-13","1458 W Lake Sammamish Pkwy NE",1975000,541,10,null,4,3.5,3650,1995,null],["2026-05-12","11262 SE 61st Place",2370000,590,23,0.930000035316457,5,4.5,4020,null,null],["2026-05-06","4441 138th Ave SE",2180000,559,null,0.9931662870159453,4,3.5,3900,1963,"Somerset"],["2026-04-30","14003 NE 6th Place",2880000,693,null,0.9763042815010678,5,4.5,4157,2017,null],["2026-04-30","2414 79th Ave NE, Medina, WA 98039",3250000,988,38,0.9299999084307783,5,3.5,3290,null,null],["2026-04-24","6591 156th Ave SE",1900000,560,20,0.95,4,3.5,3390,1998,null],["2026-04-15","15404 SE 53rd Place",2950000,537,5,1.0,4,5,5490,1988,null],["2026-04-14","917 167th Ave NE",2995000,753,3,1.0,5,4.5,3977,2025,null],["2026-04-13","612 128th Ave NE",2748000,794,14,0.9475862068965517,4,3.25,3460,2002,"Wilburton"],["2026-04-02","12115 SE 16th Place",2150000,561,6,1.1899997952093375,4,3,3830,1969,null],["2026-04-01","2187 157th Pl SE",2249000,523,null,0.899600359840144,5,4.5,4300,1987,"Phantom Lake"],["2026-03-27","3510 116th Ave NE",3260000,null,null,0.8693333333333333,6,6,5800,1990,"Bridle Trails"],["2026-03-24","2404 127th Ave SE",2184000,786,null,0.9927498352235278,4,3,2780,1958,"Woodridge"],["2026-03-23","14515 SE 20th Pl",3000000,770,52,0.967741935483871,5,4.5,3895,2026,"Robinswood"],["2026-03-20","876 172nd Ave NE",1878000,680,5,null,4,3,2760,1968,null],["2026-03-20","2654 171st Ave SE",1950000,589,5,0.9799999597948734,5,3,3310,1963,null],["2026-03-13","12914 SE 5th St",4200000,841,null,1.0,5,5.5,4996,2025,null],["2026-03-13","15503 SE 24th St",3750000,753,null,1.0,5,4.5,4980,2026,"Robinswood"],["2026-03-13","10250 SE 21st St",3300000,570,34,0.9400000797575825,6,5.5,5791,null,null],["2026-03-12","13068 SE 19th Ct",2450000,806,null,1.0103301098991733,4,3.25,3040,2025,"Woodridge"],["2026-03-06","208 106th Ave SE",3900000,1064,22,0.9799999597948734,4,4.5,3667,2025,null],["2026-02-25","1588 102nd Ave NE",4250000,883,351,0.965911286162014,5,4.5,4815,2025,"West Bellevue"],["2026-02-20","4764 155th Place SE",2550000,478,4,1.030000064627455,6,3.5,5330,1986,null],["2026-02-20","15001 NE 8th Pl",2065000,587,null,0.9433531292827775,6,3.5,3520,2025,"Crossroads"],["2026-02-20","431 158th Place SE",2960000,734,0,null,6,4.5,4035,2026,null],["2026-02-18","106 110th Ave SE",3898000,1026,8,null,5,4.5,3801,2025,"Southwest Bellevue"],["2026-02-18","4210 167th Ct SE",1950000,549,3,0.989999984769231,4,3.5,3550,2007,null],["2026-02-17","1651 169th Ave NE",2835000,723,17,0.9900001257143016,5,4,3920,2025,null],["2026-02-17","15621 SE 24th St",2270000,747,null,0.9676044330775788,4,3,3040,1957,"Phantom Lake"],["2026-02-05","14705 SE 37th St",3498000,822,0,null,5,4.5,4254,2026,null],["2026-02-04","955 103rd Ave SE",4000000,678,null,null,5,4.5,null,2025,null],["2026-01-30","4278 137th Ave NE",3065000,751,null,0.9887096774193549,4,4,4080,1967,"Bridle Trails"],["2026-01-30","14256 SE 41st St",3800000,735,0,null,5,4.5,5170,2025,null],["2026-01-23","12905 SE 4th Place",4198000,838,29,1.0,5,4.5,5006,2025,"Kelsey Creek"],["2025-12-19","17008 SE 59th St",2650000,554,4,null,5,4.5,4780,1979,"Lakemont"],["2025-12-15","10605 SE 30th St",3600000,753,null,1.0,4,4,4780,2006,"Enatai"],["2025-12-10","3976 154th Ave SE",3398000,786,26,0.9699999400529761,5,4.5,4322,2025,null],["2025-12-08","2643 106th Ave NE",3998000,1090,null,1.0,4,5,3667,2025,"West Bellevue"],["2025-12-05","4525 143rd Pl NE",2700000,553,null,0.9314198978887815,4,3.5,4880,1984,"Bridle Trails"],["2025-12-02","80 159th Pl NE",3250000,721,3,1.0,5,4.5,4505,2025,"Lake Hills"],["2025-11-26","1822 100th Ave NE",4900000,869,50,0.9179179074169266,6,5.5,5638,2025,null],["2025-11-26","3408 134th Ave NE",2100000,501,32,0.8936170212765957,4,3.75,4190,1936,"Bridle Trails"],["2025-11-25","1806 154th Ave SE",3413500,650,128,0.8985259278757568,5,6,5250,2025,"Lake Hills"],["2025-11-25","4435 140th Ave SE",3230000,810,1,null,4,3,3988,1971,"Somerset"],["2025-11-21","10475 SE 23rd St",3600000,880,12,null,4,4.25,null,1999,null],["2025-11-21","308 124th Pl NE",3900000,739,null,0.9285824831247991,5,6,5278,2025,"Wilburton"],["2025-11-21","1631 168th Pl NE",2850000,729,119,0.9743589743589743,5,5,3912,2025,null],["2025-11-20","8234 NE 8th St, Medina, WA 98039",4600000,1055,12,null,4,6,4359,1989,"Medina"],["2025-11-20","11608 SE 47th Place",2995000,760,28,null,5,4.5,3943,2025,null],["2025-11-19","10213 NE 22nd Place",2125000,891,14,null,4,3,2384,1966,null],["2025-11-18","10916 NE 17th St",4700000,982,0,null,5,4.5,4788,2025,null],["2025-11-07","4609 144th Place SE",1950000,545,5,null,5,3,3580,1978,"Somerset"],["2025-11-07","1905 91st Place NE, Clyde Hill, WA 98004",5000000,1202,4,null,4,3.5,4160,2000,"Clyde Hill"],["2025-11-06","670 W Lake Sammamish Pkwy NE",2950000,868,7,null,4,4.5,3400,1966,"West Lake Sammamish"],["2025-11-05","14424 SE 40th St",3860000,781,7,null,5,5.5,4942,2025,"Eastgate"],["2025-11-05","1613 165th Ave NE",2825000,636,16,null,5,4.5,4441,2025,null],["2025-11-04","1704 172nd Ct NE",2860000,628,5,null,5,4.5,4557,2025,null],["2025-10-31","13851 NE 1st Place",3850000,665,12,null,5,5,5790,1998,null],["2025-10-31","17102 NE 37th Place",1880000,599,2,1.0162162162162163,4,3,3140,1987,null],["2025-10-30","5709 143rd Place SE",2500000,657,9,null,4,4,3805,1981,"Somerset"],["2025-10-28","16862 SE 56th Place",2125000,531,63,null,5,3.5,4000,1994,"Lakemont"],["2025-10-28","15659 SE 9th St",2850000,739,1,null,5,4.5,3856,2025,"Lake Hills"]],"months":[["2025-10",7,5,2,2750000,657],["2025-11",22,17,5,2972500,781],["2025-12",25,6,19,2945000,737],["2026-01",9,3,6,3298000,751],["2026-02",23,10,13,2899000,728],["2026-03",23,10,13,2560000,770],["2026-04",24,8,16,2925000,627],["2026-05",23,5,18,2850000,590],["2026-06",38,11,27,3225000,785],["2026-07",25,3,22,2750000,837],["2026-08",19,2,17,2675000,665],["2026-09",25,2,23,2900000,784],["2026-10",7,0,7,2700000,null]],"summary":{"tierA_n":82,"tierA_medSold":2977500,"tierA_medPps":739,"tierA_medDom":9,"tierA_medStl":0.975,"ledger_n":5,"ledger_medDisc":-13.8,"ledger_medDom":40,"window":"2025-10-28 → 2026-10-30","total":270,"tierB_n":188}};
+(function(){
+function fmtM(v){return "$"+(v/1000000).toFixed(2)+"M"}
+function fmt$(v){return "$"+v.toLocaleString("en-US")}
+function chip(txt,bg,fg){return '<span style="background:'+bg+';color:'+fg+';border-radius:20px;padding:2px 10px;font-size:.78em;white-space:nowrap">'+txt+'</span>'}
+function spark(pts,sold){
+ var W=300,H=52,pad=8,ps=pts.map(function(p){return p[1]});
+ var mn=Math.min.apply(null,ps),mx=Math.max.apply(null,ps);if(mx===mn){mx=mn+1}
+ var xy=ps.map(function(p,i){var x=pad+i*(W-2*pad)/(ps.length-1);var y=6+(mx-p)/(mx-mn)*(H-26);return [x,y]});
+ var line=xy.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1)}).join(" ");
+ var dots=xy.map(function(p,i){var last=i===xy.length-1;return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(last?5:3.5)+'" fill="'+(last?(sold?"#3fb96f":"#8fa3c8"):"#7cc4ff")+'" stroke="#0e1830" stroke-width="1.5"/>'}).join("");
+ var first=pts[0][0]?pts[0][0]+" ":"";
+ var last=pts[pts.length-1][0]?pts[pts.length-1][0]+" ":"";
+ return '<div style="margin:8px 0 2px"><span style="font-size:.78em;color:#8fa3c8">'+first+fmtM(ps[0])+" → "+last+fmtM(ps[ps.length-1])+"</span><br>"
+ +'<svg viewBox="0 0 '+W+" "+H+'" style="width:100%;height:52px;display:block" preserveAspectRatio="none"><polyline points="'+line+'" fill="none" stroke="#7cc4ff" stroke-width="2" vector-effect="non-scaling-stroke"/>'+dots+"</svg></div>";
+}
+var lg=document.getElementById("bh-sold-ledger");
+if(lg){
+ lg.innerHTML=BH_SOLD.ledger.map(function(h){
+  var disc=h.sold!==null&&h.lastList?((h.sold/h.lastList-1)*100):null;
+  var discFirst=h.sold!==null&&h.firstList!==h.lastList?((h.sold/h.firstList-1)*100):null;
+  var pps=h.sold!==null?Math.round(h.sold/h.sqft):null;
+  var grade=h.grade==="acceptable"?"可接受链":(h.grade==="partial"?"部分链":"对口待核");
+  var school=h.score!==null?("通达分 "+h.score.toFixed(1)+" · "+grade):"对口待核";
+  var status=h.sold!==null?("已成交 · "+h.soldDate):"已成交 · 成交价未公布";
+  var head='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><b style="font-size:.98em;color:#fff">'+h.addr+"</b>"+chip(status,"#2f6e46","#dff5e3");
+  if(disc!==null){head+=chip("较末挂 "+disc.toFixed(1)+"%","#3a2a12","#ffce7a")}
+  head+="</div>";
+  var big=h.sold!==null?('<div style="font-size:1.25em;font-weight:800;color:#fff;margin-top:4px">'+fmt$(h.sold)+' <span style="font-size:.6em;color:#9fb6d8;font-weight:400">成交价 · $'+pps+'/sqft</span></div>')
+   :('<div style="font-size:1.1em;font-weight:800;color:#fff;margin-top:4px">成交价未公布 <span style="font-size:.68em;color:#9fb6d8;font-weight:400">末挂 '+fmt$(h.lastList)+'</span></div>');
+  var spec=h.beds+" 卧 · "+h.baths+" 卫 · "+h.sqft.toLocaleString("en-US")+" sqft · "+h.year+" 年建 · DOM "+(h.dom!==null?h.dom+" 天":"—")+" · "+school;
+  var extra=discFirst!==null?(' <span style="color:#8fa3c8">（较首挂 '+discFirst.toFixed(1)+'%）</span>'):"";
+  return '<div style="background:#101c33;border:1px solid #26365a;border-radius:8px;padding:10px 12px;margin-bottom:8px">'
+   +head+big
+   +'<div style="font-size:.82em;color:#9fb6d8;line-height:1.7">'+spec+extra+"</div>"
+   +spark(h.pts,h.sold!==null)
+   +'<div style="font-size:.84em;color:#ddd;line-height:1.6">'+h.note+"</div></div>";
+ }).join("");
+}
+var mo=document.getElementById("bh-sold-months");
+if(mo){
+ var h='<table style="width:100%;border-collapse:collapse;font-size:.82em"><thead><tr style="color:#9fb6d8;text-align:left">'
+ +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a\">月份</th>"
+ +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">成交量</th>"
+ +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">其中 Tier A</th>"
+ +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">中位成交价</th>"
+ +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">Tier A 中位 $/sqft</th></tr></thead><tbody>";
+ h+=BH_SOLD.months.map(function(m){
+  return "<tr><td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d\">"+m[0]+"</td>"
+  +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+m[1]+"</td>"
+  +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+m[2]+"</td>"
+  +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+fmtM(m[4])+"</td>"
+  +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+(m[5]!==null?"$"+m[5]:"—")+"</td></tr>";
+ }).join("");
+ mo.innerHTML=h+"</tbody></table>";
+}
+var BANDS=[["all","全部 82 套"],["b1","$180–250 万"],["b2","$250–350 万"],["b3","$350–500 万"]];
+var curBand="all";
+function bandOf(price){return price<2500000?"b1":(price<3500000?"b2":"b3")}
+window.bhSoldFilter=function(band){
+ curBand=band;
+ var f=document.getElementById("bh-sold-filter");
+ if(f){f.innerHTML=BANDS.map(function(b){
+  var on=b[0]===curBand;
+  return '<button onclick="bhSoldFilter(\''+b[0]+'\')" style="background:'+(on?"#2b6cb0":"#1d2c4d")+';color:'+(on?"#fff":"#9fb6d8")+';border:1px solid #35507e;border-radius:20px;padding:3px 12px;font-size:.82em;cursor:pointer;font-family:inherit">'+b[1]+"</button>";
+ }).join("")}
+ var rows=BH_SOLD.tierA.filter(function(r){return curBand==="all"||bandOf(r[2])===curBand});
+ var t=document.getElementById("bh-sold-table");
+ if(t){
+  var h='<table style="width:100%;border-collapse:collapse;font-size:.82em;white-space:nowrap"><thead><tr style="color:#9fb6d8;text-align:left">'
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a\">成交日</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a\">地址</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">成交价</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">$/sqft</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">DOM</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">成交/挂牌比</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">卧·卫</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">面积</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a;text-align:right\">年份</th>"
+  +"<th style=\"padding:5px 6px;border-bottom:1px solid #26365a\">社区</th></tr></thead><tbody>";
+  h+=rows.map(function(r){
+   return "<tr><td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d\">"+r[0]+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d\">"+r[1]+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+fmtM(r[2])+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+(r[3]!==null?"$"+r[3]:"—")+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+(r[4]!==null?r[4]+" 天":"—")+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+(r[5]!==null?r[5].toFixed(3):"—")+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+r[6]+"·"+r[7]+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+(r[8]!==null?r[8].toLocaleString("en-US"):"—")+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d;text-align:right\">"+(r[9]!==null?r[9]:"—")+"</td>"
+   +"<td style=\"padding:5px 6px;border-bottom:1px solid #1d2c4d\">"+(r[10]!==null?r[10]:"—")+"</td></tr>";
+  }).join("");
+  t.innerHTML=h+"</tbody></table>";
+ }
+ var c=document.getElementById("bh-sold-count");
+ if(c){c.textContent="显示 "+rows.length+" / 82 套 · 按成交日倒序";}
+};
+window.bhSoldFilter("all");
+})();
+</script>
+
 <script>
 var BH_MARKET={quarters:[
 {q:"2025 Q4",volA:28,volT:54,ratio:0.970,pps:739,dom:"10.5",tag:""},
@@ -2160,8 +2284,8 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
 /* ===== 二级菜单（信用卡 cards / FIRE fire / 换房 house）===== */
 (function(){
  var INIT_HASH=location.hash||"";
- var SUBS={house:{def:"view",list:["view","market","school"]},fire:{def:"home",list:["home","balance","plan"]}};
- var LABELS={house:{view:"🗺️ 看房",market:"📊 市场趋势",school:"🎓 学区与测算"},fire:{home:"🏠 总览",balance:"📋 资产负债表",plan:"🧮 退休测算"}};
+ var SUBS={house:{def:"view",list:["view","market","sold","school"]},fire:{def:"home",list:["home","balance","plan"]}};
+ var LABELS={house:{view:"🗺️ 看房",market:"📊 市场趋势",sold:"🏠 已成交",school:"🎓 学区与测算"},fire:{home:"🏠 总览",balance:"📋 资产负债表",plan:"🧮 退休测算"}};
  var firstRoute=true;
  var CC_LABELS={spend:"🎯 刷卡",home:"🏠 总览",cards:"💳 卡片",redeem:"🎁 兑换",new:"💡 新卡",updates:"📢 动态"};
  function stored(tab){try{return localStorage.getItem("co_sub_"+tab)}catch(e){return null}}
@@ -2281,7 +2405,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-07 18:05 UTC';
+var BUILD_TS='2026-11-07 18:46 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
