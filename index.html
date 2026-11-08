@@ -1596,7 +1596,7 @@ function bhOffCard(h){
  +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+priceTxt+'</span><span style="color:#8fa3c8;font-size:.78em">'+(h.off||"")+"</span></div>"
  +'<div style="color:#fff;font-weight:600;margin:2px 0">📍 '+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+(h.city||"")+"</div>"
  +'<div style="font-size:.84em;color:#ccc;margin:6px 0">'+spec.join(" · ")+"</div>"
- +(h.url?'<div style="margin:2px 0 8px"><a href="'+h.url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#7cc4ff;font-size:.88em;font-weight:600">'+(h.url.indexOf("mybuildingpermit")>=0?"许可详情页 ↗":(h.url.indexOf("redfin.com")>=0?bhRfLabel(h):"建商官网 ↗"))+'</a></div>':"")
+ +(h.url?'<div style="margin:2px 0 8px"><a href="'+h.url+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#7cc4ff;font-size:.88em;font-weight:600">'+bhOffLinkLabel(h)+'</a></div>':"")
  +(h.oneliner?'<div class="bh-ol">🗣 小美点评：'+h.oneliner+"</div>":"")
  +(h.ftags&&h.ftags.length?'<div class="bh-ftags">'+h.ftags.map(function(t){return '<span class="bh-ftag">'+t+"</span>"}).join("")+"</div>":"")
  +(rows?'<div class="bh-tb">'+rows+"</div>":"")
@@ -1770,6 +1770,7 @@ function bhOhFmtCk(ck){
 }
 function bhIsRf(u){return !!u&&u.indexOf("redfin.com")>=0}
 function bhRfLabel(h){return bhIsRf(h.url)?"Redfin 原页 · 预约 Tour ↗":"房源原页 ↗"}
+function bhOffLinkLabel(h){if(!h.url)return "";if(h.url.indexOf("mybuildingpermit")>=0)return "许可详情页 ↗";if(h.url.indexOf("redfin.com")>=0)return bhRfLabel(h);if(h.url.indexOf("zillow.com")>=0)return "Zillow 房源页 ↗";return "建商官网 ↗"}
 function bhOhVal(h){
  var oh=h.open_house||""; if(!oh)return "";
  var t=bhOhText(oh);
@@ -2406,7 +2407,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-07 23:07 UTC';
+var BUILD_TS='2026-11-08 00:03 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
