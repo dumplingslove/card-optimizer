@@ -418,9 +418,10 @@ var REC_CATS = [
       { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x+Status≈4.65%", pin: true },
       { n: "CSR Portal", s: "CSR Portal 5x(降级前!)", cur: "UR", m: 5, rate: "5x UR≈10%" },
       { n: "Amex Platinum", s: "Plat 5x(关前!)", cur: "MR", m: 5, rate: "5x MR≈10%" } ] },
-  { g: 2, icon: "🛫", name: "其他机票", pinNote: "降级前 5x 优先", ccat: "airline", why: "💡 降级前门户/官网 5x；之后→Summit 3x（境外）", alts: "Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)",
+  { g: 2, icon: "🛫", name: "其他机票", pinNote: "降级前 5x 优先", ccat: "airline", why: "💡 降级前门户/官网 5x；门户买不到时 CSR 直订 4x；之后→Summit 3x（境外）", alts: "CSR 直订 4x | Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)",
     candidates: [
       { n: "⚡CSR Portal / Amex Plat", cur: "UR", m: 5, rate: "5x≈10%", pin: true },
+      { n: "Chase Sapphire Reserve", s: "CSR 直订 4x", cur: "UR", m: 4, rate: "4x UR≈8.2%" },
       { n: "Atmos Summit", s: "Atmos 3x(境外航司)", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Amex Gold", s: "Amex Gold 3x(航司直购)", cur: "MR", m: 3, rate: "3x MR≈6%" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
@@ -2512,7 +2513,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-15 01:57 UTC';
+var BUILD_TS='2026-11-15 06:40 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
