@@ -2465,6 +2465,8 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
   var h=((firstRoute?INIT_HASH:(location.hash||""))).replace(/^#/,"");firstRoute=false;
   var parts=h.split("/"),tab=parts[0];
   if(!tab)return;
+  var _mbg=document.getElementById("bh-modal-bg");
+  if(_mbg&&_mbg.style.display!=="none"&&typeof bhClose==="function")bhClose();
   if(tab==="cards"){
    if(parts[1])activatePage(CC_PAGES.indexOf(parts[1])>=0?parts[1]:"spend");
    else activatePage("cards");
@@ -2486,10 +2488,12 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
     }
     var dash=document.getElementById("creditDash");
     var dashOn=dash&&dash.style.display!=="none"&&dash.innerHTML;
-    var t=row||(dashOn?dash:document.getElementById("extraCredits"));
+    var head=document.querySelector(".credits-section h2");
+    var t=row||(dashOn?dash:(head||document.getElementById("extraCredits")));
     var vis=t&&t.style.display!=="none"&&t.offsetParent!==null;
     if(vis){
-     t.scrollIntoView({behavior:"smooth",block:"start"});
+     var _top=Math.max(0,t.getBoundingClientRect().top+window.scrollY-64);
+     window.scrollTo({top:_top,behavior:"smooth"});
      if(row){row.style.outline="2px solid #ffd93d";row.style.outlineOffset="2px";setTimeout(function(){row.style.outline="";row.style.outlineOffset=""},4000)}
      return;
     }
@@ -2544,7 +2548,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-22 19:00 UTC';
+var BUILD_TS='2026-11-22 19:17 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
