@@ -2472,6 +2472,26 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
   var _mbg=document.getElementById("bh-modal-bg");
   if(_mbg&&typeof bhClose==="function"){var _mvis=false;try{_mvis=window.getComputedStyle(_mbg).display!=="none";}catch(e){_mvis=_mbg.style.display!=="none";}if(_mvis)bhClose();}
   if(tab==="cards"){
+   if(parts[1]&&CC_PAGES.indexOf(parts[1])<0){
+    var _cslug=parts[1];
+    var _cnorm=function(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")};
+    activatePage("cards");
+    var _ctries=0;
+    var tryCard=function(){
+     _ctries++;
+     var box=null;
+     document.querySelectorAll(".card-box .cn").forEach(function(el){if(!box&&_cnorm(el.textContent)===_cslug)box=el.closest(".card-box")});
+     if(!box){if(_ctries<10)setTimeout(tryCard,300);return;}
+     box.classList.add("open");
+     var _ctop=Math.max(0,box.getBoundingClientRect().top+window.scrollY-64);
+     window.scrollTo({top:_ctop,behavior:"auto"});
+     box.style.outline="2px solid #ffd93d";box.style.outlineOffset="2px";
+     setTimeout(function(){box.style.outline="";box.style.outlineOffset=""},4000);
+     setTimeout(function(){if(Math.abs(box.getBoundingClientRect().top-64)>90)setTimeout(tryCard,150)},400);
+    };
+    setTimeout(tryCard,120);
+    return;
+   }
    if(parts[1])activatePage(CC_PAGES.indexOf(parts[1])>=0?parts[1]:"spend");
    else activatePage("cards");
    return;
@@ -2555,7 +2575,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-22 19:37 UTC';
+var BUILD_TS='2026-11-22 19:46 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
