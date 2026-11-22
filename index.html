@@ -2385,6 +2385,7 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
  var SUBS={house:{def:"view",list:["view","market","sold","school"]},fire:{def:"home",list:["home","balance","plan"]}};
  var LABELS={house:{view:"🗺️ 看房",market:"📊 市场趋势",sold:"🏠 已成交",school:"🎓 学区与测算"},fire:{home:"🏠 总览",balance:"📋 资产负债表",plan:"🧮 退休测算"}};
  var firstRoute=true;
+ var _bhDetailTimer=null;
  var CC_LABELS={spend:"🎯 刷卡",home:"🏠 总览",cards:"💳 卡片",redeem:"🎁 兑换",new:"💡 新卡",updates:"📢 动态"};
  function stored(tab){try{return localStorage.getItem("co_sub_"+tab)}catch(e){return null}}
  function cur(tab){var tp=document.getElementById("tp-"+tab);return tp?tp.getAttribute("data-sub"):null}
@@ -2465,8 +2466,9 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
   var h=((firstRoute?INIT_HASH:(location.hash||""))).replace(/^#/,"");firstRoute=false;
   var parts=h.split("/"),tab=parts[0];
   if(!tab)return;
+  if(_bhDetailTimer){clearTimeout(_bhDetailTimer);_bhDetailTimer=null;}
   var _mbg=document.getElementById("bh-modal-bg");
-  if(_mbg&&_mbg.style.display!=="none"&&typeof bhClose==="function")bhClose();
+  if(_mbg&&typeof bhClose==="function"){var _mvis=false;try{_mvis=window.getComputedStyle(_mbg).display!=="none";}catch(e){_mvis=_mbg.style.display!=="none";}if(_mvis)bhClose();}
   if(tab==="cards"){
    if(parts[1])activatePage(CC_PAGES.indexOf(parts[1])>=0?parts[1]:"spend");
    else activatePage("cards");
@@ -2491,13 +2493,16 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
     var head=document.querySelector(".credits-section h2");
     var t=row||(dashOn?dash:(head||document.getElementById("extraCredits")));
     var vis=t&&t.style.display!=="none"&&t.offsetParent!==null;
-    if(vis){
-     var _top=Math.max(0,t.getBoundingClientRect().top+window.scrollY-64);
-     window.scrollTo({top:_top,behavior:"smooth"});
-     if(row){row.style.outline="2px solid #ffd93d";row.style.outlineOffset="2px";setTimeout(function(){row.style.outline="";row.style.outlineOffset=""},4000)}
-     return;
-    }
-    if(tries<6)setTimeout(tryScroll,350);
+    if(!vis){if(tries<10)setTimeout(tryScroll,300);return;}
+    var _top=Math.max(0,t.getBoundingClientRect().top+window.scrollY-64);
+    window.scrollTo({top:_top,behavior:"auto"});
+    if(row){row.style.outline="2px solid #ffd93d";row.style.outlineOffset="2px";setTimeout(function(){row.style.outline="";row.style.outlineOffset=""},4000)}
+    var _tt=t;
+    setTimeout(function(){
+     if(tries>=10)return;
+     if(!_tt||_tt.offsetParent===null)return;
+     if(Math.abs(_tt.getBoundingClientRect().top-64)>90)setTimeout(tryScroll,150);
+    },400);
    };
    setTimeout(tryScroll,120);
    return;
@@ -2520,7 +2525,7 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
     try{inList=bhFiltered().some(function(h){return h.n===hit.n})}catch(e){inList=false}
     if(!inList&&typeof bhClearFilters==="function")bhClearFilters();
     var nn=hit.n;
-    setTimeout(function(){if(typeof bhDetail==="function")bhDetail(nn)},90);
+    _bhDetailTimer=setTimeout(function(){if(typeof bhDetail==="function")bhDetail(nn)},90);
    }
   }
   if(history.replaceState)history.replaceState(null,"",window.__subHash(tab));
@@ -2548,7 +2553,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-22 19:17 UTC';
+var BUILD_TS='2026-11-22 19:31 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
