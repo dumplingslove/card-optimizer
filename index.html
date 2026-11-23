@@ -1914,7 +1914,7 @@ function bhCard(h){
  +(h.photos&&h.photos.length?'<div class="bh-phwrap" ontouchstart="bhCardTouchStart(event)" ontouchend="bhCardTouchEnd(event,'+h.n+')"><img class="bh-photo" id="bh-ph-'+h.n+'" src="'+h.photos[0]+'" alt="" loading="lazy" onerror="this.parentNode.style.display=\'none\'">'
   +badge
   +(h.photos.length>1?'<button class="bh-nav prev" onclick="bhCardNav(event,'+h.n+',-1)" aria-label="上一张">‹</button><button class="bh-nav next" onclick="bhCardNav(event,'+h.n+',1)" aria-label="下一张">›</button><span class="bh-pg" id="bh-pg-'+h.n+'">1 / '+h.photos.length+"</span>":"")
-  +"</div>":(bd?'<div style="margin:2px 0 6px"><span class="bh-badge '+bd[1]+'" style="position:static">'+bd[0]+"</span></div>":""))
+  +"</div>":('<div class="bh-phwrap" style="height:190px;background:#1d2c4d;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;color:#8fa3c8;font-size:.9em">📷 暂无照片</div>'+(bd?'<div style="margin:2px 0 6px"><span class="bh-badge '+bd[1]+'" style="position:static">'+bd[0]+"</span></div>":"")))
  +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="bh-price">'+bhMoney(h.price)+'</span><span style="color:#8fa3c8;font-size:.78em">No.'+h.n+"</span></div>"
  +'<div style="margin-top:6px"><button onclick="event.stopPropagation();bhDetail('+h.n+')" style="background:#ffd93d;color:#1a1a2e;border:1px solid #ffd93d;border-radius:22px;padding:9px 20px;font-size:.92em;font-weight:800;cursor:pointer">详情</button></div>'
  +'<div style="color:#fff;font-weight:600;margin:2px 0">📍 '+h.addr+'</div><div style="color:#9fb6d8;font-size:.8em">'+h.city+"</div>"
@@ -2028,7 +2028,7 @@ function bhDetail(n){
  +(h.oneliner?'<div class="bh-ol">🗣 小美点评：'+h.oneliner+"</div>":"")
  +(h.photos&&h.photos.length?'<div class="bh-gal"><div class="bh-gal-wrap" ontouchstart="bhTouchStart(event)" ontouchend="bhTouchEnd(event)"><img class="bh-gal-main" id="bh-gal-main" src="'+h.photos[0]+'" alt="" onerror="this.parentNode.parentNode.style.display=\'none\'">'
   +(h.photos.length>1?'<button class="bh-gal-nav prev" onclick="bhGalNav(-1)" aria-label="上一张">‹</button><button class="bh-gal-nav next" onclick="bhGalNav(1)" aria-label="下一张">›</button><span class="bh-gal-pg" id="bh-gal-pg">1 / '+h.photos.length+"</span>":"")
-  +'</div><div class="bh-gal-thumbs">'+h.photos.map(function(u,i){return '<img src="'+u+'" alt="" loading="lazy" data-i="'+i+'" onclick="bhGal(this)" onerror="this.remove()"'+(i===0?' class="bh-on"':"")+">"}).join("")+'</div><div class="bh-gal-cap">照片来自房源页外链，版权归原房源方；点缩略图或用 ‹ › 按钮翻页，触摸可左右滑动。</div></div>':"")
+  +'</div><div class="bh-gal-thumbs">'+h.photos.map(function(u,i){return '<img src="'+u+'" alt="" loading="lazy" data-i="'+i+'" onclick="bhGal(this)" onerror="this.remove()"'+(i===0?' class="bh-on"':"")+">"}).join("")+'</div><div class="bh-gal-cap">照片来自房源页外链，版权归原房源方；点缩略图或用 ‹ › 按钮翻页，触摸可左右滑动。</div></div>': '<div style="background:#1d2c4d;border:1px solid #35507e;border-radius:10px;padding:12px 14px;margin:0 0 10px;color:#8fa3c8;font-size:.88em">📷 暂无照片——房源页未收录图链。</div>')
  +'<div style="font-size:.9em;line-height:1.9">'
  +'<span class="bh-kv">户型</span> '+h.beds+" 卧 / "+h.baths+" 卫<br>"
  +'<span class="bh-kv">面积</span> '+(h.sqft?h.sqft.toLocaleString("en-US")+" sqft":"未标注")+(p?"（$"+p+"/sqft，本批中位 $760）":"")+"<br>"
@@ -2586,7 +2586,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-23 11:00 UTC';
+var BUILD_TS='2026-11-23 14:09 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
