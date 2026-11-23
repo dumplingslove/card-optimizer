@@ -2475,6 +2475,7 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
   syncSlots(p);
   if(history.replaceState)history.replaceState(null,"",window.__subHash(p));
  }
+ var _navOff=function(){var n=document.getElementById("navstick");return (n?n.offsetHeight:0)+8;};
  function route(){
   var h=((firstRoute?INIT_HASH:(location.hash||""))).replace(/^#/,"");firstRoute=false;
   var parts=h.split("/"),tab=parts[0];
@@ -2494,11 +2495,11 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
      document.querySelectorAll(".card-box .cn").forEach(function(el){if(!box&&_cnorm(el.textContent)===_cslug)box=el.closest(".card-box")});
      if(!box){if(_ctries<10)setTimeout(tryCard,300);return;}
      box.classList.add("open");
-     var _ctop=Math.max(0,box.getBoundingClientRect().top+window.scrollY-64);
+     var _ctop=Math.max(0,box.getBoundingClientRect().top+window.scrollY-_navOff());
      window.scrollTo({top:_ctop,behavior:"auto"});
      box.style.outline="2px solid #ffd93d";box.style.outlineOffset="2px";
      setTimeout(function(){box.style.outline="";box.style.outlineOffset=""},4000);
-     setTimeout(function(){if(Math.abs(box.getBoundingClientRect().top-64)>90)setTimeout(tryCard,150)},400);
+     setTimeout(function(){if(Math.abs(box.getBoundingClientRect().top-_navOff())>90)setTimeout(tryCard,150)},400);
     };
     setTimeout(tryCard,120);
     return;
@@ -2527,14 +2528,14 @@ var snx=document.getElementById('st-next');if(snx){var nwd=new Date(),df=(8-nwd.
     var t=row||(dashOn?dash:(head||document.getElementById("extraCredits")));
     var vis=t&&t.style.display!=="none"&&t.offsetParent!==null;
     if(!vis){if(tries<10)setTimeout(tryScroll,300);return;}
-    var _top=Math.max(0,t.getBoundingClientRect().top+window.scrollY-64);
+    var _top=Math.max(0,t.getBoundingClientRect().top+window.scrollY-_navOff());
     window.scrollTo({top:_top,behavior:"auto"});
     if(row){row.style.outline="2px solid #ffd93d";row.style.outlineOffset="2px";setTimeout(function(){row.style.outline="";row.style.outlineOffset=""},4000)}
     var _tt=t;
     setTimeout(function(){
      if(tries>=10)return;
      if(!_tt||_tt.offsetParent===null)return;
-     if(Math.abs(_tt.getBoundingClientRect().top-64)>90)setTimeout(tryScroll,150);
+     if(Math.abs(_tt.getBoundingClientRect().top-_navOff())>90)setTimeout(tryScroll,150);
     },400);
    };
    setTimeout(tryScroll,120);
@@ -2586,7 +2587,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-22 20:08 UTC';
+var BUILD_TS='2026-11-23 00:09 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
