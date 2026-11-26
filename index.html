@@ -274,6 +274,10 @@
 <div class="group-header" onclick="this.classList.toggle('open')"><h3>✈️ 旅行预订</h3><span class="garrow">›</span></div>
 <div class="group-body" id="recG2"></div>
 
+<!-- Group: On-trip spending -->
+<div class="group-header" onclick="this.classList.toggle('open')"><h3>🧳 旅途中消费</h3><span class="garrow">›</span></div>
+<div class="group-body" id="recG4"></div>
+
 <!-- Group: Utility/Subscriptions -->
 <div class="group-header" onclick="this.classList.toggle('open')"><h3>🏠 账单 & 订阅</h3><span class="garrow">›</span></div>
 <div class="group-body" id="recG3"></div>
@@ -416,36 +420,50 @@ var REC_CATS = [
   { g: 2, icon: "✈️", name: "Alaska机票", pinNote: "自家航班攒 status，AS120 已用 Summit 出票", ccat: "airline", why: "💡 自家航班 Summit 3x + status 积分",
     candidates: [
       { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x+Status≈4.65%", pin: true },
-      { n: "CSR Portal", s: "CSR Portal 5x(降级前!)", cur: "UR", m: 5, rate: "5x UR≈10%" },
+      { n: "CSR Portal", s: "CSR Portal 8x(降级前!)", cur: "UR", m: 8, rate: "8x UR≈16.4%" },
       { n: "Amex Platinum", s: "Plat 5x(关前!)", cur: "MR", m: 5, rate: "5x MR≈10%" } ] },
-  { g: 2, icon: "🛫", name: "其他机票", pinNote: "降级前 5x 优先", ccat: "airline", why: "💡 降级前门户/官网 5x；门户买不到时 CSR 直订 4x；之后→Summit 3x（境外）", alts: "CSR 直订 4x | Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)",
+  { g: 2, icon: "🛫", name: "其他机票", pinNote: "降级前 Portal 8x 优先", ccat: "airline", why: "💡 Chase Travel 订机票 8x 最强（CSR 改版后 Portal 统一 8x）；门户买不到时 CSR 直订 4x；Plat 直订 5x（关卡前）；之后→Summit 3x（境外航司）", alts: "Plat 5x(关前) | CSR 直订 4x | Atmos 3x(境外航司) | Amex Gold 3x(航司直购) | Bilt 2x(凑比例)",
     candidates: [
-      { n: "⚡CSR Portal / Amex Plat", cur: "UR", m: 5, rate: "5x≈10%", pin: true },
+      { n: "CSR Portal", s: "CSR Portal 8x", cur: "UR", m: 8, rate: "8x UR≈16.4%", pin: true },
+      { n: "Amex Platinum", s: "Plat 5x(关前!)", cur: "MR", m: 5, rate: "5x MR≈10%" },
       { n: "Chase Sapphire Reserve", s: "CSR 直订 4x", cur: "UR", m: 4, rate: "4x UR≈8.2%" },
       { n: "Atmos Summit", s: "Atmos 3x(境外航司)", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Amex Gold", s: "Amex Gold 3x(航司直购)", cur: "MR", m: 3, rate: "3x MR≈6%" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
-  { g: 2, icon: "🚗", name: "租车", ccat: "travel", why: "💡 降级前门户 10x；之后→Bilt 2x / Smartly 4%",
+  { g: 2, icon: "🚗", name: "租车", ccat: "travel", why: "💡 降级前门户 8x；之后→Bilt 2x；Smartly 仅美元结算 4%，外币结算收 3% FTF 净约 1%",
     candidates: [
-      { n: "⚡CSR Portal", cur: "UR", m: 10, rate: "10x UR!≈20.5%" },
+      { n: "⚡CSR Portal", cur: "UR", m: 8, rate: "8x UR≈16.4%" },
       { n: "Bilt Palladium", s: "Bilt 2x(≈5%Hyatt+凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
-      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" } ] },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%", cond: "仅美元结算；外币结算收 3% FTF" } ] },
   { g: 2, icon: "🏨", name: "Marriott酒店", pinNote: "直订房晚+升级优先", ccat: "hotel", why: "💡 直订拿房晚+升级；门户积分多但无精英待遇",
     candidates: [
       { n: "Marriott Brilliant", cur: "Marriott", m: 6, rate: "6x≈4.2%", pin: true },
-      { n: "CSR Portal", s: "CSR Portal 10x(降级前!)", cur: "UR", m: 10, rate: "10x UR≈20.5%" } ] },
-  { g: 2, icon: "🛏️", name: "其他酒店", ccat: "hotel", why: "💡 降级前门户 10x；Plat 酒店 credit 已用完",
+      { n: "CSR Portal", s: "CSR Portal 8x(降级前!)", cur: "UR", m: 8, rate: "8x UR≈16.4%" } ] },
+  { g: 2, icon: "🛏️", name: "其他酒店", ccat: "hotel", why: "💡 降级前门户 8x 最强；Gold Amex Travel 预付 5x；Smartly 外币结算收 3% FTF；Plat 酒店 credit 已用完",
     candidates: [
-      { n: "⚡CSR Portal", cur: "UR", m: 10, rate: "10x UR!≈20.5%" },
+      { n: "⚡CSR Portal", cur: "UR", m: 8, rate: "8x UR≈16.4%" },
       { n: "Amex Gold", s: "Amex Gold 5x(Amex Travel预付!)", cur: "MR", m: 5, rate: "5x MR≈10%" },
-      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%" },
+      { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%", cond: "仅美元结算；外币结算收 3% FTF" },
       { n: "Bilt Palladium", s: "Bilt Portal($400)", cur: "cash", m: 0, rate: "" } ] },
-  { g: 2, icon: "🌍", name: "境外消费", pinNote: "境外 3x + status 优先于纯返现", why: "💡 无 FTF；Summit 3x + status；收 3% FTF 的卡（Smartly/Cash+/CFU/老 Freedom）境外别刷", alts: "Bilt 2x(≈5%+凑比例) | Plat 5x(仅机票,关前)",
+  { g: 2, icon: "🎟️", name: "景点门票/一日游预定", why: "💡 Chase Travel 订活动/门票 8x 最强；直接在 Viator/Klook 订刷 Atmos 3x（外币消费）；按娱乐类编码时 Discover Q4 轮转 5%",
+    candidates: [
+      { n: "CSR Portal", s: "CSR Portal 8x", cur: "UR", m: 8, rate: "8x UR≈16.4%", pin: true },
+      { n: "Atmos Summit", s: "Atmos 3x(直接订)", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
+      { n: "Discover it", s: "Discover 轮转 5%", cur: "cash", m: 1, rate: "1%", rot: ["discover", "entertainment"], cond: "直接订且按娱乐类编码时" } ] },
+  { g: 2, icon: "🏡", name: "民宿 Airbnb/Vrbo", why: "💡 民宿直订 CSR 仅 1x（已无 3x 旅行类）；境外民宿刷 Atmos 3x 最稳；按酒店类编码时 Bilt 2x；Chase Travel 上架的房源可享 Portal 8x",
+    candidates: [
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%", cond: "按酒店类编码时" },
+      { n: "CSR Portal", s: "CSR Portal 8x", cur: "UR", m: 8, rate: "8x UR≈16.4%", cond: "Chase Travel 上架的房源才享 8x" } ] },
+  { g: 2, icon: "🚆", name: "机场接送/火车/轮渡", why: "💡 火车/轮渡/接送直订 CSR 仅 1x（已无 3x 旅行类）；Bilt 2x 仅覆盖机票/酒店/租车/邮轮编码；境外消费刷 Atmos 3x 最稳；Chase Travel 上架的车次/接送可享 Portal 8x",
+    candidates: [
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
+      { n: "CSR Portal", s: "CSR Portal 8x", cur: "UR", m: 8, rate: "8x UR≈16.4%", cond: "Chase Travel 上架的车次/接送才享 8x" } ] },
+  { g: 4, icon: "🌍", name: "境外购物/零售", pinNote: "境外 3x + status 优先于纯返现", why: "💡 无 FTF；Summit 3x + status；收 3% FTF 的卡（Smartly/Cash+/CFU/老 Freedom）境外别刷；零售类 Bilt 仅 1x", alts: "Bilt 1x(凑比例)",
     candidates: [
       { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
-      { n: "Bilt Palladium", s: "Bilt 2x(≈5%+凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" },
-      { n: "Amex Platinum", s: "Plat 5x(仅机票,关前)", cur: "MR", m: 5, rate: "5x MR≈10%", cond: "仅机票，不适用一般境外消费" } ] },
-  { g: 2, icon: "🌏", name: "境外餐饮", ccat: "dining",
+      { n: "Bilt Palladium", s: "Bilt 1x(凑比例)", cur: "Bilt", m: 1, rate: "1x≈2.5%" } ] },
+  { g: 4, icon: "🌏", name: "境外餐饮", ccat: "dining",
     why: function() {
       if (rotOn("chase", "dining")) { return "与国内同为 Flex 7x 最强；老 Freedom 境外收 3% 别带"; }
       return "Gold 4x（无 FTF）；老 Freedom 境外收 3% 别带";
@@ -455,15 +473,46 @@ var REC_CATS = [
       { n: "Freedom Flex", s: "Freedom Flex 轮转", cur: "UR", m: 3, rate: "3x UR≈6%", rot: ["chase", "dining"] },
       { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
-  { g: 2, icon: "🚇", name: "公交/地铁",
+  { g: 4, icon: "🚇", name: "境外公交/地铁",
     why: function() {
       if (rotOn("chase", "transit")) return "本季轮转含公交 5x 时先刷 Freedom Flex（老 Freedom 境外收 3% 别带）";
-      return "本季无公交轮转；国内 Smartly 4% 兜底；⚠️ 境外公交/地铁别刷 Smartly（3% FTF，净约 1%），改刷 Bilt 2x（≈5%）";
+      return "国内 Smartly 4%，境外别刷 Smartly 改 Bilt 2x；⚠️ Smartly 境外收 3% FTF，净约 1%";
     },
     candidates: [
-      { n: "U.S. Bank Smartly", cur: "cash", m: 4, rate: "4% cash" },
-      { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%", sv: 3.9 },
-      { n: "Freedom Flex/老Freedom", s: "Freedom 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "transit"] } ] },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
+      { n: "Freedom Flex", s: "Freedom Flex 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "transit"] } ] },
+  { g: 4, icon: "🛒", name: "境外超市/便利店",
+    why: function() {
+      if (rotOn("chase", "grocery")) { return "Q4 轮转 5x（仅 Flex，额度与餐饮/捐款共用 $1,500/卡）；老 Freedom 境外收 3% 别带"; }
+      return "本季无超市轮转；境外超市刷 Atmos 3x；老 Freedom 境外收 3% 别带";
+    },
+    candidates: [
+      { n: "Freedom Flex", s: "Freedom Flex 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "grocery"] },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" } ] },
+  { g: 4, icon: "🚕", name: "境外打车/网约车", why: "💡 Grab/打车境外刷 Bilt 2x 最强；Atmos 3x 备选；CSR 直订打车仅 1x（已无 3x 旅行类），Lyft 5x 仅美国境内；Gold 每月 $10 Uber Cash 可抵 Uber 车费",
+    candidates: [
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
+      { n: "Amex Gold", s: "Gold $10/月 Uber Cash", cur: "cash", m: 0, rate: "$10/月抵扣" },
+      { n: "Chase Sapphire Reserve", s: "CSR Lyft 5x", cur: "UR", m: 5, rate: "5x UR≈10%", cond: "仅美国境内 Lyft" } ] },
+  { g: 4, icon: "⛽", name: "租车加油", why: "💡 境外加油刷 Atmos 3x；Costco Visa 加油 4%（免 FTF，年上限 $7,000）；Bilt 加油仅 1x；Smartly 境外收 3% FTF 别刷",
+    candidates: [
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
+      { n: "Costco Anywhere Visa", s: "Costco 4%", cur: "cash", m: 4, rate: "4%" } ] },
+  { g: 4, icon: "🏨", name: "酒店内消费（挂房账）", why: "💡 挂房账按酒店直订算，CSR 直订 4x 最强；Marriott 住店房费刷 Brilliant 6x 拿房晚，房内消费仍刷 CSR 4x；Bilt 2x 备选",
+    candidates: [
+      { n: "Chase Sapphire Reserve", s: "CSR 直订 4x", cur: "UR", m: 4, rate: "4x UR≈8.2%" },
+      { n: "Marriott Brilliant", s: "Brilliant 6x", cur: "Marriott", m: 6, rate: "6x≈4.2%" },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
+  { g: 4, icon: "🎫", name: "景点门票现场买", why: "💡 现场门票 CSR/Bilt 均仅 1x（非旅行类编码）；外币消费刷 Atmos 3x 最稳；按娱乐类编码时 Discover Q4 轮转 5% 更优",
+    candidates: [
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
+      { n: "Discover it", s: "Discover 轮转 5%", cur: "cash", m: 1, rate: "1%", rot: ["discover", "entertainment"], cond: "按娱乐类编码时" } ] },
+  { g: 4, icon: "🏧", name: "境外取现", why: "💡 别用信用卡取现（手续费+立即计息、无免息期）；境外取现用免 FTF 的借记卡，提前确认当地 ATM 是否另收费",
+    candidates: [
+      { n: "借记卡取现", cur: "cash", m: 0, rate: "免 FTF 借记卡", pin: true },
+      { n: "信用卡取现", cur: "cash", m: 0, rate: "手续费+立即计息", cond: "❌ 别用信用卡取现" } ] },
   // ===== 账单 & 订阅 (g:3) =====
   { g: 3, icon: "📺", name: "流媒体", pinNote: "报销抵扣优先", ccat: "entertainment", why: "💡 Plat $25/月报销；关卡后→Cash+ 5%",
     candidates: [
@@ -498,12 +547,12 @@ var COMP_TRUE_MULT = { // 该类常规倍率 [倍率,币种]，换季同步改�
   grocery: { FLEX:[5,"UR"], FREEDOM:[5,"UR"], GOLD:[4,"MR"], CFU:[1.5,"UR"], CSR:[1,"UR"], PLAT:[1,"MR"], DELTA:[1,"MILES"], SUMMIT:[1,"Atmos"], SMARTLY:[4,"cash"], CASHPLUS:[1,"cash"], BILT:[2,"Bilt"], DISCOVER:[1,"cash"], BRILLIANT:[2,"Marriott"] },
   dining: { FLEX:[7,"UR"], FREEDOM:[5,"UR"], GOLD:[4,"MR"], CSR:[3,"UR"], CFU:[1.5,"UR"], PLAT:[1,"MR"], DELTA:[1,"MILES"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], CASHPLUS:[1,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], DISCOVER:[5,"cash"] },
   gas: { SMARTLY:[4,"cash"], CFU:[1.5,"UR"], CSR:[1,"UR"], PLAT:[1,"MR"], GOLD:[1,"MR"], DELTA:[1,"MILES"], SUMMIT:[1,"Atmos"], CASHPLUS:[1,"cash"], BILT:[2,"Bilt"], DISCOVER:[1,"cash"], BRILLIANT:[2,"Marriott"], FLEX:[1,"UR"], FREEDOM:[1,"UR"] },
-  airline: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[3,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
-  hotel: { BRILLIANT:[6,"Marriott"], GOLD:[5,"MR"], CSR:[10,"UR"], PLAT:[5,"MR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], SUMMIT:[1,"Atmos"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
+  airline: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[4,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
+  hotel: { BRILLIANT:[6,"Marriott"], GOLD:[5,"MR"], CSR:[8,"UR"], PLAT:[5,"MR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], SUMMIT:[1,"Atmos"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
   utilities: { CASHPLUS:[5,"cash"], DISCOVER:[5,"cash"], BILT:[2,"Bilt"], SMARTLY:[4,"cash"], CFU:[1.5,"UR"], CSR:[1,"UR"], PLAT:[1,"MR"], GOLD:[1,"MR"], SUMMIT:[1,"Atmos"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], BRILLIANT:[2,"Marriott"], DELTA:[1,"MILES"] },
   streaming: { PLAT:[1,"MR"], CASHPLUS:[5,"cash"], CSR:[1,"UR"], CFU:[1.5,"UR"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], GOLD:[1,"MR"], SUMMIT:[1,"Atmos"], BRILLIANT:[2,"Marriott"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
-  alaska: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[3,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
-  airline_other: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[3,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] }
+  alaska: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[4,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] },
+  airline_other: { PLAT:[5,"MR"], GOLD:[3,"MR"], CSR:[4,"UR"], SUMMIT:[3,"Atmos"], SMARTLY:[4,"cash"], BILT:[2,"Bilt"], BRILLIANT:[3,"Marriott"], CFU:[1.5,"UR"], FLEX:[1,"UR"], FREEDOM:[1,"UR"], CASHPLUS:[1,"cash"], DISCOVER:[1,"cash"], DELTA:[1,"MILES"] }
 };
 var COMP_TIER_DOT = { best: "✅", alt: "🟡", off: "❌", pending: "❔" };
 function compBlockHtml(cat){
@@ -616,7 +665,7 @@ function candTableHtml(cat){
   return "<div class='cand-table'>" + rows + "</div>";
 }
 function renderRecs() {
-  var groups = { 1: [], 2: [], 3: [] };
+  var groups = { 1: [], 2: [], 3: [], 4: [] };
   REC_CATS.forEach(function(cat) {
     var cands = cat.candidates.map(function(c, i) { return { c: c, i: i, score: recScore(c) }; });
     var best = null;
@@ -632,7 +681,7 @@ function renderRecs() {
       + '<div class="rec-detail"' + (cat.ccat ? ' data-ccat="' + cat.ccat + '"' : '') + '><div class="verdict">' + verdict + '</div>' + (tip ? '<div class="v-note" style="margin-bottom:2px">' + tip + '</div>' : '') + candTableHtml(cat) + compBlockHtml(cat) + rotBarHtml(cat) + '</div>';
     groups[cat.g].push(row);
   });
-  for (var g = 1; g <= 3; g++) {
+  for (var g = 1; g <= 4; g++) {
     var el = document.getElementById("recG" + g);
     if (el) el.innerHTML = groups[g].join("\n");
   }
@@ -651,7 +700,7 @@ renderRecs();
 
 <div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Chase Sapphire Reserve</span><span class="cf">$795 ⚠️降5/11</span></div><div class="cb"><b>8x</b>Chase Travel(≈16.4%) | <b>4x</b>航司酒店直购(≈8.2%) | 3x餐饮(≈6.2%) (2025.6改版后费率) <span class="ftf ftf-ok">🌍 免境外手续费</span></div><div class="cd"><h4>积分</h4><ul><li>8x Chase Travel(含The Edit)</li><li>4x 航司/酒店直购</li><li>5x Lyft + $10/月 Lyft credit ($120/年)</li><li>3x 餐饮 | 1x 其他旅行</li><li>10x Chase Dining部分餐厅</li></ul><h4>权益</h4><ul><li>$300/年旅行credit(自动)</li><li><b style="color:#ffd93d">$250×2/年 The Edit credit</b>(Chase Travel订The Edit酒店、预付≥2晚，statement credit返还)</li><li><b style="color:#ffd93d">$250 Select Hotels credit</b>(仅2026年：IHG/Montage/Pendry/Omni/Virgin Hotels/Minor/Pan Pacific)</li>
 <li><b style="color:#ffd93d">$150/半年 Exclusive Tables dining credit</b>(名单内餐厅堂食刷 CSR 自动返；西雅图 5 家，最近 Bellevue Takai by Kashiba；下半年 $150 在 12-31 前用掉)</li>
-<li><b style="color:#ffd93d">$150/半年 StubHub/viagogo credit</b>(须先在 Chase App 激活再买票；下半年 $150 在 12-31 前用掉)</li><li>Points Boost: 指定酒店/高端舱位最高2¢/分兑换；老积分1.5¢保底至2027-10-26</li><li>Priority Pass</li><li>$120 Global Entry/TSA PreCheck</li><li>$120/年 Peloton credit($10/月)</li><li>Apple TV+ / Apple Music 免费(至2027年中)</li><li>IHG 铂金会籍(改版新增)</li><li>旅行延误险</li></ul><div class="tip">💡 UR转Hyatt 1:1是最高价值(实测2.2–3.3cpp)。Park Hyatt/Andaz等高端=巨大价值。也可转United(close-in免手续费)、Southwest(1.4cpp+companion pass)</div><div class="protip">🎯 资深玩家：降级前把Portal 10x用到极致(酒店+租车)。$300 credit涵盖Uber/停车/过路费等。Lyft 5x别忘用。⚠️降到CSP后转分有变化：UR→Hyatt从1:1降为4:3（2026-10-01起），Portal从1.5x降到1.25x。DoorDash DashPass免费也是(降前享受)</div></div></div>
+<li><b style="color:#ffd93d">$150/半年 StubHub/viagogo credit</b>(须先在 Chase App 激活再买票；下半年 $150 在 12-31 前用掉)</li><li>Points Boost: 指定酒店/高端舱位最高2¢/分兑换；老积分1.5¢保底至2027-10-26</li><li>Priority Pass</li><li>$120 Global Entry/TSA PreCheck</li><li>$120/年 Peloton credit($10/月)</li><li>Apple TV+ / Apple Music 免费(至2027年中)</li><li>IHG 铂金会籍(改版新增)</li><li>旅行延误险</li></ul><div class="tip">💡 UR转Hyatt 1:1是最高价值(实测2.2–3.3cpp)。Park Hyatt/Andaz等高端=巨大价值。也可转United(close-in免手续费)、Southwest(1.4cpp+companion pass)</div><div class="protip">🎯 资深玩家：降级前把Portal 8x用到极致(酒店+租车)。$300 credit涵盖Uber/停车/过路费等。Lyft 5x别忘用。⚠️降到CSP后转分有变化：UR→Hyatt从1:1降为4:3（2026-10-01起），Portal从1.5x降到1.25x。DoorDash DashPass免费也是(降前享受)</div></div></div>
 
 <div class="card-box" onclick="this.classList.toggle('open')"><div class="ct"><span class="cn">Bilt Palladium</span><span class="cf">$495/年</span></div><div class="cb"><b>2x</b>日常≈5%Hyatt | <b>1.25x</b>房租 <span class="ftf ftf-ok">🌍 免境外手续费</span></div><div class="cd"><h4>积分</h4><ul><li>2x 所有非房租</li><li>1.25x 房租(需消费≥租金)</li></ul><h4>权益</h4><ul><li>$400酒店credit($200x2)</li><li>$200 Bilt Cash/年</li><li>Priority Pass</li><li>Cell Phone Protection</li><li>无FTF</li></ul><div class="tip">💡 Bilt→Hyatt最值(Park Hyatt东京35K–75K/晚，现金$800+；⚠️2027-01-01起转Hyatt变4:3)。→Cathay 1:1 | →JAL 1:1 | →United 1:1 | →Atmos 1:1</div><div class="protip">🎯 资深玩家：积分加速器$200Bilt Cash→+1x(变3x)，每年5次=$25K额外消费@3x=75K额外积分。Rent Day(每月1号)刷卡积分翻倍活动别错过。$400酒店credit用Bilt Travel Portal订即可触发(不限品牌)</div></div></div>
 
@@ -2589,7 +2638,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-26 21:25 UTC';
+var BUILD_TS='2026-11-26 21:44 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
