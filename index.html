@@ -445,24 +445,27 @@ var REC_CATS = [
       { n: "Amex Gold", s: "Amex Gold 5x(Amex Travel预付!)", cur: "MR", m: 5, rate: "5x MR≈10%" },
       { n: "U.S. Bank Smartly", s: "Smartly 4%", cur: "cash", m: 4, rate: "4%", cond: "仅美元结算；外币结算收 3% FTF" },
       { n: "Bilt Palladium", s: "Bilt Portal($400)", cur: "cash", m: 0, rate: "" } ] },
-  { g: 2, icon: "🎟️", name: "景点门票/一日游预定", why: "💡 Chase Travel 订活动/门票 8x 最强；直接在 Viator/Klook 订刷 Atmos 3x（外币消费）；按娱乐类编码时 Discover Q4 轮转 5%",
+  { g: 2, icon: "🎟️", name: "景点门票/一日游预定", why: "💡 Chase Travel 订活动/门票 8x 最强；直接在 Viator/Klook 订刷 Bilt 2x≈5%（Palladium 日常消费一律 2x）；按娱乐类编码时 Discover Q4 轮转 5%",
     candidates: [
       { n: "CSR Portal", s: "CSR Portal 8x", cur: "UR", m: 8, rate: "8x UR≈16.4%", pin: true },
+      { n: "Bilt Palladium", s: "Bilt 2x(直接订)", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "Atmos Summit", s: "Atmos 3x(直接订)", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Discover it", s: "Discover 轮转 5%", cur: "cash", m: 1, rate: "1%", rot: ["discover", "entertainment"], cond: "直接订且按娱乐类编码时" } ] },
-  { g: 2, icon: "🏡", name: "民宿 Airbnb/Vrbo", why: "💡 民宿直订 CSR 仅 1x（已无 3x 旅行类）；境外民宿刷 Atmos 3x 最稳；按酒店类编码时 Bilt 2x；Chase Travel 上架的房源可享 Portal 8x",
+  { g: 2, icon: "🏡", name: "民宿 Airbnb/Vrbo", why: "💡 民宿直订 CSR 仅 1x（已无 3x 旅行类）；民宿刷 Bilt 2x≈5% 最强（Palladium 日常消费一律 2x）；Chase Travel 上架的房源可享 Portal 8x",
     candidates: [
-      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
-      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%", cond: "按酒店类编码时" },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%", pin: true },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "CSR Portal", s: "CSR Portal 8x", cur: "UR", m: 8, rate: "8x UR≈16.4%", cond: "Chase Travel 上架的房源才享 8x" } ] },
-  { g: 2, icon: "🚆", name: "机场接送/火车/轮渡", why: "💡 火车/轮渡/接送直订 CSR 仅 1x（已无 3x 旅行类）；Bilt 2x 仅覆盖机票/酒店/租车/邮轮编码；境外消费刷 Atmos 3x 最稳；Chase Travel 上架的车次/接送可享 Portal 8x",
+  { g: 2, icon: "🚆", name: "机场接送/火车/轮渡", why: "💡 火车/轮渡/接送直订 CSR 仅 1x（已无 3x 旅行类）；刷 Bilt 2x≈5% 最强（Palladium 日常消费一律 2x）；Chase Travel 上架的车次/接送可享 Portal 8x",
     candidates: [
-      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%", pin: true },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "CSR Portal", s: "CSR Portal 8x", cur: "UR", m: 8, rate: "8x UR≈16.4%", cond: "Chase Travel 上架的车次/接送才享 8x" } ] },
-  { g: 4, icon: "🌍", name: "境外购物/零售", pinNote: "境外 3x + status 优先于纯返现", why: "💡 无 FTF；Summit 3x + status；收 3% FTF 的卡（Smartly/Cash+/CFU/老 Freedom）境外别刷；零售类 Bilt 仅 1x", alts: "Bilt 1x(凑比例)",
+  { g: 4, icon: "🌍", name: "境外购物/零售", pinNote: "Bilt 全场 2x≈5% 最强", why: "💡 无 FTF；Bilt 全场 2x≈5% 最强（Palladium 2.0 日常消费一律 2x）；Summit 3x 备选；收 3% FTF 的卡（Smartly/Cash+/CFU/老 Freedom）境外别刷", alts: "Atmos 3x≈4.65%",
     candidates: [
-      { n: "Atmos Summit", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
-      { n: "Bilt Palladium", s: "Bilt 1x(凑比例)", cur: "Bilt", m: 1, rate: "1x≈2.5%" } ] },
+      { n: "Bilt Palladium", cur: "Bilt", m: 2, rate: "2x≈5%", pin: true },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" }
+    ] },
   { g: 4, icon: "🌏", name: "境外餐饮", ccat: "dining",
     why: function() {
       if (rotOn("chase", "dining")) { return "与国内同为 Flex 7x 最强；老 Freedom 境外收 3% 别带"; }
@@ -485,10 +488,11 @@ var REC_CATS = [
   { g: 4, icon: "🛒", name: "境外超市/便利店",
     why: function() {
       if (rotOn("chase", "grocery")) { return "Q4 轮转 5x（仅 Flex，额度与餐饮/捐款共用 $1,500/卡）；老 Freedom 境外收 3% 别带"; }
-      return "本季无超市轮转；境外超市刷 Atmos 3x；老 Freedom 境外收 3% 别带";
+      return "本季无超市轮转；境外超市刷 Bilt 2x（≈5%）；老 Freedom 境外收 3% 别带";
     },
     candidates: [
       { n: "Freedom Flex", s: "Freedom Flex 轮转", cur: "UR", m: 1, rate: "1x UR≈2%", rot: ["chase", "grocery"] },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" } ] },
   { g: 4, icon: "🚕", name: "境外打车/网约车", why: "💡 Grab/打车境外刷 Bilt 2x 最强；Atmos 3x 备选；CSR 直订打车仅 1x（已无 3x 旅行类），Lyft 5x 仅美国境内；Gold 每月 $10 Uber Cash 可抵 Uber 车费",
     candidates: [
@@ -496,18 +500,21 @@ var REC_CATS = [
       { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Amex Gold", s: "Gold $10/月 Uber Cash", cur: "cash", m: 0, rate: "$10/月抵扣" },
       { n: "Chase Sapphire Reserve", s: "CSR Lyft 5x", cur: "UR", m: 5, rate: "5x UR≈10%", cond: "仅美国境内 Lyft" } ] },
-  { g: 4, icon: "⛽", name: "租车加油", why: "💡 境外加油刷 Atmos 3x；Costco Visa 加油 4%（免 FTF，年上限 $7,000）；Bilt 加油仅 1x；Smartly 境外收 3% FTF 别刷",
+  { g: 4, icon: "⛽", name: "租车加油", why: "💡 境外加油刷 Bilt 2x≈5% 最强（Palladium 日常消费一律 2x）；Costco Visa 加油 4%（免 FTF，年上限 $7,000）；Atmos 3x 备选；Smartly 境外收 3% FTF 别刷",
     candidates: [
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" },
       { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
-      { n: "Costco Anywhere Visa", s: "Costco 4%", cur: "cash", m: 4, rate: "4%" } ] },
+      { n: "Costco Anywhere Visa", s: "Costco 4%", cur: "cash", m: 4, rate: "4%" }
+    ] },
   { g: 4, icon: "🏨", name: "酒店内消费（挂房账）", why: "💡 挂房账按酒店直订算，CSR 直订 4x 最强；Marriott 住店房费刷 Brilliant 6x 拿房晚，房内消费仍刷 CSR 4x；Bilt 2x 备选",
     candidates: [
       { n: "Chase Sapphire Reserve", s: "CSR 直订 4x", cur: "UR", m: 4, rate: "4x UR≈8.2%" },
       { n: "Marriott Brilliant", s: "Brilliant 6x", cur: "Marriott", m: 6, rate: "6x≈4.2%" },
       { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
-  { g: 4, icon: "🎫", name: "景点门票现场买", why: "💡 现场门票 CSR/Bilt 均仅 1x（非旅行类编码）；外币消费刷 Atmos 3x 最稳；按娱乐类编码时 Discover Q4 轮转 5% 更优",
+  { g: 4, icon: "🎫", name: "景点门票现场买", why: "💡 现场门票刷 Bilt 2x≈5% 最强（Palladium 日常消费一律 2x）；外币消费 Atmos 3x 备选；CSR 直订仅 1x；按娱乐类编码时 Discover Q4 轮转 5% 更优",
     candidates: [
-      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%", pin: true },
+      { n: "Bilt Palladium", s: "Bilt 2x", cur: "Bilt", m: 2, rate: "2x≈5%", pin: true },
+      { n: "Atmos Summit", s: "Atmos 3x", cur: "Atmos", m: 3, rate: "3x≈4.65%" },
       { n: "Discover it", s: "Discover 轮转 5%", cur: "cash", m: 1, rate: "1%", rot: ["discover", "entertainment"], cond: "按娱乐类编码时" } ] },
   { g: 4, icon: "🏧", name: "境外取现", why: "💡 别用信用卡取现（手续费+立即计息、无免息期）；境外取现用免 FTF 的借记卡，提前确认当地 ATM 是否另收费",
     candidates: [
@@ -2638,7 +2645,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-26 21:44 UTC';
+var BUILD_TS='2026-11-26 21:51 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
