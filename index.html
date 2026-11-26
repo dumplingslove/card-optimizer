@@ -457,8 +457,8 @@ var REC_CATS = [
       { n: "Bilt Palladium", s: "Bilt 2x(凑比例)", cur: "Bilt", m: 2, rate: "2x≈5%" } ] },
   { g: 2, icon: "🚇", name: "公交/地铁",
     why: function() {
-      if (rotOn("chase", "transit")) return "本季轮转含公交 5x 时先刷 Freedom";
-      return "本季无公交轮转；Smartly 4% 兜底";
+      if (rotOn("chase", "transit")) return "本季轮转含公交 5x 时先刷 Freedom Flex（老 Freedom 境外收 3% 别带）";
+      return "本季无公交轮转；国内 Smartly 4% 兜底；⚠️ 境外公交/地铁别刷 Smartly（3% FTF，净约 1%），改刷 Bilt 2x（≈5%）";
     },
     candidates: [
       { n: "U.S. Bank Smartly", cur: "cash", m: 4, rate: "4% cash" },
@@ -2589,7 +2589,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-26 19:20 UTC';
+var BUILD_TS='2026-11-26 21:25 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
