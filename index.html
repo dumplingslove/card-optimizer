@@ -2589,7 +2589,7 @@ cb();
 <script>
 // Copy the site's share link to clipboard
 var SITE_URL='https://dumplingslove.github.io/card-optimizer/';
-var BUILD_TS='2026-11-26 14:05 UTC';
+var BUILD_TS='2026-11-26 16:06 UTC';
 (function(){var el=document.getElementById('buildStamp');if(el)el.textContent='版本 '+BUILD_TS+'（与最新推送对不上时，点右下角 🔄 强制刷新）'})();
 function frToast(msg){var t=document.getElementById('frToast');if(!t)return;t.textContent=msg;t.classList.add('show')}
 function frStep(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(res,ms)})])}
@@ -3439,6 +3439,7 @@ document.addEventListener('DOMContentLoaded',function(){if(document.getElementBy
       var txt = list.map(function(it){
         var nm = it.r.card_name.replace("Chase Sapphire Reserve", "CSR").replace("Amex Platinum", "Plat").replace("Amex Gold", "Gold").replace("Marriott Brilliant", "Brilliant").replace("Bilt Palladium", "Bilt");
         if (it.state === "unknown") return nm + " " + it.r.credit_name + "（待确认）";
+        if (it.rem == null) return "<b>" + nm + " " + it.r.credit_name + "</b>（金额待确认）";
         return "<b>" + nm + " " + it.r.credit_name + " " + fmtM(it.rem) + "</b>" + (it.days != null ? "（剩 " + it.days + " 天）" : "");
       }).join(" · ");
       document.querySelectorAll('[data-ccat="' + cat + '"]').forEach(function(el){
